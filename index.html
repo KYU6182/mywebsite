@@ -4,35 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ION STAY 在庫管理システム</title>
-    <!-- デザイン用 (Tailwind CSS) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .bg-glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
     </style>
 </head>
 <body class="bg-[#F8FAFC]">
     <div id="root"></div>
 
     <script type="module">
-        // 安定したライブラリ読み込み (ESM)
-        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0';
+        import React, { useState, useEffect, useMemo, useRef } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         import { 
-            AlertCircle, Package, Search, Loader2, X, MessageSquare, Clock, 
-            Truck, History, Check, Plus, Trash2, PlusCircle, MinusCircle, 
-            ChevronDown, ChevronUp, Filter, Layers, Bell 
+            AlertCircle, Package, Search, Loader2, X, Clock, 
+            Plus, Trash2, PlusCircle, MinusCircle, 
+            ChevronDown, Image as ImageIcon, Camera, Upload, Sparkles
         } from 'https://esm.sh/lucide-react@0.344.0?bundle';
         
-        // Firebase ライブラリ
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         // ==========================================
-        // Firebase設定
+        // Firebase Configuration (元の設定を復旧)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBbzFujP0P7ExZ9m_ofnUGwHvTSFFgC1Ks",
@@ -47,6 +45,47 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = 'ion-stay-inventory-system';
+        const apiKey = ""; // Gemini API key
+
+        // ==========================================
+        // Utilities
+        // ==========================================
+        const formatDateTime = (isoString) => {
+            if (!isoString) return '未確認';
+            const date = new Date(isoString);
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            
+            const timeStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            if (isToday) return `今日 ${timeStr}`;
+            return `${date.getMonth() + 1}/${date.getDate()} ${timeStr}`;
+        };
+
+        const compressImage = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 300;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                };
+            });
+        };
 
         const App = () => {
             const [items, setItems] = useState([]);
@@ -54,21 +93,25 @@
             const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
             const [filterLocation, setFilterLocation] = useState('All');
-            const [sortBy, setSortBy] = useState('category');
             const [saveStatus, setSaveStatus] = useState('');
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deleteConfirmItem, setDeleteConfirmItem] = useState(null);
             const [expandedId, setExpandedId] = useState(null);
+            const [aiAnalysis, setAiAnalysis] = useState(null);
+            const [isAiLoading, setIsAiLoading] = useState(false);
+            const fileInputRef = useRef(null);
 
             const [newItem, setNewItem] = useState({
-                name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: ''
+                name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: '', imageUrl: ''
             });
 
+            // Authentication
             useEffect(() => {
                 signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
                 return onAuthStateChanged(auth, setUser);
             }, []);
 
+            // Data Subscription
             useEffect(() => {
                 if (!user) return;
                 const inventoryCol = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
@@ -95,17 +138,30 @@
                 updateItem(item.id, { stock: newStock });
             };
 
+            const handleFileChange = async (e, isUpdate = false, itemId = null) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                setSaveStatus('画像処理中...');
+                const base64 = await compressImage(file);
+                if (isUpdate && itemId) {
+                    await updateItem(itemId, { imageUrl: base64 });
+                } else {
+                    setNewItem({ ...newItem, imageUrl: base64 });
+                }
+                setSaveStatus('');
+            };
+
             const addItem = async (e) => {
                 e.preventDefault();
                 if (!user || !newItem.name) return;
                 const id = crypto.randomUUID();
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id), {
-                        ...newItem, id, orderDate: '', lastOrderDate: '', lastChecked: new Date().toISOString()
+                        ...newItem, id, lastChecked: new Date().toISOString()
                     });
                     setIsModalOpen(false);
-                    setNewItem({ name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: '' });
-                } catch (err) { alert('保存に失敗しました。Firestoreの「ルール」設定を確認してください。'); }
+                    setNewItem({ name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: '', imageUrl: '' });
+                } catch (err) { alert('保存に失敗しました。'); }
             };
 
             const deleteItem = async (id) => {
@@ -114,119 +170,173 @@
                 setDeleteConfirmItem(null);
             };
 
+            // AI Analysis
+            const runAiAnalysis = async () => {
+                if (isAiLoading) return;
+                setIsAiLoading(true);
+                const inventorySummary = items.map(i => `${i.name}(${i.location}): ${i.stock}/${i.threshold}`).join('\n');
+                
+                const prompt = `あなたは在庫管理者です。以下のデータを見て、緊急で補充すべきものや管理アドバイスを日本語で3つ、箇条書きで短く回答してください。\n${inventorySummary}`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const result = await response.json();
+                    setAiAnalysis(result.candidates?.[0]?.content?.parts?.[0]?.text || "分析できませんでした。");
+                } catch (e) {
+                    setAiAnalysis("AI分析をご利用いただけません。");
+                } finally {
+                    setIsAiLoading(false);
+                }
+            };
+
+            const lowStockItems = useMemo(() => items.filter(item => Number(item.stock) <= Number(item.threshold)), [items]);
+
             const groupedItems = useMemo(() => {
                 const filtered = items.filter(item => {
                     const name = String(item.name || "").toLowerCase();
-                    const category = String(item.category || "").toLowerCase();
                     const search = searchTerm.toLowerCase();
-                    return (name.includes(search) || category.includes(search)) && (filterLocation === 'All' || item.location === filterLocation);
+                    return name.includes(search) && (filterLocation === 'All' || item.location === filterLocation);
                 });
+
                 const groups = {};
                 filtered.forEach(item => {
                     const cleanName = item.name.trim();
                     if (!groups[cleanName]) {
-                        groups[cleanName] = { name: cleanName, category: item.category, unit: item.unit, totalStock: 0, hasAlert: false, locations: [] };
+                        groups[cleanName] = { 
+                            name: cleanName, category: item.category, unit: item.unit, 
+                            totalStock: 0, hasAlert: false, locations: [], imageUrl: item.imageUrl,
+                            lastChecked: item.lastChecked 
+                        };
                     }
                     const stock = Number(item.stock) || 0;
                     const isLow = stock <= (Number(item.threshold) || 0);
                     groups[cleanName].locations.push({ ...item, isLow });
                     groups[cleanName].totalStock += stock;
-                    if (isLow && !item.orderDate) groups[cleanName].hasAlert = true;
+                    if (isLow) groups[cleanName].hasAlert = true;
+                    if (item.imageUrl) groups[cleanName].imageUrl = item.imageUrl;
+                    if (!groups[cleanName].lastChecked || new Date(item.lastChecked) > new Date(groups[cleanName].lastChecked)) {
+                        groups[cleanName].lastChecked = item.lastChecked;
+                    }
                 });
-                return Object.values(groups).sort((a, b) => {
-                    if (sortBy === 'stock') return a.totalStock - b.totalStock;
-                    return a.name.localeCompare(b.name, 'ja');
-                });
-            }, [items, searchTerm, filterLocation, sortBy]);
+                return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+            }, [items, searchTerm, filterLocation]);
 
-            const lowStockCount = useMemo(() => items.filter(item => Number(item.stock) <= Number(item.threshold) && !item.orderDate).length, [items]);
-            const locations = ['All', ...new Set(items.map(item => item.location))].filter(Boolean);
+            const locations = ['All', '事務所', '天神', '博多', '清川', 'エブリィ', 'IONビル２階'];
 
-            if (loading) return React.createElement('div', { className: 'flex h-screen items-center justify-center bg-slate-50 text-slate-400 font-black' }, 'LOADING...');
+            if (loading) return React.createElement('div', { className: 'flex h-screen items-center justify-center bg-white text-slate-400 font-black' }, 'LOADING...');
 
             return React.createElement('div', { className: 'min-h-screen pb-32' },
-                saveStatus && React.createElement('div', { className: 'fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/90 text-white px-5 py-2 rounded-full text-xs font-bold shadow-xl' }, saveStatus),
+                saveStatus && React.createElement('div', { className: 'fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-5 py-2 rounded-full text-xs font-black shadow-2xl' }, saveStatus),
                 
-                React.createElement('header', { className: 'bg-white/90 backdrop-blur-lg border-b sticky top-0 z-40 p-4 shadow-sm' },
+                React.createElement('header', { className: 'bg-white/90 backdrop-blur-md border-b sticky top-0 z-40 p-4 shadow-sm' },
                     React.createElement('div', { className: 'max-w-2xl mx-auto space-y-3' },
                         React.createElement('div', { className: 'flex items-center justify-between' },
                             React.createElement('h1', { className: 'text-xl font-black text-slate-800 flex items-center gap-2' }, React.createElement(Package, { className: 'text-blue-600' }), 'ION STAY'),
-                            React.createElement('div', { className: 'flex items-center gap-1.5' },
-                                React.createElement('div', { className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse' }),
-                                React.createElement('span', { className: 'text-[10px] text-slate-400 font-black uppercase' }, 'Cloud Syncing')
+                            React.createElement('button', { onClick: runAiAnalysis, className: 'flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg active:scale-95 transition-all' }, 
+                                isAiLoading ? React.createElement(Loader2, { className: 'animate-spin', size: 12 }) : React.createElement(Sparkles, { size: 12 }),
+                                'AI 在庫分析'
                             )
                         ),
-                        React.createElement('input', { type: 'text', placeholder: '品目を検索...', className: 'w-full p-2.5 bg-slate-100 rounded-xl text-sm font-bold outline-none shadow-inner', value: searchTerm, onChange: e => setSearchTerm(e.target.value) }),
+                        React.createElement('div', { className: 'relative' },
+                            React.createElement(Search, { className: 'absolute left-3 top-1/2 -translate-y-1/2 text-slate-400', size: 16 }),
+                            React.createElement('input', { type: 'text', placeholder: '品目を検索...', className: 'w-full pl-10 pr-4 py-2.5 bg-slate-100 rounded-xl text-sm font-bold outline-none', value: searchTerm, onChange: e => setSearchTerm(e.target.value) })
+                        ),
                         React.createElement('div', { className: 'flex gap-2 overflow-x-auto scrollbar-hide' },
                             locations.map(loc => React.createElement('button', {
                                 key: loc,
                                 onClick: () => setFilterLocation(loc),
-                                className: `px-4 py-1.5 rounded-full text-[11px] font-black whitespace-nowrap transition-all ${filterLocation === loc ? 'bg-blue-600 text-white shadow-lg' : 'bg-white border text-slate-400'}`
+                                className: `px-4 py-1.5 rounded-full text-[11px] font-black whitespace-nowrap transition-all ${filterLocation === loc ? 'bg-blue-600 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400'}`
                             }, loc === 'All' ? 'すべての拠点' : loc))
                         )
                     )
                 ),
 
                 React.createElement('main', { className: 'max-w-2xl mx-auto p-4 space-y-4' },
-                    lowStockCount > 0 && React.createElement('div', { className: 'bg-red-500 p-4 rounded-2xl text-white flex items-center justify-between shadow-lg animate-pulse' },
-                        React.createElement('div', { className: 'flex items-center gap-3' }, React.createElement(AlertCircle), React.createElement('span', { className: 'text-sm font-black' }, `${lowStockCount}件の補充が必要です`))
+                    aiAnalysis && React.createElement('div', { className: 'bg-indigo-600 p-4 rounded-3xl relative text-white shadow-xl' },
+                        React.createElement('button', { onClick: () => setAiAnalysis(null), className: 'absolute top-3 right-3 opacity-50' }, React.createElement(X, { size: 16 })),
+                        React.createElement('h4', { className: 'text-[10px] font-black uppercase mb-2 flex items-center gap-1 opacity-80' }, React.createElement(Sparkles, { size: 10 }), 'AI 管理アドバイス'),
+                        React.createElement('div', { className: 'text-xs font-bold whitespace-pre-wrap leading-relaxed' }, aiAnalysis)
                     ),
 
-                    groupedItems.map(group => React.createElement('div', { key: group.name, className: `bg-white rounded-3xl border transition-all ${group.hasAlert ? 'border-red-200' : 'border-slate-100'} overflow-hidden shadow-sm mb-4` },
-                        React.createElement('div', { className: `p-4 flex justify-between items-end ${group.hasAlert ? 'bg-red-50/50' : 'bg-slate-50/50'}` },
+                    lowStockItems.length > 0 && React.createElement('div', { className: 'bg-red-500 p-4 rounded-3xl text-white shadow-xl animate-pulse' },
+                        React.createElement('div', { className: 'flex items-start gap-3' }, 
+                            React.createElement(AlertCircle, { className: 'mt-0.5 flex-shrink-0' }), 
                             React.createElement('div', null,
+                                React.createElement('span', { className: 'text-sm font-black block' }, `${lowStockItems.length}件の補充が必要です`),
+                                React.createElement('div', { className: 'text-[10px] font-bold mt-1 opacity-90' }, 
+                                    [...new Set(lowStockItems.map(i => i.name))].join(', ')
+                                )
+                            )
+                        )
+                    ),
+
+                    groupedItems.map(group => React.createElement('div', { key: group.name, className: `bg-white rounded-[2rem] border transition-all ${group.hasAlert ? 'border-red-200 shadow-red-50' : 'border-slate-100 shadow-slate-100'} overflow-hidden shadow-xl mb-4` },
+                        React.createElement('div', { className: `p-4 flex items-center gap-4 ${group.hasAlert ? 'bg-red-50/50' : 'bg-slate-50/30'}` },
+                            React.createElement('div', { className: 'w-16 h-16 bg-white rounded-2xl overflow-hidden flex-shrink-0 border border-slate-100 flex items-center justify-center shadow-inner' },
+                                group.imageUrl ? 
+                                    React.createElement('img', { src: group.imageUrl, className: 'w-full h-full object-cover' }) :
+                                    React.createElement(ImageIcon, { className: 'text-slate-200', size: 24 })
+                            ),
+                            React.createElement('div', { className: 'flex-1 min-w-0' },
                                 React.createElement('div', { className: 'flex items-center gap-2 mb-0.5' },
-                                    React.createElement('span', { className: 'text-[9px] font-black text-slate-300 uppercase' }, group.category),
-                                    group.hasAlert && React.createElement('span', { className: 'bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full' }, '要補充')
+                                    React.createElement('span', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-tight' }, group.category),
+                                    group.hasAlert && React.createElement('span', { className: 'bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full' }, 'LOW')
                                 ),
-                                React.createElement('h3', { className: 'text-lg font-black text-slate-800' }, group.name)
+                                React.createElement('h3', { className: 'text-lg font-black text-slate-800 leading-none truncate' }, group.name),
+                                React.createElement('div', { className: 'text-[9px] font-black text-slate-400 mt-2 flex items-center gap-1 uppercase' }, 
+                                    React.createElement(Clock, { size: 10, className: 'text-blue-400' }),
+                                    `最終確認: ${formatDateTime(group.lastChecked)}`
+                                )
                             ),
                             React.createElement('div', { className: 'text-right' },
-                                React.createElement('div', { className: `text-2xl font-black ${group.hasAlert ? 'text-red-600' : 'text-blue-600'}` }, group.totalStock, React.createElement('span', { className: 'text-[10px] ml-1 text-slate-400 uppercase' }, group.unit))
+                                React.createElement('div', { className: `text-2xl font-black ${group.hasAlert ? 'text-red-600' : 'text-blue-600'}` }, group.totalStock, React.createElement('span', { className: 'text-[10px] ml-1 text-slate-400' }, group.unit))
                             )
                         ),
                         React.createElement('div', { className: 'divide-y divide-slate-50' },
-                            group.locations.map(item => React.createElement('div', { key: item.id, className: `p-4 ${item.isLow && !item.orderDate ? 'bg-red-50/30' : ''}` },
+                            group.locations.map(item => React.createElement('div', { key: item.id, className: `p-4 ${item.isLow ? 'bg-red-50/10' : ''}` },
                                 React.createElement('div', { className: 'flex justify-between items-center gap-4' },
                                     React.createElement('div', { onClick: () => setExpandedId(expandedId === item.id ? null : item.id), className: 'flex-1 cursor-pointer min-w-0' },
-                                        React.createElement('span', { className: `text-[9px] font-black px-2 py-0.5 rounded tracking-widest ${item.isLow && !item.orderDate ? 'bg-red-600 text-white' : 'bg-slate-800 text-white'}` }, item.location),
-                                        React.createElement('div', { className: 'text-[11px] text-slate-500 mt-1 font-bold truncate' }, item.isLow && !item.orderDate ? `補充が必要です` : (item.memo || "詳細なし"))
+                                        React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                                            React.createElement('span', { className: `text-[9px] font-black px-2 py-0.5 rounded-md tracking-widest ${item.isLow ? 'bg-red-600 text-white' : 'bg-slate-800 text-white'}` }, item.location),
+                                            React.createElement('span', { className: 'text-[10px] font-bold text-slate-400' }, formatDateTime(item.lastChecked))
+                                        ),
+                                        React.createElement('div', { className: 'text-[11px] text-slate-500 font-bold truncate' }, item.memo || "メモなし")
                                     ),
-                                    React.createElement('div', { className: `flex items-center gap-1 border rounded-xl p-1 bg-white ${item.isLow && !item.orderDate ? 'border-red-200' : 'border-slate-200'}` },
-                                        React.createElement('button', { onClick: () => adjustStock(item, -1), className: 'text-slate-300 p-1' }, React.createElement(MinusCircle, { size: 20 })),
-                                        React.createElement('input', { type: 'number', inputMode: 'numeric', value: item.stock, onChange: e => updateItem(item.id, {stock: parseInt(e.target.value) || 0}), className: `w-10 text-center text-sm font-black outline-none border-0 p-0 ${item.isLow && !item.orderDate ? 'text-red-600' : 'text-slate-800'}` }),
-                                        React.createElement('button', { onClick: () => adjustStock(item, 1), className: 'text-slate-300 p-1' }, React.createElement(PlusCircle, { size: 20 }))
+                                    React.createElement('div', { className: `flex items-center gap-1 border rounded-xl p-1 bg-white ${item.isLow ? 'border-red-200' : 'border-slate-100'}` },
+                                        React.createElement('button', { onClick: () => adjustStock(item, -1), className: 'text-slate-300 p-1 hover:text-slate-500' }, React.createElement(MinusCircle, { size: 20 })),
+                                        React.createElement('input', { type: 'number', value: item.stock, onChange: e => updateItem(item.id, {stock: parseInt(e.target.value) || 0}), className: `w-10 text-center text-sm font-black outline-none border-0 p-0 ${item.isLow ? 'text-red-600' : 'text-slate-800'}` }),
+                                        React.createElement('button', { onClick: () => adjustStock(item, 1), className: 'text-slate-300 p-1 hover:text-slate-500' }, React.createElement(PlusCircle, { size: 20 }))
                                     ),
                                     React.createElement('button', { onClick: () => setExpandedId(expandedId === item.id ? null : item.id), className: 'text-slate-300' }, React.createElement(ChevronDown, { className: expandedId === item.id ? 'rotate-180 transition-transform' : '' }))
                                 ),
-                                expandedId === item.id && React.createElement('div', { className: 'mt-4 p-4 bg-slate-50 rounded-2xl space-y-4 border-t border-slate-100' },
-                                    React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
-                                        React.createElement('div', { className: 'space-y-1' },
-                                            React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase' }, '補充アラート数'),
-                                            React.createElement('input', { 
-                                                type: 'number', 
-                                                className: 'w-full p-2 bg-white border-2 border-slate-100 rounded-xl text-xs font-bold outline-none', 
-                                                value: item.threshold, 
-                                                onChange: e => updateItem(item.id, { threshold: parseInt(e.target.value) || 0 })
-                                            })
+                                expandedId === item.id && React.createElement('div', { className: 'mt-4 p-4 bg-slate-50 rounded-2xl space-y-4 border border-slate-100' },
+                                    React.createElement('div', { className: 'flex gap-4' },
+                                        React.createElement('div', { 
+                                            className: 'w-24 h-24 bg-white rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer shadow-sm',
+                                            onClick: () => fileInputRef.current.click()
+                                        },
+                                            item.imageUrl ? 
+                                                React.createElement('img', { src: item.imageUrl, className: 'w-full h-full object-cover' }) :
+                                                React.createElement(Camera, { className: 'text-slate-300', size: 24 }),
+                                            React.createElement('input', { type: 'file', ref: fileInputRef, className: 'hidden', accept: 'image/*', onChange: (e) => handleFileChange(e, true, item.id) })
                                         ),
-                                        React.createElement('div', { className: 'space-y-1' },
-                                            React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase' }, '拠点メモ'),
-                                            React.createElement('input', { 
-                                                type: 'text', 
-                                                className: 'w-full p-2 bg-white border-2 border-slate-100 rounded-xl text-xs font-bold outline-none', 
-                                                placeholder: '棚の右側など',
-                                                value: item.memo || '', 
-                                                onChange: e => updateItem(item.id, { memo: e.target.value })
-                                            })
+                                        React.createElement('div', { className: 'flex-1 space-y-3' },
+                                            React.createElement('div', null,
+                                                React.createElement('label', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-widest' }, 'アラート閾値'),
+                                                React.createElement('input', { type: 'number', className: 'w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 ring-blue-100', value: item.threshold, onChange: e => updateItem(item.id, { threshold: parseInt(e.target.value) || 0 }) })
+                                            ),
+                                            React.createElement('div', null,
+                                                React.createElement('label', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-widest' }, '拠点メモ'),
+                                                React.createElement('input', { type: 'text', className: 'w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 ring-blue-100', placeholder: '詳細', value: item.memo || '', onChange: e => updateItem(item.id, { memo: e.target.value }) })
+                                            )
                                         )
                                     ),
-                                    React.createElement('div', { className: 'flex justify-between items-center pt-2' },
-                                        React.createElement('div', { className: 'text-[9px] font-bold text-slate-300 flex items-center gap-1' }, React.createElement(Clock, { size: 10 }), item.lastChecked ? new Date(item.lastChecked).toLocaleString() : '-'),
-                                        React.createElement('button', { 
-                                            onClick: () => setDeleteConfirmItem(item),
-                                            className: 'text-[10px] font-black text-red-400 uppercase bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors'
-                                        }, 'この拠点を削除')
+                                    React.createElement('div', { className: 'flex justify-end' },
+                                        React.createElement('button', { onClick: () => setDeleteConfirmItem(item), className: 'text-[9px] font-black text-red-400 uppercase bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors' }, 'この拠点を削除')
                                     )
                                 )
                             ))
@@ -234,59 +344,65 @@
                     ))
                 ),
 
-                React.createElement('button', { onClick: () => setIsModalOpen(true), className: 'fixed bottom-8 right-6 bg-blue-600 text-white w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center z-50 active:scale-95 transition-transform' }, React.createElement(Plus, { size: 30 })),
+                React.createElement('button', { onClick: () => setIsModalOpen(true), className: 'fixed bottom-8 right-6 bg-blue-600 text-white w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-transform' }, React.createElement(Plus, { size: 28 })),
 
-                isModalOpen && React.createElement('div', { className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-end justify-center' },
-                    React.createElement('div', { className: 'bg-white rounded-t-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300' },
+                isModalOpen && React.createElement('div', { className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center' },
+                    React.createElement('div', { className: 'bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300' },
                         React.createElement('div', { className: 'bg-slate-800 p-5 text-white flex justify-between items-center' },
-                            React.createElement('h3', { className: 'font-black' }, '品目・拠点登録'),
-                            React.createElement('button', { onClick: () => setIsModalOpen(false), className: 'p-2 hover:bg-white/10 rounded-full' }, React.createElement(X, { size: 18 }))
+                            React.createElement('h3', { className: 'font-black' }, '新規登録'),
+                            React.createElement('button', { onClick: () => setIsModalOpen(false), className: 'p-2' }, React.createElement(X, { size: 18 }))
                         ),
-                        React.createElement('form', { className: 'p-6 space-y-5', onSubmit: addItem },
-                            React.createElement('div', { className: 'space-y-1' },
-                                React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1' }, '品目名'),
-                                React.createElement('input', { required: true, placeholder: '例: 使い捨て歯ブラシ', className: 'w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 transition-all', value: newItem.name, onChange: e => setNewItem({...newItem, name: e.target.value}) })
+                        React.createElement('form', { className: 'p-6 space-y-4', onSubmit: addItem },
+                            React.createElement('div', { className: 'flex justify-center mb-2' },
+                                React.createElement('div', { 
+                                    className: 'w-24 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-slate-100 transition-all',
+                                    onClick: () => document.getElementById('new-file-input').click()
+                                },
+                                    newItem.imageUrl ? 
+                                        React.createElement('img', { src: newItem.imageUrl, className: 'w-full h-full object-cover' }) :
+                                        React.createElement(Upload, { className: 'text-slate-300', size: 24 }),
+                                    React.createElement('input', { id: 'new-file-input', type: 'file', className: 'hidden', accept: 'image/*', onChange: (e) => handleFileChange(e) })
+                                )
                             ),
-                            React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
-                                React.createElement('div', { className: 'space-y-1' },
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1' }, '拠点'),
-                                    React.createElement('select', { className: 'w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none appearance-none', value: newItem.location, onChange: e => setNewItem({...newItem, location: e.target.value}) },
-                                        React.createElement('option', { value: '事務所' }, '事務所'),
-                                        React.createElement('option', { value: '天神' }, '天神'),
-                                        React.createElement('option', { value: '博多' }, '博多'),
-                                        React.createElement('option', { value: '清川' }, '清川'),
-                                        React.createElement('option', { value: 'エブリィ' }, 'エブリィ'),
-                                        React.createElement('option', { value: 'IONビル２階' }, 'IONビル２階')
+                            React.createElement('div', { className: 'space-y-1' },
+                                React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '品目名'),
+                                React.createElement('input', { required: true, placeholder: '例: 歯ブラシ', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-blue-500', value: newItem.name, onChange: e => setNewItem({...newItem, name: e.target.value}) })
+                            ),
+                            React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '拠点'),
+                                    React.createElement('select', { className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none appearance-none', value: newItem.location, onChange: e => setNewItem({...newItem, location: e.target.value}) },
+                                        locations.slice(1).map(loc => React.createElement('option', { key: loc, value: loc }, loc))
                                     )
                                 ),
-                                React.createElement('div', { className: 'space-y-1' },
-                                    React.createElement('label', { className: 'text-[10px] font-black text-red-500 uppercase tracking-widest ml-1' }, '補充アラート数'),
-                                    React.createElement('input', { type: 'number', placeholder: '例: 10', className: 'w-full p-4 bg-red-50 border-2 border-red-100 rounded-2xl font-bold text-red-600 outline-none', value: newItem.threshold, onChange: e => setNewItem({...newItem, threshold: parseInt(e.target.value) || 0}) })
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: 'text-[10px] font-black text-red-500 uppercase ml-1' }, '補充閾値'),
+                                    React.createElement('input', { type: 'number', className: 'w-full p-4 bg-red-50 border border-red-100 rounded-2xl font-bold text-red-600 outline-none', value: newItem.threshold, onChange: e => setNewItem({...newItem, threshold: parseInt(e.target.value) || 0}) })
                                 )
                             ),
-                            React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
-                                React.createElement('div', { className: 'space-y-1' },
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1' }, '現在の在庫'),
-                                    React.createElement('input', { type: 'number', className: 'w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none', value: newItem.stock, onChange: e => setNewItem({...newItem, stock: parseInt(e.target.value) || 0}) })
+                            React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '初期在庫'),
+                                    React.createElement('input', { type: 'number', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none', value: newItem.stock, onChange: e => setNewItem({...newItem, stock: parseInt(e.target.value) || 0}) })
                                 ),
-                                React.createElement('div', { className: 'space-y-1' },
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1' }, '単位'),
-                                    React.createElement('input', { type: 'text', placeholder: '個、パックなど', className: 'w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none', value: newItem.unit, onChange: e => setNewItem({...newItem, unit: e.target.value}) })
+                                React.createElement('div', null,
+                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '単位'),
+                                    React.createElement('input', { type: 'text', placeholder: '個', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none', value: newItem.unit, onChange: e => setNewItem({...newItem, unit: e.target.value}) })
                                 )
                             ),
-                            React.createElement('button', { type: 'submit', className: 'w-full py-5 bg-blue-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-blue-700 transition-colors' }, 'クラウドに保存')
+                            React.createElement('button', { type: 'submit', className: 'w-full py-5 bg-blue-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-blue-700 active:scale-95 transition-all' }, '登録する')
                         )
                     )
                 ),
 
                 deleteConfirmItem && React.createElement('div', { className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-[110]' },
-                    React.createElement('div', { className: 'bg-white p-8 rounded-[2.5rem] text-center w-full max-w-xs shadow-2xl animate-in zoom-in-95 duration-200' },
-                        React.createElement('div', { className: 'w-16 h-16 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-4 rotate-3' }, React.createElement(Trash2, { size: 32 })),
+                    React.createElement('div', { className: 'bg-white p-8 rounded-[2rem] text-center w-full max-w-xs shadow-2xl animate-in zoom-in-95' },
+                        React.createElement('div', { className: 'w-16 h-16 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-4' }, React.createElement(Trash2, { size: 32 })),
                         React.createElement('h3', { className: 'text-xl font-black mb-2 text-slate-800' }, '削除しますか？'),
-                        React.createElement('p', { className: 'text-xs text-slate-400 font-bold mb-8 leading-relaxed' }, `「${deleteConfirmItem.location}」拠点の「${deleteConfirmItem.name}」を完全に削除します。`),
+                        React.createElement('p', { className: 'text-xs text-slate-400 font-bold mb-8' }, `「${deleteConfirmItem.location}」の「${deleteConfirmItem.name}」を完全に削除します。`),
                         React.createElement('div', { className: 'flex gap-3' },
-                            React.createElement('button', { onClick: () => setDeleteConfirmItem(null), className: 'flex-1 py-4 bg-slate-100 rounded-2xl font-black text-xs uppercase text-slate-500' }, '戻る'),
-                            React.createElement('button', { onClick: () => deleteItem(deleteConfirmItem.id), className: 'flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-red-100' }, '削除実行')
+                            React.createElement('button', { onClick: () => setDeleteConfirmItem(null), className: 'flex-1 py-4 bg-slate-100 rounded-2xl font-black text-xs text-slate-500' }, 'キャンセル'),
+                            React.createElement('button', { onClick: () => deleteItem(deleteConfirmItem.id), className: 'flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-xs shadow-lg' }, '削除実行')
                         )
                     )
                 )
