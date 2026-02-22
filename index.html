@@ -2,415 +2,762 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ION STAY 在庫管理システム</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>もしも私が、アイドルになったら。</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Custom Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
+
+        /* Hide Scrollbar */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .bg-glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+        
+        /* SafeArea */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #app, #modal-overlay { display: none; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out forwards; }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body class="bg-[#F8FAFC]">
-    <div id="root"></div>
+<body class="bg-gray-100 text-gray-800 selection:bg-pink-200">
 
-    <script type="module">
-        import React, { useState, useEffect, useMemo, useRef } from 'https://esm.sh/react@18.2.0';
-        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-        import { 
-            AlertCircle, Package, Search, Loader2, X, Clock, 
-            Plus, Trash2, PlusCircle, MinusCircle, 
-            ChevronDown, Image as ImageIcon, Camera, Upload, Sparkles
-        } from 'https://esm.sh/lucide-react@0.344.0?bundle';
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 flex items-center justify-center flex-col relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
+        <i data-lucide="crown" class="w-16 h-16 text-white mb-6 animate-float opacity-80"></i>
+        <div class="loader mb-4"></div>
+        <p class="text-white font-bold text-sm tracking-widest drop-shadow-md">MOSHI AI INITIALIZING...</p>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-[#fafafa] relative shadow-2xl overflow-x-hidden border-x border-gray-200">
         
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        <!-- ==================== HOME TAB ==================== -->
+        <div id="tab-home" class="tab-content active pb-safe min-h-screen bg-gray-50">
+            <!-- Header -->
+            <div class="glass sticky top-0 z-40 px-5 py-3.5 flex justify-between items-center shadow-sm">
+                <!-- ★変更点：GitHubにアップロードしたロゴ画像へのパスを指定します -->
+                <!-- imagesフォルダの中の、logo.pngという名前の画像を読み込む設定です -->
+                <img src="./images/logo.png" alt="Moshi Ai Logo" class="h-7 w-auto object-contain drop-shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/300x100/ffffff/ec4899?text=Moshi+Ai+Logo';">
+                
+                <div class="flex gap-3">
+                    <button class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm hover:text-pink-500 transition-colors"><i data-lucide="search" class="w-5 h-5"></i></button>
+                    <button class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm hover:text-pink-500 transition-colors relative">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-pink-500 rounded-full border-2 border-white"></span>
+                    </button>
+                </div>
+            </div>
 
-        // ==========================================
-        // Firebase Configuration (元の設定を復旧)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBbzFujP0P7ExZ9m_ofnUGwHvTSFFgC1Ks",
-            authDomain: "project-7549205985465687953.firebaseapp.com",
-            projectId: "project-7549205985465687953",
-            storageBucket: "project-7549205985465687953.firebasestorage.app",
-            messagingSenderId: "814748288068",
-            appId: "1:814748288068:web:9c34b5e0476eb4313ae811"
-        };
+            <!-- Hero Banner Slider -->
+            <div class="px-5 mt-4 mb-6">
+                <!-- ★変更点：GitHubにアップロードしたバナー画像へのパスを指定します -->
+                <!-- imagesフォルダの中の、banner.pngという名前の画像を読み込む設定です -->
+                <div class="rounded-3xl shadow-xl relative overflow-hidden aspect-[2/1] bg-gray-200">
+                    <img src="./images/banner.png" alt="キャンペーンバナー" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?w=800&fit=crop&q=80';">
+                </div>
+            </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = 'ion-stay-inventory-system';
-        const apiKey = ""; // Gemini API key
+            <!-- Hot Idols (Horizontal Scroll) -->
+            <div class="mb-6">
+                <div class="px-5 mb-3 flex justify-between items-end">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm tracking-tight"><i data-lucide="flame" class="w-4 h-4 text-orange-500"></i> 注目ライバー</h3>
+                    <span class="text-[10px] text-gray-500 font-bold">すべて見る</span>
+                </div>
+                <div class="flex overflow-x-auto px-5 gap-3 pb-4 scrollbar-hide snap-x" id="home-hot-idols">
+                    <!-- JS Generated -->
+                </div>
+            </div>
 
-        // ==========================================
-        // Utilities
-        // ==========================================
-        const formatDateTime = (isoString) => {
-            if (!isoString) return '未確認';
-            const date = new Date(isoString);
-            const now = new Date();
-            const isToday = date.toDateString() === now.toDateString();
+            <!-- Timeline Posts -->
+            <div class="bg-white rounded-t-3xl pt-6 pb-2 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] border-t border-gray-100">
+                <div class="px-5 mb-4 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm tracking-tight"><i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i> タイムライン</h3>
+                </div>
+                <div id="home-feed-container" class="space-y-6"></div>
+            </div>
+        </div>
+
+        <!-- ==================== MYPAGE TAB ==================== -->
+        <div id="tab-mypage" class="tab-content pb-safe min-h-screen bg-gray-50">
+            <div id="mypage-container"></div>
+        </div>
+
+        <!-- ==================== RANKING TAB ==================== -->
+        <div id="tab-ranking" class="tab-content pb-safe pt-5 min-h-screen bg-[#fafafa]">
+            <div class="px-5 mb-4 sticky top-0 bg-[#fafafa]/90 backdrop-blur-md z-30 pt-2 pb-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-xl font-black text-gray-900 tracking-tight">ランキング</h1>
+                    <span class="bg-pink-100 text-pink-600 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse-soft">リアルタイム</span>
+                </div>
+                
+                <!-- Category Tabs (Pill style) -->
+                <div class="flex gap-2 bg-gray-100 p-1 rounded-full" id="ranking-category-tabs">
+                    <!-- JS Generated -->
+                </div>
+            </div>
+
+            <!-- Podium -->
+            <div class="pt-8 pb-10 bg-gradient-to-b from-[#fafafa] to-gray-50 border-b border-gray-100 mb-4">
+                <div id="ranking-top3-container" class="flex justify-center items-end gap-2 h-48 px-5"></div>
+            </div>
+
+            <!-- List -->
+            <div id="ranking-list-container" class="px-4 space-y-2.5"></div>
+        </div>
+
+        <!-- ==================== MODALS ==================== -->
+        <div id="modal-overlay" class="fixed inset-0 z-50">
             
-            const timeStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-            if (isToday) return `今日 ${timeStr}`;
-            return `${date.getMonth() + 1}/${date.getDate()} ${timeStr}`;
+            <!-- Vote Modal (Bottom Sheet style) -->
+            <div id="modal-vote" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col justify-end">
+                <div class="bg-white w-full rounded-t-3xl p-6 pb-safe animate-slide-up relative shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+                    <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+                    
+                    <div id="vote-spinner" class="hidden absolute inset-0 bg-white/70 backdrop-blur-md z-20 flex flex-col items-center justify-center rounded-t-3xl">
+                        <div class="loader !border-pink-200 !border-top-pink-500 w-12 h-12"></div>
+                        <p class="mt-4 text-pink-500 font-bold text-sm">応援を送信中...</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 mb-6">
+                        <div id="vote-idol-image" class="w-16 h-16 rounded-full border-2 border-gray-100 shadow-sm"></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 mb-0.5 tracking-wider uppercase">Vote for</p>
+                            <h2 class="text-2xl font-black text-gray-900 leading-none"><span id="vote-idol-name"></span></h2>
+                            <p class="text-xs text-pink-500 font-bold mt-1">現在 <span id="vote-idol-pt"></span> pt</p>
+                        </div>
+                    </div>
+
+                    <div id="vote-producer-points" class="hidden bg-gray-50 border border-gray-100 text-gray-800 text-xs font-bold p-4 rounded-2xl mb-6 flex justify-between items-center shadow-inner">
+                        <span class="flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4 text-gray-400"></i> 保有ポイント</span>
+                        <span class="text-xl font-black font-mono"><span id="vote-my-points"></span> <span class="text-[10px] font-bold text-gray-500">pt</span></span>
+                    </div>
+
+                    <p class="text-xs font-bold text-gray-500 mb-3 ml-1">贈るギフトを選んでください</p>
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div onclick="logic.executeVote(10)" class="bg-white border border-pink-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-sm hover:border-pink-400">
+                            <span class="text-3xl drop-shadow-sm">💖</span>
+                            <div class="text-center">
+                                <span class="block text-[10px] font-black text-pink-600 mb-0.5">無料応援</span>
+                                <span class="block text-[9px] text-gray-400 font-bold">10 pt</span>
+                            </div>
+                        </div>
+                        <div onclick="logic.executeVote(100)" class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-sm">
+                            <span class="text-3xl drop-shadow-sm">💐</span>
+                            <div class="text-center">
+                                <span class="block text-[10px] font-black text-blue-700 mb-0.5">花束</span>
+                                <span class="block text-[9px] text-blue-400 font-bold">100 pt</span>
+                            </div>
+                        </div>
+                        <div onclick="logic.executeVote(1000)" class="bg-gradient-to-br from-yellow-100 to-orange-100 border border-yellow-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-md relative overflow-hidden">
+                            <div class="absolute -top-4 -right-4 w-12 h-12 bg-white/40 rounded-full blur-md"></div>
+                            <span class="text-3xl drop-shadow-md relative z-10">👑</span>
+                            <div class="text-center relative z-10">
+                                <span class="block text-[10px] font-black text-yellow-800 mb-0.5">ティアラ</span>
+                                <span class="block text-[9px] text-yellow-600 font-bold">1,000 pt</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="ui.closeModals()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition-colors">キャンセル</button>
+                </div>
+            </div>
+
+            <!-- Other Modals Container -->
+            <div id="modal-other-container" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5"></div>
+        </div>
+
+        <!-- ==================== Bottom Navigation Bar ==================== -->
+        <div class="fixed bottom-0 left-0 w-full z-40">
+            <div class="max-w-md mx-auto glass-nav border-t border-gray-200/50 pb-safe pt-2 bg-white/80 backdrop-blur-xl">
+                <div class="flex justify-around items-center h-14 px-2">
+                    <button onclick="appState.navigateTo('home')" id="nav-home" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-pink-500 transform hover:scale-105">
+                        <i data-lucide="home" class="w-6 h-6"></i><span class="text-[9px] font-bold">ホーム</span>
+                    </button>
+                    <button onclick="appState.navigateTo('ranking')" id="nav-ranking" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-gray-400 transform hover:scale-105">
+                        <i data-lucide="trophy" class="w-6 h-6"></i><span class="text-[9px] font-bold">ランキング</span>
+                    </button>
+                    <button onclick="appState.navigateTo('mypage')" id="nav-mypage" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-gray-400 transform hover:scale-105">
+                        <div class="relative">
+                            <i data-lucide="user" class="w-6 h-6"></i>
+                            <div id="nav-mypage-badge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></div>
+                        </div>
+                        <span class="text-[9px] font-bold">マイページ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic (Mocked DB) -->
+    <script>
+        // Data & State
+        const INITIAL_IDOLS = [
+            { id: 'idol-1', userId: 'mock-1', name: 'Miyu', pt: 12500, votersCount: 45, area: '東京', createdAt: Date.now() - 86400000, image: 'bg-[url(https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop)] bg-cover bg-center' },
+            { id: 'idol-2', userId: 'mock-2', name: 'RUKA', pt: 10200, votersCount: 38, area: '大阪', createdAt: Date.now() - 172800000, image: 'bg-[url(https://images.unsplash.com/photo-1503185912284-5271ff81b9a8?w=400&h=400&fit=crop)] bg-cover bg-center' },
+            { id: 'idol-3', userId: 'mock-3', name: 'Aoi', pt: 8900, votersCount: 22, area: '福岡', createdAt: Date.now() - 500000, image: 'bg-[url(https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop)] bg-cover bg-center' },
+            { id: 'idol-4', userId: 'mock-4', name: 'Sakura', pt: 4500, votersCount: 15, area: '北海道', createdAt: Date.now() - 1000000, image: 'bg-[url(https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop)] bg-cover bg-center' },
+            { id: 'idol-5', userId: 'mock-5', name: 'Nana', pt: 1200, votersCount: 8, area: '愛知', createdAt: Date.now(), image: 'bg-[url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop)] bg-cover bg-center' },
+            { id: 'idol-6', userId: 'mock-6', name: 'Emi', pt: 800, votersCount: 5, area: '東京', createdAt: Date.now(), image: 'bg-[url(https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=400&h=400&fit=crop)] bg-cover bg-center' }
+        ];
+
+        const INITIAL_POSTS = [
+            { id: 'post-1', idolId: 'idol-1', content: '今日はレッスン頑張ったよ！みんな応援よろしくね🥺💕', likes: 124, createdAt: Date.now() - 3600000, postImg: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=600&h=600&fit=crop' },
+            { id: 'post-2', idolId: 'idol-2', content: '絶対表紙になりたい！力を貸してください🔥', likes: 89, createdAt: Date.now() - 7200000, postImg: 'https://images.unsplash.com/photo-1508214751196-bfd1436c4ae9?w=600&h=600&fit=crop' },
+            { id: 'post-3', idolId: 'idol-3', content: '新しいお洋服買っちゃった✨どうかな？', likes: 56, createdAt: Date.now() - 14400000, postImg: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=600&fit=crop' }
+        ];
+
+        window.appState = {
+            activeTab: 'home',
+            idols: INITIAL_IDOLS.map(i => ({...i, isRookie: (i.votersCount < 10)})),
+            posts: INITIAL_POSTS,
+            myIdolData: null,
+            myProducerData: null,
+            voteTargetIdol: null,
+            rankingCategory: 'overall',
+            mypageDiagStep: 0,
+            
+            navigateTo: function(tab, extraProps = {}) {
+                this.activeTab = tab;
+                if(extraProps.startDiagnosis) this.mypageDiagStep = 1;
+                ui.renderTabs();
+                ui.updateNav();
+                ui.renderCurrentTab();
+                window.scrollTo(0,0);
+            }
         };
 
-        const compressImage = (file) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 300;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7));
-                    };
-                };
-            });
+        // UI Engine
+        window.ui = {
+            init: function() {
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    this.renderTabs();
+                    this.updateNav();
+                    this.renderCurrentTab();
+                }, 1000); // Fake load time
+            },
+            renderTabs: function() {
+                ['home', 'ranking', 'mypage'].forEach(tab => {
+                    const el = document.getElementById(`tab-${tab}`);
+                    if (el) el.classList.toggle('active', tab === appState.activeTab);
+                });
+            },
+            updateNav: function() {
+                ['home', 'ranking', 'mypage'].forEach(tab => {
+                    const btn = document.getElementById(`nav-${tab}`);
+                    if(btn) {
+                        btn.classList.toggle('text-pink-500', tab === appState.activeTab);
+                        btn.classList.toggle('text-gray-400', tab !== appState.activeTab);
+                    }
+                });
+                lucide.createIcons();
+            },
+            openModal: function(type) {
+                document.getElementById('modal-overlay').style.display = 'block';
+                document.getElementById('modal-vote').classList.add('hidden');
+                document.getElementById('modal-other-container').classList.add('hidden');
+
+                if (type === 'vote') {
+                    document.getElementById('modal-vote').classList.remove('hidden');
+                    document.getElementById('vote-idol-name').innerText = appState.voteTargetIdol.name;
+                    document.getElementById('vote-idol-pt').innerText = appState.voteTargetIdol.pt.toLocaleString();
+                    document.getElementById('vote-idol-image').className = `w-16 h-16 rounded-full border-2 border-white shadow-md ${appState.voteTargetIdol.image}`;
+                    
+                    if (appState.myProducerData) {
+                        document.getElementById('vote-producer-points').classList.remove('hidden');
+                        document.getElementById('vote-my-points').innerText = appState.myProducerData.points.toLocaleString();
+                    }
+                } else if (type === 'card' || type === 'signup') {
+                    const container = document.getElementById('modal-other-container');
+                    container.classList.remove('hidden');
+                    
+                    if (type === 'card') {
+                        container.innerHTML = `
+                            <div class="bg-white w-full max-w-sm rounded-3xl p-5 animate-slide-up shadow-2xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-black text-gray-800">おねだりカード生成</h3>
+                                    <button onclick="ui.closeModals()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                </div>
+                                <div class="bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl p-5 text-white mb-5 aspect-[4/5] flex flex-col justify-between relative overflow-hidden shadow-inner">
+                                    <div class="absolute -top-4 -right-4 opacity-10"><i data-lucide="crown" class="w-40 h-40"></i></div>
+                                    <div class="relative z-10">
+                                        <span class="bg-white text-pink-500 text-[10px] font-black px-3 py-1.5 rounded-full mb-3 inline-block shadow-sm">もしアイ 創刊号 参加中</span>
+                                        <h2 class="text-3xl font-black leading-tight mb-2 tracking-tight drop-shadow-md">お願い！<br/>私を押し上げて🥺</h2>
+                                    </div>
+                                    <div class="relative z-10 bg-white/20 backdrop-blur-md p-4 rounded-2xl border border-white/40 flex items-center gap-4 shadow-lg">
+                                        <div class="w-14 h-14 rounded-full border-2 border-white shadow-sm ${appState.myIdolData.image}"></div>
+                                        <div>
+                                            <p class="font-black text-xl leading-none mb-1.5 drop-shadow-sm">${appState.myIdolData.name}</p>
+                                            <p class="text-[10px] font-bold bg-black/30 px-2 py-0.5 rounded text-white/90 w-max">目標まであと少し！</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <button onclick="ui.closeModals()" class="flex-[1] bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-sm transition-colors"><i data-lucide="download" class="w-4 h-4"></i> 保存</button>
+                                    <button onclick="ui.closeModals()" class="flex-[2] bg-gray-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 shadow-md text-sm transition-transform"><i data-lucide="share-2" class="w-4 h-4"></i> Xでシェアする</button>
+                                </div>
+                            </div>
+                        `;
+                    } else if (type === 'signup') {
+                        container.innerHTML = `
+                            <div class="bg-white rounded-3xl p-6 w-full max-w-sm relative animate-slide-up shadow-2xl">
+                                <button onclick="ui.closeModals()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                <div class="w-16 h-16 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center mb-4"><i data-lucide="gift" class="w-8 h-8"></i></div>
+                                <h3 class="text-xl font-black text-gray-900 leading-tight mb-2">今すぐ登録して、<br/><span class="text-pink-600">150pt</span>をGET🎁</h3>
+                                <p class="text-xs text-gray-500 mb-6 leading-relaxed">登録すると150ptが無料でもらえます。このポイントを使って <strong class="text-gray-800">${appState.voteTargetIdol.name}</strong> さんを助けませんか？</p>
+                                <form onsubmit="logic.handleProducerRegister(event)">
+                                    <input type="text" id="input-producer-name" placeholder="プロデューサー名を入力" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-pink-400 mb-4" required />
+                                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i> 登録して150pt受け取る
+                                    </button>
+                                </form>
+                            </div>
+                        `;
+                    }
+                }
+                lucide.createIcons();
+            },
+            closeModals: function() {
+                document.getElementById('modal-overlay').style.display = 'none';
+            },
+            renderCurrentTab: function() {
+                if (appState.activeTab === 'home') this.renderHome();
+                else if (appState.activeTab === 'ranking') this.renderRanking();
+                else if (appState.activeTab === 'mypage') this.renderMyPage();
+                lucide.createIcons();
+            },
+            renderHome: function() {
+                const sorted = [...appState.idols].sort((a, b) => b.pt - a.pt);
+                
+                // Horizontal Hot Idols
+                let hotHtml = '';
+                sorted.slice(0, 5).forEach(idol => {
+                    hotHtml += `
+                        <div class="flex flex-col items-center gap-2 snap-center shrink-0 w-20 cursor-pointer" onclick="logic.initiateVote('${idol.id}')">
+                            <div class="relative">
+                                <div class="w-16 h-16 rounded-full border-[3px] border-pink-400 p-[2px] shadow-sm">
+                                    <div class="w-full h-full rounded-full ${idol.image} shadow-inner"></div>
+                                </div>
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full border border-white shadow-sm">
+                                    ${(idol.pt/1000).toFixed(1)}k
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-700 truncate w-full text-center">${idol.name}</span>
+                        </div>
+                    `;
+                });
+                document.getElementById('home-hot-idols').innerHTML = hotHtml;
+
+                // Timeline Feed (MixChannel/Instagram style)
+                let postsHtml = '';
+                appState.posts.forEach(post => {
+                    const idol = appState.idols.find(i => i.id === post.idolId);
+                    const isCleared = idol.votersCount >= 10;
+                    
+                    postsHtml += `
+                        <div class="bg-white border-b border-gray-100 pb-5">
+                            <div class="px-5 py-3 flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full ${idol.image} border border-gray-100 shadow-sm"></div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-gray-900 flex items-center gap-1">
+                                            ${idol.name}
+                                            ${isCleared ? '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-pink-500"></i>' : ''}
+                                        </h4>
+                                        <p class="text-[10px] text-gray-400 font-medium">1時間前 ・ ${idol.area}</p>
+                                    </div>
+                                </div>
+                                <button class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                            </div>
+                            
+                            <!-- Post Image -->
+                            <div class="w-full aspect-square bg-gray-100 relative overflow-hidden group">
+                                <img src="${post.postImg}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="post">
+                                
+                                <!-- Glassmorphism overlay for status -->
+                                <div class="absolute bottom-3 left-3 right-3 glass-dark p-3.5 rounded-2xl">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-white text-xs font-bold flex items-center gap-1.5"><i data-lucide="crown" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> 現在 ${idol.pt.toLocaleString()} pt</span>
+                                    </div>
+                                    <p class="text-white/90 text-xs font-medium leading-snug drop-shadow-sm">${post.content}</p>
+                                </div>
+                            </div>
+
+                            <div class="px-5 pt-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <div class="flex gap-4">
+                                        <button class="text-gray-800 hover:text-pink-500 transition-colors"><i data-lucide="heart" class="w-6 h-6"></i></button>
+                                        <button class="text-gray-800 hover:text-gray-500 transition-colors"><i data-lucide="message-circle" class="w-6 h-6"></i></button>
+                                        <button class="text-gray-800 hover:text-gray-500 transition-colors"><i data-lucide="send" class="w-6 h-6"></i></button>
+                                    </div>
+                                    <button onclick="logic.initiateVote('${idol.id}')" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition-all flex items-center gap-1.5">
+                                        <i data-lucide="gift" class="w-4 h-4"></i> 応援する
+                                    </button>
+                                </div>
+                                <p class="font-bold text-xs text-gray-900">${post.likes} 件のいいね</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('home-feed-container').innerHTML = postsHtml;
+            },
+            renderRanking: function() {
+                // Tabs
+                const cats = [
+                    { id: 'overall', label: '総合ランキング' },
+                    { id: 'rookie', label: '新人枠🔰' }
+                ];
+                let catHtml = '';
+                cats.forEach(c => {
+                    const isActive = appState.rankingCategory === c.id;
+                    const cClass = isActive ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700';
+                    catHtml += `<button onclick="appState.rankingCategory='${c.id}'; ui.renderRanking();" class="flex-1 text-xs font-bold py-2 rounded-full transition-all ${cClass}">${c.label}</button>`;
+                });
+                document.getElementById('ranking-category-tabs').innerHTML = catHtml;
+
+                let list = [...appState.idols].sort((a, b) => b.pt - a.pt);
+                if (appState.rankingCategory === 'rookie') list = list.filter(i => i.isRookie);
+
+                const top3 = list.slice(0, 3);
+                const others = list.slice(3);
+
+                // Podium
+                let podiumHtml = '';
+                if(top3[1]) podiumHtml += this.createPodium(top3[1], 2, 'from-gray-300 to-gray-100', 'text-gray-600', 'h-24');
+                if(top3[0]) podiumHtml += this.createPodium(top3[0], 1, 'from-yellow-300 to-yellow-100', 'text-yellow-700', 'h-32');
+                if(top3[2]) podiumHtml += this.createPodium(top3[2], 3, 'from-orange-300 to-orange-100', 'text-orange-800', 'h-20');
+                document.getElementById('ranking-top3-container').innerHTML = podiumHtml;
+
+                // List
+                let listHtml = '';
+                others.forEach((item, idx) => {
+                    const rank = idx + 4;
+                    const isMe = appState.myIdolData && item.id === appState.myIdolData.id;
+                    const bClass = isMe ? 'border-pink-300 bg-pink-50' : 'border-transparent bg-white shadow-sm';
+                    listHtml += `
+                        <div class="p-3.5 rounded-2xl flex items-center gap-3 border transition-transform active:scale-[0.98] ${bClass}">
+                            <div class="w-8 text-center"><span class="font-black italic text-lg text-gray-400">${rank}</span></div>
+                            <div class="w-12 h-12 rounded-full border border-gray-100 shadow-sm shrink-0 ${item.image}"></div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-bold text-gray-900 text-sm truncate flex items-center gap-1.5">
+                                    ${item.name}
+                                    ${isMe ? '<span class="text-[8px] bg-pink-500 text-white px-1.5 py-0.5 rounded-full">You</span>' : ''}
+                                </h3>
+                                <p class="text-[10px] text-gray-500 mt-0.5"><i data-lucide="map-pin" class="w-2.5 h-2.5 inline pb-0.5"></i> ${item.area}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-black text-gray-900">${item.pt.toLocaleString()}</p>
+                                <p class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">points</p>
+                            </div>
+                            <button onclick="logic.initiateVote('${item.id}')" class="w-10 h-10 bg-gray-50 hover:bg-pink-50 text-pink-500 rounded-full flex items-center justify-center transition-colors ml-1 border border-gray-100">
+                                <i data-lucide="gift" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+                document.getElementById('ranking-list-container').innerHTML = listHtml;
+            },
+            createPodium: function(idol, rank, bgGradient, textColor, heightClass) {
+                return `
+                    <div class="flex flex-col items-center flex-1 relative">
+                        ${rank === 1 ? '<i data-lucide="crown" class="w-8 h-8 text-yellow-400 fill-yellow-400 absolute -top-10 animate-float drop-shadow-md"></i>' : ''}
+                        <div class="relative z-10 mb-[-12px]">
+                            <div class="w-16 h-16 rounded-full border-4 border-white shadow-md ${idol.image} flex items-center justify-center relative bg-white">
+                                <div class="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+                                    <span class="text-xs font-black ${textColor}">${rank}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full ${heightClass} bg-gradient-to-t ${bgGradient} rounded-t-xl flex flex-col items-center justify-end pb-3 shadow-inner relative overflow-hidden">
+                            <div class="absolute inset-0 bg-white/20"></div>
+                            <span class="text-[10px] font-bold ${textColor} truncate w-full text-center px-1 relative z-10 drop-shadow-sm">${idol.name}</span>
+                            <span class="text-xs font-black ${textColor} relative z-10 drop-shadow-sm">${(idol.pt/1000).toFixed(1)}k</span>
+                        </div>
+                    </div>
+                `;
+            },
+            renderMyPage: function() {
+                const container = document.getElementById('mypage-container');
+                const { myIdolData, myProducerData, mypageDiagStep } = appState;
+
+                if (!myIdolData && !myProducerData) {
+                    // Registration Flow
+                    if (mypageDiagStep === 0) {
+                        container.innerHTML = `
+                            <div class="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center animate-fade-in">
+                                <div class="w-24 h-24 bg-gradient-to-br from-pink-400 to-purple-500 rounded-3xl flex items-center justify-center mb-6 shadow-xl transform rotate-3">
+                                    <i data-lucide="sparkles" class="w-10 h-10 text-white"></i>
+                                </div>
+                                <h2 class="text-2xl font-black text-gray-900 mb-3 leading-tight tracking-tight">さあ、あなたの<br>ストーリーを始めよう</h2>
+                                <p class="text-sm text-gray-500 mb-10 leading-relaxed">たった30秒の診断で、あなたの隠れたアイドルタイプがわかります。</p>
+                                <button onclick="appState.mypageDiagStep=1; ui.renderMyPage();" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                                    診断をスタート <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                    } else if (mypageDiagStep === 1) {
+                        container.innerHTML = `
+                            <div class="px-6 pt-12 animate-slide-up">
+                                <div class="w-full bg-gray-200 h-1.5 rounded-full mb-8"><div class="bg-pink-500 w-1/2 h-full rounded-full"></div></div>
+                                <h2 class="text-2xl font-black text-gray-900 mb-8 leading-tight">休日の過ごし方で、<br>一番好きなのは？</h2>
+                                <div class="space-y-3">
+                                    ${['おしゃれなカフェ巡り☕️', '家でネトフリ＆ゴロゴロ🛌', '友達とカラオケで騒ぐ🎤'].map(ans => `
+                                        <button onclick="appState.mypageDiagStep=2; ui.renderMyPage();" class="w-full bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-2xl hover:border-pink-400 hover:bg-pink-50 transition-all text-left px-5 shadow-sm">${ans}</button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else if (mypageDiagStep === 2) {
+                        container.innerHTML = `
+                            <div class="px-5 pt-10 pb-20 animate-fade-in">
+                                <div class="text-center mb-8">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Result</p>
+                                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 mb-3">愛され小悪魔 系</h2>
+                                    <p class="text-xs text-gray-500 leading-relaxed">ミステリアスな魅力がファンを惹きつけます。<br>今ならライバルが少なくて狙い目！</p>
+                                </div>
+                                <div class="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-4">
+                                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                                        <h3 class="font-bold text-gray-900 text-sm">そのままデビュー登録！</h3>
+                                    </div>
+                                    <form onsubmit="logic.handleEntry(document.getElementById('entry-name').value); return false;">
+                                        <label class="block text-[10px] font-bold text-gray-500 mb-1.5 ml-1">アイドル名</label>
+                                        <input type="text" id="entry-name" placeholder="例: Miyu" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-pink-400 mb-6 outline-none transition-all" required />
+                                        <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-4 rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
+                                            候補生としてエントリーする
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (myProducerData && !myIdolData) {
+                    // Producer Dashboard
+                    container.innerHTML = `
+                        <div class="px-5 pt-8 animate-fade-in pb-20">
+                            <h1 class="text-2xl font-black text-gray-900 mb-6">Producer Dashboard</h1>
+                            
+                            <!-- License Card -->
+                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 text-white shadow-2xl mb-8 relative overflow-hidden border border-gray-700">
+                                <div class="absolute -right-10 -top-10 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl"></div>
+                                <div class="relative z-10 flex justify-between items-start mb-8">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-gray-400 tracking-widest mb-1">PRODUCER LICENSE</p>
+                                        <h2 class="text-lg font-black text-yellow-500 flex items-center gap-1.5"><i data-lucide="crown" class="w-4 h-4"></i> トレーニー</h2>
+                                    </div>
+                                    <i data-lucide="scan" class="w-6 h-6 text-white/30"></i>
+                                </div>
+                                <div class="relative z-10">
+                                    <p class="text-[10px] text-gray-400 font-bold mb-0.5">NAME</p>
+                                    <p class="text-2xl font-black tracking-tight mb-6">${myProducerData.name}</p>
+                                    <div class="border-t border-white/10 pt-4 flex justify-between items-end">
+                                        <div class="text-right">
+                                            <p class="text-[10px] text-gray-400 font-bold mb-0.5">WALLET</p>
+                                            <p class="text-xl font-black font-mono flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4"></i> ${myProducerData.points.toLocaleString()} <span class="text-[10px] text-gray-500">pt</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 text-center">
+                                <div class="w-12 h-12 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-3"><i data-lucide="mic" class="w-6 h-6"></i></div>
+                                <h3 class="font-bold text-gray-900 text-sm mb-1">あなたも表舞台へ</h3>
+                                <p class="text-xs text-gray-500 mb-4">プロデュースするだけでなく、自分もアイドルとしてデビューしませんか？</p>
+                                <button onclick="appState.mypageDiagStep=2; ui.renderMyPage();" class="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold py-3 rounded-xl text-sm transition-colors">デビュー登録へ進む</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (myIdolData) {
+                    // ★ Idol Dashboard (MixChannel Style, Gamification rich)
+                    const pt = myIdolData.pt;
+                    const nextReq = 5000;
+                    const progress = Math.min((pt / nextReq) * 100, 100);
+
+                    container.innerHTML = `
+                        <div class="animate-fade-in">
+                            <!-- Cover & Header -->
+                            <div class="relative h-48 bg-gradient-to-br from-pink-400 to-purple-500 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&fit=crop" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
+                                <div class="absolute top-4 right-4 flex gap-2">
+                                    <button class="w-8 h-8 glass rounded-full flex items-center justify-center text-white"><i data-lucide="share" class="w-4 h-4"></i></button>
+                                    <button class="w-8 h-8 glass rounded-full flex items-center justify-center text-white"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Info -->
+                            <div class="px-5 relative -mt-16 mb-6">
+                                <div class="flex justify-between items-end mb-3">
+                                    <div class="w-[100px] h-[100px] rounded-full border-4 border-white ${myIdolData.image} shadow-lg bg-white"></div>
+                                    <button class="bg-gray-900 text-white px-5 py-2 rounded-full text-[10px] font-bold shadow-md hover:bg-black transition-colors">プロフィール編集</button>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-1.5 mb-1">
+                                        ${myIdolData.name}
+                                        <i data-lucide="check-decagram" class="w-5 h-5 text-blue-500 fill-blue-500"></i>
+                                    </h2>
+                                    <p class="text-[11px] text-gray-500 font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> 東京 ・ 第3回もしアイ参加中</p>
+                                </div>
+                                <div class="flex gap-4 mt-4 bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
+                                    <div class="flex-1 text-center border-r border-gray-100">
+                                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">獲得ポイント</p>
+                                        <p class="text-lg font-black text-gray-900">${pt.toLocaleString()}</p>
+                                    </div>
+                                    <div class="flex-1 text-center">
+                                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">ファン</p>
+                                        <p class="text-lg font-black text-gray-900">142</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dashboard Content -->
+                            <div class="px-5 space-y-4 pb-24">
+                                
+                                <!-- Rank Card -->
+                                <div class="bg-gradient-to-br from-pink-500 to-rose-500 rounded-3xl p-5 text-white shadow-md relative overflow-hidden">
+                                    <div class="absolute -right-6 -bottom-6 opacity-20"><i data-lucide="trending-up" class="w-32 h-32"></i></div>
+                                    <div class="relative z-10">
+                                        <p class="text-[10px] font-bold tracking-widest text-white/80 mb-1">現在の予想ランク</p>
+                                        <div class="flex items-baseline gap-2 mb-4">
+                                            <span class="text-4xl font-black italic">A</span>
+                                            <span class="text-sm font-bold opacity-90">ランク (1/4P掲載)</span>
+                                        </div>
+                                        <div class="flex justify-between text-[10px] font-bold mb-1.5">
+                                            <span>Sランクまで</span>
+                                            <span>あと ${(nextReq - pt).toLocaleString()} pt</span>
+                                        </div>
+                                        <div class="h-2.5 bg-black/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-white rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Alert -->
+                                <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 shadow-sm relative overflow-hidden">
+                                    <div class="absolute left-0 top-0 w-1 h-full bg-red-500"></div>
+                                    <i data-lucide="siren" class="w-5 h-5 text-red-500 shrink-0 mt-0.5 animate-pulse-soft"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-red-600 mb-1">RUKAさんが猛追中！(差:120pt)</h4>
+                                        <p class="text-[10px] text-red-500/80 mb-3 leading-snug">ランクダウンの危機です。SOSおねだりカードを発行してシェアしましょう。</p>
+                                        <button onclick="ui.openModal('card')" class="bg-red-500 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-red-600 transition-colors">SOSを発信する</button>
+                                    </div>
+                                </div>
+
+                                <!-- Missions -->
+                                <div class="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
+                                    <h3 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                                        <i data-lucide="check-square" class="w-4 h-4 text-pink-500"></i> 今日のミッション
+                                    </h3>
+                                    <div class="space-y-4">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex gap-3 items-center">
+                                                <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-pink-500"><i data-lucide="camera" class="w-4 h-4"></i></div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900">タイムラインに投稿</p>
+                                                    <p class="text-[10px] text-pink-500 font-bold">+10 pt</p>
+                                                </div>
+                                            </div>
+                                            <button class="bg-gray-100 text-gray-600 text-[10px] font-bold px-4 py-2 rounded-xl">投稿</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
         };
 
-        const App = () => {
-            const [items, setItems] = useState([]);
-            const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const [searchTerm, setSearchTerm] = useState('');
-            const [filterLocation, setFilterLocation] = useState('All');
-            const [saveStatus, setSaveStatus] = useState('');
-            const [isModalOpen, setIsModalOpen] = useState(false);
-            const [deleteConfirmItem, setDeleteConfirmItem] = useState(null);
-            const [expandedId, setExpandedId] = useState(null);
-            const [aiAnalysis, setAiAnalysis] = useState(null);
-            const [isAiLoading, setIsAiLoading] = useState(false);
-            const fileInputRef = useRef(null);
-
-            const [newItem, setNewItem] = useState({
-                name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: '', imageUrl: ''
-            });
-
-            // Authentication
-            useEffect(() => {
-                signInAnonymously(auth).catch(err => console.error("Auth Error:", err));
-                return onAuthStateChanged(auth, setUser);
-            }, []);
-
-            // Data Subscription
-            useEffect(() => {
-                if (!user) return;
-                const inventoryCol = collection(db, 'artifacts', appId, 'public', 'data', 'inventory');
-                return onSnapshot(inventoryCol, (snapshot) => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setItems(data);
-                    setLoading(false);
-                }, (err) => setLoading(false));
-            }, [user]);
-
-            const updateItem = async (id, updates) => {
-                if (!user) return;
-                setSaveStatus('保存中...');
-                try {
-                    const itemDoc = doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id);
-                    await updateDoc(itemDoc, { ...updates, lastChecked: new Date().toISOString() });
-                    setSaveStatus('保存完了');
-                    setTimeout(() => setSaveStatus(''), 1500);
-                } catch (err) { setSaveStatus('エラー'); }
-            };
-
-            const adjustStock = (item, amount) => {
-                const newStock = Math.max(0, (Number(item.stock) || 0) + amount);
-                updateItem(item.id, { stock: newStock });
-            };
-
-            const handleFileChange = async (e, isUpdate = false, itemId = null) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                setSaveStatus('画像処理中...');
-                const base64 = await compressImage(file);
-                if (isUpdate && itemId) {
-                    await updateItem(itemId, { imageUrl: base64 });
+        // Logic (Mocked interactions)
+        window.logic = {
+            initiateVote: function(id) {
+                appState.voteTargetIdol = appState.idols.find(i => i.id === id);
+                if(appState.myProducerData || appState.myIdolData) {
+                    ui.openModal('vote');
                 } else {
-                    setNewItem({ ...newItem, imageUrl: base64 });
+                    ui.openModal('signup');
                 }
-                setSaveStatus('');
-            };
-
-            const addItem = async (e) => {
+            },
+            handleProducerRegister: function(e) {
                 e.preventDefault();
-                if (!user || !newItem.name) return;
-                const id = crypto.randomUUID();
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id), {
-                        ...newItem, id, lastChecked: new Date().toISOString()
-                    });
-                    setIsModalOpen(false);
-                    setNewItem({ name: '', category: '消耗品', location: '事務所', stock: 0, unit: '個', threshold: 10, memo: '', imageUrl: '' });
-                } catch (err) { alert('保存に失敗しました。'); }
-            };
-
-            const deleteItem = async (id) => {
-                if (!user) return;
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id));
-                setDeleteConfirmItem(null);
-            };
-
-            // AI Analysis
-            const runAiAnalysis = async () => {
-                if (isAiLoading) return;
-                setIsAiLoading(true);
-                const inventorySummary = items.map(i => `${i.name}(${i.location}): ${i.stock}/${i.threshold}`).join('\n');
+                appState.myProducerData = { name: document.getElementById('input-producer-name').value, points: 150 };
+                ui.closeModals();
+                ui.openModal('vote');
+            },
+            executeVote: function(points) {
+                const spinner = document.getElementById('vote-spinner');
+                spinner.classList.remove('hidden');
                 
-                const prompt = `あなたは在庫管理者です。以下のデータを見て、緊急で補充すべきものや管理アドバイスを日本語で3つ、箇条書きで短く回答してください。\n${inventorySummary}`;
-
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    const result = await response.json();
-                    setAiAnalysis(result.candidates?.[0]?.content?.parts?.[0]?.text || "分析できませんでした。");
-                } catch (e) {
-                    setAiAnalysis("AI分析をご利用いただけません。");
-                } finally {
-                    setIsAiLoading(false);
-                }
-            };
-
-            const lowStockItems = useMemo(() => items.filter(item => Number(item.stock) <= Number(item.threshold)), [items]);
-
-            const groupedItems = useMemo(() => {
-                const filtered = items.filter(item => {
-                    const name = String(item.name || "").toLowerCase();
-                    const search = searchTerm.toLowerCase();
-                    return name.includes(search) && (filterLocation === 'All' || item.location === filterLocation);
-                });
-
-                const groups = {};
-                filtered.forEach(item => {
-                    const cleanName = item.name.trim();
-                    if (!groups[cleanName]) {
-                        groups[cleanName] = { 
-                            name: cleanName, category: item.category, unit: item.unit, 
-                            totalStock: 0, hasAlert: false, locations: [], imageUrl: item.imageUrl,
-                            lastChecked: item.lastChecked 
-                        };
-                    }
-                    const stock = Number(item.stock) || 0;
-                    const isLow = stock <= (Number(item.threshold) || 0);
-                    groups[cleanName].locations.push({ ...item, isLow });
-                    groups[cleanName].totalStock += stock;
-                    if (isLow) groups[cleanName].hasAlert = true;
-                    if (item.imageUrl) groups[cleanName].imageUrl = item.imageUrl;
-                    if (!groups[cleanName].lastChecked || new Date(item.lastChecked) > new Date(groups[cleanName].lastChecked)) {
-                        groups[cleanName].lastChecked = item.lastChecked;
-                    }
-                });
-                return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-            }, [items, searchTerm, filterLocation]);
-
-            const locations = ['All', '事務所', '天神', '博多', '清川', 'エブリィ', 'IONビル２階'];
-
-            if (loading) return React.createElement('div', { className: 'flex h-screen items-center justify-center bg-white text-slate-400 font-black' }, 'LOADING...');
-
-            return React.createElement('div', { className: 'min-h-screen pb-32' },
-                saveStatus && React.createElement('div', { className: 'fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 text-white px-5 py-2 rounded-full text-xs font-black shadow-2xl' }, saveStatus),
-                
-                React.createElement('header', { className: 'bg-white/90 backdrop-blur-md border-b sticky top-0 z-40 p-4 shadow-sm' },
-                    React.createElement('div', { className: 'max-w-2xl mx-auto space-y-3' },
-                        React.createElement('div', { className: 'flex items-center justify-between' },
-                            React.createElement('h1', { className: 'text-xl font-black text-slate-800 flex items-center gap-2' }, React.createElement(Package, { className: 'text-blue-600' }), 'ION STAY'),
-                            React.createElement('button', { onClick: runAiAnalysis, className: 'flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-full text-[10px] font-black shadow-lg active:scale-95 transition-all' }, 
-                                isAiLoading ? React.createElement(Loader2, { className: 'animate-spin', size: 12 }) : React.createElement(Sparkles, { size: 12 }),
-                                'AI 在庫分析'
-                            )
-                        ),
-                        React.createElement('div', { className: 'relative' },
-                            React.createElement(Search, { className: 'absolute left-3 top-1/2 -translate-y-1/2 text-slate-400', size: 16 }),
-                            React.createElement('input', { type: 'text', placeholder: '品目を検索...', className: 'w-full pl-10 pr-4 py-2.5 bg-slate-100 rounded-xl text-sm font-bold outline-none', value: searchTerm, onChange: e => setSearchTerm(e.target.value) })
-                        ),
-                        React.createElement('div', { className: 'flex gap-2 overflow-x-auto scrollbar-hide' },
-                            locations.map(loc => React.createElement('button', {
-                                key: loc,
-                                onClick: () => setFilterLocation(loc),
-                                className: `px-4 py-1.5 rounded-full text-[11px] font-black whitespace-nowrap transition-all ${filterLocation === loc ? 'bg-blue-600 text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-400'}`
-                            }, loc === 'All' ? 'すべての拠点' : loc))
-                        )
-                    )
-                ),
-
-                React.createElement('main', { className: 'max-w-2xl mx-auto p-4 space-y-4' },
-                    aiAnalysis && React.createElement('div', { className: 'bg-indigo-600 p-4 rounded-3xl relative text-white shadow-xl' },
-                        React.createElement('button', { onClick: () => setAiAnalysis(null), className: 'absolute top-3 right-3 opacity-50' }, React.createElement(X, { size: 16 })),
-                        React.createElement('h4', { className: 'text-[10px] font-black uppercase mb-2 flex items-center gap-1 opacity-80' }, React.createElement(Sparkles, { size: 10 }), 'AI 管理アドバイス'),
-                        React.createElement('div', { className: 'text-xs font-bold whitespace-pre-wrap leading-relaxed' }, aiAnalysis)
-                    ),
-
-                    lowStockItems.length > 0 && React.createElement('div', { className: 'bg-red-500 p-4 rounded-3xl text-white shadow-xl animate-pulse' },
-                        React.createElement('div', { className: 'flex items-start gap-3' }, 
-                            React.createElement(AlertCircle, { className: 'mt-0.5 flex-shrink-0' }), 
-                            React.createElement('div', null,
-                                React.createElement('span', { className: 'text-sm font-black block' }, `${lowStockItems.length}件の補充が必要です`),
-                                React.createElement('div', { className: 'text-[10px] font-bold mt-1 opacity-90' }, 
-                                    [...new Set(lowStockItems.map(i => i.name))].join(', ')
-                                )
-                            )
-                        )
-                    ),
-
-                    groupedItems.map(group => React.createElement('div', { key: group.name, className: `bg-white rounded-[2rem] border transition-all ${group.hasAlert ? 'border-red-200 shadow-red-50' : 'border-slate-100 shadow-slate-100'} overflow-hidden shadow-xl mb-4` },
-                        React.createElement('div', { className: `p-4 flex items-center gap-4 ${group.hasAlert ? 'bg-red-50/50' : 'bg-slate-50/30'}` },
-                            React.createElement('div', { className: 'w-16 h-16 bg-white rounded-2xl overflow-hidden flex-shrink-0 border border-slate-100 flex items-center justify-center shadow-inner' },
-                                group.imageUrl ? 
-                                    React.createElement('img', { src: group.imageUrl, className: 'w-full h-full object-cover' }) :
-                                    React.createElement(ImageIcon, { className: 'text-slate-200', size: 24 })
-                            ),
-                            React.createElement('div', { className: 'flex-1 min-w-0' },
-                                React.createElement('div', { className: 'flex items-center gap-2 mb-0.5' },
-                                    React.createElement('span', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-tight' }, group.category),
-                                    group.hasAlert && React.createElement('span', { className: 'bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full' }, 'LOW')
-                                ),
-                                React.createElement('h3', { className: 'text-lg font-black text-slate-800 leading-none truncate' }, group.name),
-                                React.createElement('div', { className: 'text-[9px] font-black text-slate-400 mt-2 flex items-center gap-1 uppercase' }, 
-                                    React.createElement(Clock, { size: 10, className: 'text-blue-400' }),
-                                    `最終確認: ${formatDateTime(group.lastChecked)}`
-                                )
-                            ),
-                            React.createElement('div', { className: 'text-right' },
-                                React.createElement('div', { className: `text-2xl font-black ${group.hasAlert ? 'text-red-600' : 'text-blue-600'}` }, group.totalStock, React.createElement('span', { className: 'text-[10px] ml-1 text-slate-400' }, group.unit))
-                            )
-                        ),
-                        React.createElement('div', { className: 'divide-y divide-slate-50' },
-                            group.locations.map(item => React.createElement('div', { key: item.id, className: `p-4 ${item.isLow ? 'bg-red-50/10' : ''}` },
-                                React.createElement('div', { className: 'flex justify-between items-center gap-4' },
-                                    React.createElement('div', { onClick: () => setExpandedId(expandedId === item.id ? null : item.id), className: 'flex-1 cursor-pointer min-w-0' },
-                                        React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-                                            React.createElement('span', { className: `text-[9px] font-black px-2 py-0.5 rounded-md tracking-widest ${item.isLow ? 'bg-red-600 text-white' : 'bg-slate-800 text-white'}` }, item.location),
-                                            React.createElement('span', { className: 'text-[10px] font-bold text-slate-400' }, formatDateTime(item.lastChecked))
-                                        ),
-                                        React.createElement('div', { className: 'text-[11px] text-slate-500 font-bold truncate' }, item.memo || "メモなし")
-                                    ),
-                                    React.createElement('div', { className: `flex items-center gap-1 border rounded-xl p-1 bg-white ${item.isLow ? 'border-red-200' : 'border-slate-100'}` },
-                                        React.createElement('button', { onClick: () => adjustStock(item, -1), className: 'text-slate-300 p-1 hover:text-slate-500' }, React.createElement(MinusCircle, { size: 20 })),
-                                        React.createElement('input', { type: 'number', value: item.stock, onChange: e => updateItem(item.id, {stock: parseInt(e.target.value) || 0}), className: `w-10 text-center text-sm font-black outline-none border-0 p-0 ${item.isLow ? 'text-red-600' : 'text-slate-800'}` }),
-                                        React.createElement('button', { onClick: () => adjustStock(item, 1), className: 'text-slate-300 p-1 hover:text-slate-500' }, React.createElement(PlusCircle, { size: 20 }))
-                                    ),
-                                    React.createElement('button', { onClick: () => setExpandedId(expandedId === item.id ? null : item.id), className: 'text-slate-300' }, React.createElement(ChevronDown, { className: expandedId === item.id ? 'rotate-180 transition-transform' : '' }))
-                                ),
-                                expandedId === item.id && React.createElement('div', { className: 'mt-4 p-4 bg-slate-50 rounded-2xl space-y-4 border border-slate-100' },
-                                    React.createElement('div', { className: 'flex gap-4' },
-                                        React.createElement('div', { 
-                                            className: 'w-24 h-24 bg-white rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer shadow-sm',
-                                            onClick: () => fileInputRef.current.click()
-                                        },
-                                            item.imageUrl ? 
-                                                React.createElement('img', { src: item.imageUrl, className: 'w-full h-full object-cover' }) :
-                                                React.createElement(Camera, { className: 'text-slate-300', size: 24 }),
-                                            React.createElement('input', { type: 'file', ref: fileInputRef, className: 'hidden', accept: 'image/*', onChange: (e) => handleFileChange(e, true, item.id) })
-                                        ),
-                                        React.createElement('div', { className: 'flex-1 space-y-3' },
-                                            React.createElement('div', null,
-                                                React.createElement('label', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-widest' }, 'アラート閾値'),
-                                                React.createElement('input', { type: 'number', className: 'w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 ring-blue-100', value: item.threshold, onChange: e => updateItem(item.id, { threshold: parseInt(e.target.value) || 0 }) })
-                                            ),
-                                            React.createElement('div', null,
-                                                React.createElement('label', { className: 'text-[9px] font-black text-slate-400 uppercase tracking-widest' }, '拠点メモ'),
-                                                React.createElement('input', { type: 'text', className: 'w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:ring-2 ring-blue-100', placeholder: '詳細', value: item.memo || '', onChange: e => updateItem(item.id, { memo: e.target.value }) })
-                                            )
-                                        )
-                                    ),
-                                    React.createElement('div', { className: 'flex justify-end' },
-                                        React.createElement('button', { onClick: () => setDeleteConfirmItem(item), className: 'text-[9px] font-black text-red-400 uppercase bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors' }, 'この拠点を削除')
-                                    )
-                                )
-                            ))
-                        )
-                    ))
-                ),
-
-                React.createElement('button', { onClick: () => setIsModalOpen(true), className: 'fixed bottom-8 right-6 bg-blue-600 text-white w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-transform' }, React.createElement(Plus, { size: 28 })),
-
-                isModalOpen && React.createElement('div', { className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-end sm:items-center justify-center' },
-                    React.createElement('div', { className: 'bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300' },
-                        React.createElement('div', { className: 'bg-slate-800 p-5 text-white flex justify-between items-center' },
-                            React.createElement('h3', { className: 'font-black' }, '新規登録'),
-                            React.createElement('button', { onClick: () => setIsModalOpen(false), className: 'p-2' }, React.createElement(X, { size: 18 }))
-                        ),
-                        React.createElement('form', { className: 'p-6 space-y-4', onSubmit: addItem },
-                            React.createElement('div', { className: 'flex justify-center mb-2' },
-                                React.createElement('div', { 
-                                    className: 'w-24 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:bg-slate-100 transition-all',
-                                    onClick: () => document.getElementById('new-file-input').click()
-                                },
-                                    newItem.imageUrl ? 
-                                        React.createElement('img', { src: newItem.imageUrl, className: 'w-full h-full object-cover' }) :
-                                        React.createElement(Upload, { className: 'text-slate-300', size: 24 }),
-                                    React.createElement('input', { id: 'new-file-input', type: 'file', className: 'hidden', accept: 'image/*', onChange: (e) => handleFileChange(e) })
-                                )
-                            ),
-                            React.createElement('div', { className: 'space-y-1' },
-                                React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '品目名'),
-                                React.createElement('input', { required: true, placeholder: '例: 歯ブラシ', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-blue-500', value: newItem.name, onChange: e => setNewItem({...newItem, name: e.target.value}) })
-                            ),
-                            React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '拠点'),
-                                    React.createElement('select', { className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none appearance-none', value: newItem.location, onChange: e => setNewItem({...newItem, location: e.target.value}) },
-                                        locations.slice(1).map(loc => React.createElement('option', { key: loc, value: loc }, loc))
-                                    )
-                                ),
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'text-[10px] font-black text-red-500 uppercase ml-1' }, '補充閾値'),
-                                    React.createElement('input', { type: 'number', className: 'w-full p-4 bg-red-50 border border-red-100 rounded-2xl font-bold text-red-600 outline-none', value: newItem.threshold, onChange: e => setNewItem({...newItem, threshold: parseInt(e.target.value) || 0}) })
-                                )
-                            ),
-                            React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '初期在庫'),
-                                    React.createElement('input', { type: 'number', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none', value: newItem.stock, onChange: e => setNewItem({...newItem, stock: parseInt(e.target.value) || 0}) })
-                                ),
-                                React.createElement('div', null,
-                                    React.createElement('label', { className: 'text-[10px] font-black text-slate-400 uppercase ml-1' }, '単位'),
-                                    React.createElement('input', { type: 'text', placeholder: '個', className: 'w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none', value: newItem.unit, onChange: e => setNewItem({...newItem, unit: e.target.value}) })
-                                )
-                            ),
-                            React.createElement('button', { type: 'submit', className: 'w-full py-5 bg-blue-600 text-white rounded-3xl font-black text-lg shadow-xl hover:bg-blue-700 active:scale-95 transition-all' }, '登録する')
-                        )
-                    )
-                ),
-
-                deleteConfirmItem && React.createElement('div', { className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-[110]' },
-                    React.createElement('div', { className: 'bg-white p-8 rounded-[2rem] text-center w-full max-w-xs shadow-2xl animate-in zoom-in-95' },
-                        React.createElement('div', { className: 'w-16 h-16 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-4' }, React.createElement(Trash2, { size: 32 })),
-                        React.createElement('h3', { className: 'text-xl font-black mb-2 text-slate-800' }, '削除しますか？'),
-                        React.createElement('p', { className: 'text-xs text-slate-400 font-bold mb-8' }, `「${deleteConfirmItem.location}」の「${deleteConfirmItem.name}」を完全に削除します。`),
-                        React.createElement('div', { className: 'flex gap-3' },
-                            React.createElement('button', { onClick: () => setDeleteConfirmItem(null), className: 'flex-1 py-4 bg-slate-100 rounded-2xl font-black text-xs text-slate-500' }, 'キャンセル'),
-                            React.createElement('button', { onClick: () => deleteItem(deleteConfirmItem.id), className: 'flex-1 py-4 bg-red-600 text-white rounded-2xl font-black text-xs shadow-lg' }, '削除実行')
-                        )
-                    )
-                )
-            );
+                setTimeout(() => {
+                    // Update mock data
+                    appState.voteTargetIdol.pt += points;
+                    if(appState.myProducerData) appState.myProducerData.points -= points;
+                    if(appState.myIdolData && appState.myIdolData.id === appState.voteTargetIdol.id) appState.myIdolData.pt += points;
+                    
+                    spinner.classList.add('hidden');
+                    ui.closeModals();
+                    ui.renderCurrentTab();
+                }, 800);
+            },
+            handleEntry: function(name) {
+                appState.myIdolData = {
+                    id: 'my-idol', name: name, pt: 0, votersCount: 0, area: '東京', image: 'bg-[url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop)] bg-cover bg-center'
+                };
+                appState.idols.push(appState.myIdolData);
+                appState.mypageDiagStep = 0;
+                ui.renderCurrentTab();
+            }
         };
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        // Start App
+        ui.init();
+
     </script>
 </body>
 </html>
