@@ -444,7 +444,10 @@
                   
                   <div className="flex flex-col md:flex-row items-center gap-10">
                     <div className="flex-1 space-y-6 text-center md:text-left z-10">
-                      <span className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
+                      
+                      {/* --- キャッチフレーズ画像切り替え部分 --- */}
+                      <img src="./catchphrase.png" alt="あなたのスマホから始まる" className="h-6 md:h-8 object-contain mb-2 mx-auto md:mx-0" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline-block'; }} />
+                      <span style={{display: 'none'}} className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
                       
                       {/* --- 画像・テキスト切り替え部分 --- */}
                       <img src="./top.png" alt="もしも私が、アイドルになったら。" className="w-full max-w-xl mx-auto md:mx-0 object-contain drop-shadow-md" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
