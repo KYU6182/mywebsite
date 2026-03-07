@@ -1,761 +1,629 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>もしも私が、アイドルになったら。</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
-        
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>もしも私が、アイドルになったら。 | 公式ポータルサイト</title>
+  
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome (アイコン用) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        /* Custom Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
-
-        /* Hide Scrollbar */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* SafeArea */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
-
-        /* Loading Spinner */
-        .loader {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        #app, #modal-overlay { display: none; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out forwards; }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    </style>
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel (ブラウザ内でJSXを変換) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap');
+    
+    body { font-family: sans-serif; }
+    .font-serif { font-family: 'Noto Serif JP', serif; }
+    
+    /* アニメーション設定 */
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fade-in 0.5s ease-out; }
+    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 selection:bg-pink-200">
+<body class="antialiased bg-pink-50 selection:bg-pink-200 selection:text-pink-900 text-gray-800">
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 flex items-center justify-center flex-col relative overflow-hidden">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
-        <i data-lucide="crown" class="w-16 h-16 text-white mb-6 animate-float opacity-80"></i>
-        <div class="loader mb-4"></div>
-        <p class="text-white font-bold text-sm tracking-widest drop-shadow-md">MOSHI AI INITIALIZING...</p>
-    </div>
+  <!-- Reactアプリのマウントポイント -->
+  <div id="root"></div>
 
-    <!-- Main App Container -->
-    <div id="app" class="max-w-md mx-auto min-h-screen bg-[#fafafa] relative shadow-2xl overflow-x-hidden border-x border-gray-200">
+  <!-- アプリケーションのコード -->
+  <script type="text/babel" data-type="module">
+    // --- Firebase 連携 (ES Modules) ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const { useState, useEffect } = React;
+
+    // あなたのFirebaseプロジェクト設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
+      authDomain: "moshiai-5735b.firebaseapp.com",
+      projectId: "moshiai-5735b",
+      storageBucket: "moshiai-5735b.firebasestorage.app",
+      messagingSenderId: "347806317602",
+      appId: "1:347806317602:web:d25481c7dd1376aa20de7b"
+    };
+
+    // Firebaseの初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = 'moshiai-default-app'; // DBのパス用
+
+    // --- モックデータ ---
+    const IDOLS = [
+      { id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300" },
+      { id: 2, name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300" },
+      { id: 3, name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300" },
+      { id: 4, name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300" },
+      { id: 5, name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300" },
+      { id: 6, name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300" },
+    ];
+
+    const MAGAZINES = [
+      { id: 3, issue: "第3号 (最新号)", title: "夏色アイドル宣言！", coverModel: "投票で決定！", status: "投票受付中" },
+      { id: 2, issue: "第2号", title: "キラキラ輝く、私の原石", coverModel: "桜井 ひな", status: "発売中" },
+      { id: 1, issue: "第1号", title: "あなたの新しい物語のスタート", coverModel: "星野 きらら", status: "発売中" },
+    ];
+
+    const RANKING = [
+      { rank: 1, idolId: 5, name: "天音 くるみ", votes: "12,450" },
+      { rank: 2, idolId: 6, name: "姫宮 りあ", votes: "11,200" },
+      { rank: 3, idolId: 4, name: "水瀬 あい", votes: "10,800" },
+    ];
+
+    // --- 共通コンポーネント ---
+    const SectionTitle = ({ title, subtitle, iconClass }) => (
+      <div className="text-center mb-10">
+        <div className="flex justify-center items-center gap-2 mb-2 text-pink-500">
+          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
+          {iconClass && <i className={`${iconClass} text-2xl`}></i>}
+          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
+        </div>
+        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif tracking-wide">
+          {title}
+        </h2>
+        {subtitle && <p className="text-gray-500 mt-2 text-sm md:text-base">{subtitle}</p>}
+      </div>
+    );
+
+    const MockImage = ({ text, className, bgClass = "bg-gray-100", iconClass }) => (
+      <div className={`flex flex-col items-center justify-center text-gray-400 overflow-hidden relative ${bgClass} ${className}`}>
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+        <i className={`${iconClass || 'fa-solid fa-camera'} text-4xl mb-2 drop-shadow-sm`}></i>
+        <span className="text-xs md:text-sm font-medium z-10 px-4 text-center text-gray-600 drop-shadow-sm">{text}</span>
+      </div>
+    );
+
+    // --- キャストマイページ コンポーネント ---
+    const MyPageView = ({ currentUser }) => {
+      const [loading, setLoading] = useState(true);
+      const [isEditing, setIsEditing] = useState(false);
+      
+      const [profile, setProfile] = useState({
+        name: '白鳥 ゆな',
+        catchphrase: 'いつも応援ありがとう！今日も1日がんばろう♡',
+        photoUrl: '',
+        entryNo: '084'
+      });
+      
+      const [editForm, setEditForm] = useState(profile);
+      const [userPoints, setUserPoints] = useState(4800);
+      const [missions, setMissions] = useState([
+        { id: 1, title: "今日の自撮りを1枚投稿する", points: 10, completed: false },
+        { id: 2, title: "ファンからのコメントに3件返信", points: 30, completed: false },
+        { id: 3, title: "Twitterでハッシュタグ投稿", points: 20, completed: false },
+        { id: 4, title: "プロフィールを充実させる", points: 50, completed: true },
+      ]);
+
+      // Firebaseデータ取得
+      useEffect(() => {
+        if (!currentUser) return;
+        const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profileData', 'main');
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setProfile(data);
+            setEditForm(data);
+          } else {
+            setDoc(docRef, profile).catch(console.error);
+          }
+          setLoading(false);
+        }, (error) => {
+          console.error("Firestore Error:", error);
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      }, [currentUser]);
+
+      const handleSaveProfile = async () => {
+        if (!currentUser) return;
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profileData', 'main');
+          await setDoc(docRef, editForm, { merge: true });
+          setIsEditing(false);
+        } catch (error) {
+          console.error("Error saving profile:", error);
+        }
+      };
+
+      const handleToggleMission = (id, points) => {
+        setMissions(missions.map(m => {
+          if (m.id === id) {
+            setUserPoints(prev => m.completed ? prev - points : prev + points);
+            return { ...m, completed: !m.completed };
+          }
+          return m;
+        }));
+      };
+
+      const currentRank = 12;
+      const pointsToNextRank = 1200;
+
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-10 animate-fade-in">
+          
+          {/* プロフィールヘッダー */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 mb-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden min-h-[160px]">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-50 rounded-full mix-blend-multiply opacity-50"></div>
+            
+            <div className="absolute top-4 right-4 z-20">
+              {!isEditing && !loading && (
+                <button onClick={() => setIsEditing(true)} className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-pink-500 transition-colors bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                  <i className="fa-solid fa-pen text-xs"></i> プロフィール編集
+                </button>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="animate-pulse w-full flex items-center gap-6">
+                <div className="w-24 h-24 bg-gray-200 rounded-full shrink-0"></div>
+                <div className="flex-1 space-y-3">
+                   <div className="h-4 bg-gray-200 w-24 rounded"></div>
+                   <div className="h-6 bg-gray-200 w-48 rounded"></div>
+                   <div className="h-4 bg-gray-200 w-full max-w-sm rounded"></div>
+                </div>
+              </div>
+            ) : isEditing ? (
+              <div className="w-full flex flex-col md:flex-row gap-6 z-10 bg-white/90 p-2 md:p-4 rounded-2xl backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-3 shrink-0">
+                   <div className="w-24 h-24 rounded-full border-4 border-pink-100 overflow-hidden relative bg-gray-50 flex items-center justify-center shadow-inner">
+                      {editForm.photoUrl ? (
+                        <img src={editForm.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <i className="fa-solid fa-camera text-3xl text-gray-300"></i>
+                      )}
+                   </div>
+                   <div className="w-full max-w-[180px] relative">
+                     <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                       <i className="fa-solid fa-image text-sm text-gray-400"></i>
+                     </div>
+                     <input type="text" value={editForm.photoUrl || ''} onChange={(e) => setEditForm({...editForm, photoUrl: e.target.value})} placeholder="画像のURLを入力..." className="w-full text-xs pl-8 pr-2 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 bg-gray-50 hover:bg-white" />
+                   </div>
+                </div>
+
+                <div className="flex-1 flex flex-col gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 mb-1 block">お名前 (ニックネーム)</label>
+                    <input type="text" value={editForm.name || ''} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="w-full md:w-1/2 font-bold text-gray-800 px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 bg-gray-50 hover:bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 mb-1 block">キャッチフレーズ・ひとこと</label>
+                    <textarea value={editForm.catchphrase || ''} onChange={(e) => setEditForm({...editForm, catchphrase: e.target.value})} rows="2" className="w-full text-sm text-gray-700 px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 resize-none bg-gray-50 hover:bg-white" />
+                  </div>
+                  <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
+                    <button onClick={() => {setEditForm(profile); setIsEditing(false);}} className="px-4 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl">キャンセル</button>
+                    <button onClick={handleSaveProfile} className="px-6 py-2.5 text-sm font-bold text-white bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center gap-1.5 shadow-md shadow-pink-200">
+                      <i className="fa-solid fa-floppy-disk text-sm"></i> 保存する
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="w-24 h-24 rounded-full border-4 border-pink-100 shadow-md shrink-0 overflow-hidden bg-gradient-to-tr from-pink-200 to-purple-200 flex items-center justify-center">
+                  {profile.photoUrl ? (
+                    <img src={profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-medium px-2 text-center text-gray-600 drop-shadow-sm">[自撮り未設定]</span>
+                  )}
+                </div>
+                <div className="flex-1 text-center md:text-left z-10">
+                  <div className="inline-block bg-pink-100 text-pink-600 text-xs font-bold px-3 py-1 rounded-full mb-2">エントリーNo. {profile.entryNo}</div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.name} <span className="text-lg font-normal text-gray-500">ちゃん</span></h2>
+                  <p className="text-sm text-gray-500 whitespace-pre-wrap">{profile.catchphrase}</p>
+                </div>
+                
+                <div className="flex gap-4 w-full md:w-auto z-10">
+                  <div className="flex-1 md:w-32 bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
+                    <p className="text-xs text-gray-500 font-bold mb-1">現在の順位</p>
+                    <p className="text-3xl font-bold text-pink-500">{currentRank}<span className="text-sm text-gray-500 ml-1">位</span></p>
+                  </div>
+                  <div className="flex-1 md:w-32 bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
+                    <p className="text-xs text-gray-500 font-bold mb-1">獲得ポイント</p>
+                    <p className="text-2xl font-bold text-purple-500 mt-1">{userPoints.toLocaleString()}<span className="text-xs text-gray-500 ml-1">pt</span></p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* ミッション機能 */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-pink-100 h-full">
+                <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+                  <i className="fa-solid fa-bullseye text-xl text-pink-500"></i>
+                  <h3 className="text-lg font-bold text-gray-800">今日のミッション</h3>
+                  <span className="ml-auto text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-bold">毎日24時リセット</span>
+                </div>
+                <div className="space-y-3">
+                  {missions.map(mission => (
+                    <div key={mission.id} onClick={() => handleToggleMission(mission.id, mission.points)} className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer select-none group ${mission.completed ? 'bg-gray-50 border-transparent opacity-60' : 'bg-white border-pink-100 hover:border-pink-300 shadow-sm'}`}>
+                      <div className="flex items-center gap-3">
+                        <button className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${mission.completed ? 'bg-pink-500 border-pink-500' : 'border-gray-300 group-hover:border-pink-400'}`}>
+                           {mission.completed && <i className="fa-solid fa-check text-sm text-white"></i>}
+                        </button>
+                        <span className={`font-medium text-sm md:text-base ${mission.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{mission.title}</span>
+                      </div>
+                      <div className={`flex items-center gap-1 font-bold shrink-0 ${mission.completed ? 'text-gray-400' : 'text-pink-500'}`}>
+                        <span className="text-xs border px-2 py-0.5 rounded-full border-current">+{mission.points} pt</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 掲載シミュレーター */}
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-gray-50 to-pink-50 rounded-3xl p-6 shadow-sm border border-pink-100 relative overflow-hidden h-full">
+                <div className="flex items-center justify-between mb-6 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-columns text-xl text-purple-500"></i>
+                    <h3 className="text-lg font-bold text-gray-800">掲載シミュレーター</h3>
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-600 mb-4 z-10 relative">
+                  もし今、雑誌が発売されたら…<br/>あなたは<span className="font-bold text-pink-500 px-1">1/4ページサイズ</span>で掲載されます！
+                </p>
+
+                <div className="overflow-x-auto pb-4 -mx-2 px-2">
+                  <div className="flex gap-4 min-w-max mx-auto justify-center bg-gray-200/50 p-6 rounded-2xl">
+                    <div className="w-40 h-56 bg-white shadow-md flex flex-col p-1.5 gap-1.5 relative">
+                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]" style={{writingMode: 'vertical-rl'}}>左ページ</div>
+                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">10位 (1/4P)</div>
+                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">11位 (1/4P)</div>
+                      <div className="flex-1 bg-pink-50 border-2 border-pink-400 rounded flex flex-col items-center justify-center text-[10px] text-pink-600 font-bold relative shadow-inner overflow-hidden">
+                        <div className="absolute inset-0 bg-pink-400 opacity-10 animate-pulse"></div>
+                        <i className="fa-solid fa-wand-magic-sparkles text-sm text-pink-500 mb-0.5"></i> 現在のあなた
+                        <span className="font-normal text-[9px] mt-0.5">12位 (1/4P)</span>
+                      </div>
+                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">13位 (1/4P)</div>
+                    </div>
+                    <div className="w-40 h-56 bg-white shadow-md flex flex-col p-1.5 gap-1.5 relative">
+                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]" style={{writingMode: 'vertical-rl'}}>右ページ</div>
+                      <div className="flex-1 bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded flex flex-col items-center justify-center text-xs text-yellow-600 font-bold shadow-sm relative overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+                        <i className="fa-solid fa-arrow-trend-up text-lg mb-1 group-hover:-translate-y-1 transition-transform"></i> 次の目標枠！
+                        <span className="font-normal text-[10px] mt-1 text-yellow-700">8位・9位 (1/2P)</span>
+                      </div>
+                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">6位・7位 (1/2P)</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 bg-white p-4 rounded-2xl shadow-sm border border-pink-50 relative z-10">
+                  <div className="flex justify-between text-xs font-bold mb-2">
+                    <span className="text-gray-500">現在: 1/4ページ枠</span>
+                    <span className="text-yellow-600 flex items-center gap-1"><i className="fa-solid fa-crown text-xs"></i> 目標: 1/2ページ枠</span>
+                  </div>
+                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
+                    <div className="h-full bg-gradient-to-r from-pink-400 to-purple-500 w-[70%] rounded-full relative">
+                      <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/30 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                    </div>
+                  </div>
+                  <p className="text-center text-xs text-gray-500">
+                    ランクアップ圏内まであと <span className="text-pink-500 font-bold text-base">{pointsToNextRank.toLocaleString()}</span> pt！
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+
+    // --- メインアプリケーション ---
+    function App() {
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [activeTab, setActiveTab] = useState('home'); 
+      const [currentUser, setCurrentUser] = useState(null);
+      const [scrolled, setScrolled] = useState(false);
+
+      useEffect(() => {
+        const initAuth = async () => {
+          try {
+            await signInAnonymously(auth);
+          } catch (error) {
+            console.error("Authentication Error:", error);
+          }
+        };
+        initAuth();
         
-        <!-- ==================== HOME TAB ==================== -->
-        <div id="tab-home" class="tab-content active pb-safe min-h-screen bg-gray-50">
-            <!-- Header -->
-            <div class="glass sticky top-0 z-40 px-5 py-3.5 flex justify-between items-center shadow-sm">
-                <!-- ★変更点：ロゴを大きくしました (h-7 -> h-12) -->
-                <img src="logo.png" alt="Moshi Ai Logo" class="h-12 w-auto object-contain drop-shadow-sm">
+        const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
+        return () => unsubscribe();
+      }, []);
+
+      useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      const scrollTo = (id) => {
+        setIsMenuOpen(false);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      const toggleMode = () => {
+        setActiveTab(prev => prev === 'home' ? 'mypage' : 'home');
+        setIsMenuOpen(false);
+        window.scrollTo(0, 0);
+      };
+
+      return (
+        <div className="pb-24">
+          
+          <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-2' : 'bg-transparent py-4'}`}>
+            <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
+                <img src="./logo.png" alt="もしアイ" className="h-8 md:h-10 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                <span style={{display: 'none'}} className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif">
+                  <i className="fa-solid fa-heart text-2xl text-pink-500 animate-pulse mr-2"></i>もしアイ
+                </span>
+              </div>
+
+              <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                {activeTab === 'home' && ['HOME', 'NEWS', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
+                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="hover:text-pink-500 transition-colors relative group">
+                    {item}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all group-hover:w-full"></span>
+                  </button>
+                ))}
                 
-                <div class="flex gap-3">
-                    <button class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm hover:text-pink-500 transition-colors"><i data-lucide="search" class="w-5 h-5"></i></button>
-                    <button class="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-sm hover:text-pink-500 transition-colors relative">
-                        <i data-lucide="bell" class="w-5 h-5"></i>
-                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-pink-500 rounded-full border-2 border-white"></span>
-                    </button>
-                </div>
+                <button onClick={toggleMode} className={`ml-4 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-transform transform hover:scale-105 border ${activeTab === 'home' ? 'bg-white text-pink-500 border-pink-200 shadow-sm' : 'bg-gray-800 text-white border-gray-800 shadow-md'}`}>
+                  {activeTab === 'home' ? <><i className="fa-solid fa-user text-sm"></i> キャストログイン</> : <><i className="fa-solid fa-arrow-up-right-from-square text-sm"></i> ファン向けサイトへ</>}
+                </button>
+              </nav>
+
+              <button className="md:hidden text-gray-600 p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <i className="fa-solid fa-xmark text-2xl"></i> : <i className="fa-solid fa-bars text-2xl"></i>}
+              </button>
             </div>
+          </header>
 
-            <!-- Hero Banner Slider -->
-            <div class="px-5 mt-4 mb-6">
-                <!-- ★変更点：枠の比率を縦長に変更しました (aspect-[2/1] -> aspect-[3/4]) -->
-                <div class="rounded-3xl shadow-xl relative overflow-hidden aspect-[3/4] bg-gray-200">
-                    <img src="banner.png" alt="キャンペーンバナー" class="w-full h-full object-cover">
-                </div>
+          {isMenuOpen && (
+            <div className="fixed inset-0 z-40 bg-white/95 backdrop-blur-sm pt-24 px-6 flex flex-col gap-6 md:hidden">
+                <button onClick={toggleMode} className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 mb-4 border ${activeTab === 'home' ? 'bg-pink-50 text-pink-600 border-pink-200' : 'bg-gray-900 text-white border-gray-800'}`}>
+                  {activeTab === 'home' ? <><i className="fa-solid fa-user text-lg"></i> キャスト専用マイページへ</> : <><i className="fa-solid fa-arrow-up-right-from-square text-lg"></i> ファン向けサイトへ戻る</>}
+                </button>
+
+                {activeTab === 'home' && ['HOME', 'NEWS', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
+                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="text-xl font-bold text-gray-700 text-left border-b border-pink-100 pb-4 flex justify-between items-center">
+                    {item}
+                    <i className="fa-solid fa-chevron-right text-lg text-pink-300"></i>
+                  </button>
+                ))}
             </div>
+          )}
 
-            <!-- Hot Idols (Horizontal Scroll) -->
-            <div class="mb-6">
-                <div class="px-5 mb-3 flex justify-between items-end">
-                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm tracking-tight"><i data-lucide="flame" class="w-4 h-4 text-orange-500"></i> 注目ライバー</h3>
-                    <span class="text-[10px] text-gray-500 font-bold">すべて見る</span>
-                </div>
-                <div class="flex overflow-x-auto px-5 gap-3 pb-4 scrollbar-hide snap-x" id="home-hot-idols">
-                    <!-- JS Generated -->
-                </div>
-            </div>
-
-            <!-- Timeline Posts -->
-            <div class="bg-white rounded-t-3xl pt-6 pb-2 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] border-t border-gray-100">
-                <div class="px-5 mb-4 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm tracking-tight"><i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i> タイムライン</h3>
-                </div>
-                <div id="home-feed-container" class="space-y-6"></div>
-            </div>
-        </div>
-
-        <!-- ==================== MYPAGE TAB ==================== -->
-        <div id="tab-mypage" class="tab-content pb-safe min-h-screen bg-gray-50">
-            <div id="mypage-container"></div>
-        </div>
-
-        <!-- ==================== RANKING TAB ==================== -->
-        <div id="tab-ranking" class="tab-content pb-safe pt-5 min-h-screen bg-[#fafafa]">
-            <div class="px-5 mb-4 sticky top-0 bg-[#fafafa]/90 backdrop-blur-md z-30 pt-2 pb-2">
-                <div class="flex justify-between items-center mb-4">
-                    <h1 class="text-xl font-black text-gray-900 tracking-tight">ランキング</h1>
-                    <span class="bg-pink-100 text-pink-600 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse-soft">リアルタイム</span>
-                </div>
-                
-                <!-- Category Tabs (Pill style) -->
-                <div class="flex gap-2 bg-gray-100 p-1 rounded-full" id="ranking-category-tabs">
-                    <!-- JS Generated -->
-                </div>
-            </div>
-
-            <!-- Podium -->
-            <div class="pt-8 pb-10 bg-gradient-to-b from-[#fafafa] to-gray-50 border-b border-gray-100 mb-4">
-                <div id="ranking-top3-container" class="flex justify-center items-end gap-2 h-48 px-5"></div>
-            </div>
-
-            <!-- List -->
-            <div id="ranking-list-container" class="px-4 space-y-2.5"></div>
-        </div>
-
-        <!-- ==================== MODALS ==================== -->
-        <div id="modal-overlay" class="fixed inset-0 z-50">
-            
-            <!-- Vote Modal (Bottom Sheet style) -->
-            <div id="modal-vote" class="hidden absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col justify-end">
-                <div class="bg-white w-full rounded-t-3xl p-6 pb-safe animate-slide-up relative shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
-                    <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-                    
-                    <div id="vote-spinner" class="hidden absolute inset-0 bg-white/70 backdrop-blur-md z-20 flex flex-col items-center justify-center rounded-t-3xl">
-                        <div class="loader !border-pink-200 !border-top-pink-500 w-12 h-12"></div>
-                        <p class="mt-4 text-pink-500 font-bold text-sm">応援を送信中...</p>
+          <main className="pt-16">
+            {activeTab === 'mypage' ? (
+              <MyPageView currentUser={currentUser} />
+            ) : (
+              <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* HERO SECTION */}
+                <section id="home" className="py-10 md:py-20 relative">
+                  <div className="absolute top-10 left-10 text-pink-300/50 animate-bounce"><i className="fa-solid fa-star text-4xl"></i></div>
+                  <div className="absolute bottom-10 right-10 text-purple-300/50 animate-pulse"><i className="fa-solid fa-wand-magic-sparkles text-4xl"></i></div>
+                  
+                  <div className="flex flex-col md:flex-row items-center gap-10">
+                    <div className="flex-1 space-y-6 text-center md:text-left z-10">
+                      <span className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-serif leading-tight">
+                        もしも私が、<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">アイドルになったら。</span>
+                      </h1>
+                      <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
+                        自撮り1枚から始まった物語。<br className="hidden md:block"/>普通の女の子だった彼女たちが、今、ここで輝いています。<br/>次は、あなたの推しを見つける番。
+                      </p>
+                      <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <button onClick={() => scrollTo('ranking')} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-500/30 transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
+                          <i className="fa-solid fa-crown text-xl"></i> 投票して応援する
+                        </button>
+                        <button onClick={() => scrollTo('idol-list')} className="bg-white hover:bg-gray-50 text-pink-600 px-8 py-3 rounded-full font-bold shadow-md transition-transform transform hover:scale-105 flex items-center justify-center gap-2 border border-pink-100">
+                          <i className="fa-solid fa-users text-xl"></i> アイドルを探す
+                        </button>
+                      </div>
                     </div>
                     
-                    <div class="flex items-center gap-4 mb-6">
-                        <div id="vote-idol-image" class="w-16 h-16 rounded-full border-2 border-gray-100 shadow-sm"></div>
-                        <div>
-                            <p class="text-[10px] font-bold text-gray-400 mb-0.5 tracking-wider uppercase">Vote for</p>
-                            <h2 class="text-2xl font-black text-gray-900 leading-none"><span id="vote-idol-name"></span></h2>
-                            <p class="text-xs text-pink-500 font-bold mt-1">現在 <span id="vote-idol-pt"></span> pt</p>
-                        </div>
+                    <div className="flex-1 w-full max-w-md mx-auto relative">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-pink-300 to-purple-300 rounded-[3rem] rotate-3 opacity-30 blur-lg"></div>
+                      <div className="relative bg-white p-2 rounded-[3rem] shadow-xl border border-pink-100">
+                          <MockImage text="[初代グランプリの笑顔のポートレート]" className="h-96 md:h-[32rem] rounded-[2.5rem]" bgClass="bg-gradient-to-br from-pink-100 to-purple-100" iconClass="fa-solid fa-heart text-pink-300" />
+                          <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-bold">1st</div>
+                              <div>
+                                <p className="text-xs text-pink-500 font-bold">初代グランプリ</p>
+                                <p className="font-bold text-gray-800 text-lg">星野 きらら</p>
+                              </div>
+                            </div>
+                          </div>
+                      </div>
                     </div>
+                  </div>
+                </section>
 
-                    <div id="vote-producer-points" class="hidden bg-gray-50 border border-gray-100 text-gray-800 text-xs font-bold p-4 rounded-2xl mb-6 flex justify-between items-center shadow-inner">
-                        <span class="flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4 text-gray-400"></i> 保有ポイント</span>
-                        <span class="text-xl font-black font-mono"><span id="vote-my-points"></span> <span class="text-[10px] font-bold text-gray-500">pt</span></span>
-                    </div>
+                {/* NEWS SECTION */}
+                <section id="news" className="py-12">
+                  <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-pink-100">
+                    <h3 className="flex items-center gap-2 font-bold text-xl text-gray-800 mb-6 border-b border-pink-50 pb-4">
+                      <i className="fa-solid fa-tower-broadcast text-xl text-pink-500"></i> NEWS & TOPICS
+                    </h3>
+                    <ul className="space-y-4">
+                      {[
+                        { date: "2026.03.01", label: "MAGAZINE", text: "第3号の表紙モデル投票がスタートしました！" },
+                        { date: "2026.02.25", label: "OFF-MELTY", text: "公式モデルによる春の新作スナップを公開しました。" },
+                        { date: "2026.02.10", label: "INFO", text: "次世代アイドルの新規エントリー受付を再開しました！" }
+                      ].map((news, i) => (
+                        <li key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-pink-50 p-2 rounded-lg transition-colors cursor-pointer group">
+                          <div className="flex items-center gap-3 w-48 shrink-0">
+                            <span className="text-sm text-gray-400 font-mono">{news.date}</span>
+                            <span className="text-xs font-bold px-2 py-1 bg-pink-100 text-pink-600 rounded-md">{news.label}</span>
+                          </div>
+                          <p className="text-gray-700 text-sm md:text-base group-hover:text-pink-600 transition-colors">{news.text}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
 
-                    <p class="text-xs font-bold text-gray-500 mb-3 ml-1">贈るギフトを選んでください</p>
-                    <div class="grid grid-cols-3 gap-3 mb-6">
-                        <div onclick="logic.executeVote(10)" class="bg-white border border-pink-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-sm hover:border-pink-400">
-                            <span class="text-3xl drop-shadow-sm">💖</span>
-                            <div class="text-center">
-                                <span class="block text-[10px] font-black text-pink-600 mb-0.5">無料応援</span>
-                                <span class="block text-[9px] text-gray-400 font-bold">10 pt</span>
-                            </div>
+                {/* RANKING SECTION */}
+                <section id="ranking" className="py-16">
+                  <SectionTitle title="CURRENT RANKING" subtitle="応援して表紙モデルを決めよう！第3号表紙争奪戦" iconClass="fa-solid fa-trophy" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    {RANKING.map((item, index) => (
+                      <div key={index} className={`relative bg-white rounded-3xl p-1 shadow-lg border-2 ${index === 0 ? 'border-yellow-300 md:-translate-y-4' : index === 1 ? 'border-gray-300' : 'border-orange-200'}`}>
+                        <div className={`absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-10 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>
+                          {item.rank}
                         </div>
-                        <div onclick="logic.executeVote(100)" class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-sm">
-                            <span class="text-3xl drop-shadow-sm">💐</span>
-                            <div class="text-center">
-                                <span class="block text-[10px] font-black text-blue-700 mb-0.5">花束</span>
-                                <span class="block text-[9px] text-blue-400 font-bold">100 pt</span>
-                            </div>
+                        <div className="bg-white rounded-[1.3rem] overflow-hidden p-4 pt-8 h-full flex flex-col items-center text-center">
+                          <MockImage text={`[${item.name}]`} className="w-24 h-24 rounded-full mb-4 shadow-inner" bgClass={`bg-gradient-to-tr ${IDOLS.find(i => i.id === item.idolId)?.color}`} />
+                          <h4 className="font-bold text-lg mb-1">{item.name}</h4>
+                          <p className="text-sm text-gray-500 mb-4 font-mono font-medium">{item.votes} pt</p>
+                          <button className={`mt-auto w-full py-2 rounded-xl font-bold text-sm transition-colors ${index === 0 ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' : 'bg-pink-50 text-pink-600 hover:bg-pink-100'}`}>投票する</button>
                         </div>
-                        <div onclick="logic.executeVote(1000)" class="bg-gradient-to-br from-yellow-100 to-orange-100 border border-yellow-300 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform cursor-pointer shadow-md relative overflow-hidden">
-                            <div class="absolute -top-4 -right-4 w-12 h-12 bg-white/40 rounded-full blur-md"></div>
-                            <span class="text-3xl drop-shadow-md relative z-10">👑</span>
-                            <div class="text-center relative z-10">
-                                <span class="block text-[10px] font-black text-yellow-800 mb-0.5">ティアラ</span>
-                                <span class="block text-[9px] text-yellow-600 font-bold">1,000 pt</span>
-                            </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* IDOL LIST SECTION */}
+                <section id="idol-list" className="py-16">
+                  <SectionTitle title="IDOL LIST" subtitle="雑誌デビューから表紙まで、夢を叶えたアイドルたち" iconClass="fa-solid fa-users" />
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+                    {IDOLS.map((idol) => (
+                      <div key={idol.id} className="group cursor-pointer">
+                        <div className="relative overflow-hidden rounded-3xl mb-3 shadow-sm group-hover:shadow-xl transition-all duration-300">
+                          <MockImage text={`[${idol.name}]`} className="w-full aspect-[4/5] transition-transform duration-500 group-hover:scale-105" bgClass={`bg-gradient-to-br ${idol.color}`} />
+                          <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                            <span className="bg-black/50 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded-full border border-white/20">{idol.type}</span>
+                            {idol.isOffMelty && <span className="bg-pink-500/80 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded-full border border-pink-300/50">Off-Melty公式</span>}
+                          </div>
                         </div>
-                    </div>
-                    <button onclick="ui.closeModals()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-4 rounded-2xl transition-colors">キャンセル</button>
+                        <div className="px-1">
+                          <p className="text-xs text-pink-500 font-bold mb-0.5">{idol.issue}</p>
+                          <h4 className="font-bold text-gray-800 text-lg md:text-xl mb-1">{idol.name}</h4>
+                          <p className="text-xs text-gray-500 line-clamp-1">{idol.catchphrase}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* MAGAZINE SECTION */}
+                <section id="magazine" className="py-16 bg-white/50 rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+                  
+                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。これまでに発売された雑誌たち" iconClass="fa-solid fa-book-open" />
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
+                    {MAGAZINES.map((mag) => (
+                      <div key={mag.id} className="flex flex-col items-center group">
+                        <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white rounded-md shadow-lg border-l-4 border-gray-100 p-2 transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-1">
+                          <MockImage text={`[表紙: ${mag.title}]`} className="w-full h-full rounded shadow-inner" bgClass="bg-gradient-to-b from-gray-50 to-gray-200" />
+                          <div className="absolute top-4 left-0 bg-pink-500 text-white text-xs font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
+                        </div>
+                        <div className="text-center mt-6">
+                          <span className={`text-xs font-bold px-2 py-1 rounded-full ${mag.status === '発売中' ? 'bg-gray-100 text-gray-600' : 'bg-pink-100 text-pink-600'}`}>{mag.status}</span>
+                          <h4 className="font-bold text-lg mt-2 text-gray-800">{mag.title}</h4>
+                          <p className="text-sm text-gray-500 mt-1">表紙: {mag.coverModel}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
+          </main>
+
+          <footer className="bg-gray-900 text-white pt-16 pb-32 md:pb-16 mt-20 rounded-t-[3rem]">
+            <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
+              <div>
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+                  <img src="./logo.png" alt="もしアイ" className="h-8 md:h-10 object-contain bg-white/80 p-1 rounded-lg" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                  <span style={{display: 'none'}} className="text-2xl font-bold font-serif">
+                    <i className="fa-solid fa-heart text-2xl text-pink-400 mr-2"></i>もしアイ
+                  </span>
                 </div>
+                <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                  もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-4 border-b border-gray-800 pb-2">CONTENTS</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><button onClick={() => {setActiveTab('home'); setTimeout(()=>scrollTo('home'),100);}} className="hover:text-pink-400">ホーム</button></li>
+                  <li><button onClick={toggleMode} className="text-pink-400 hover:text-pink-300 font-bold">▶ キャスト用マイページ</button></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-lg mb-4 border-b border-gray-800 pb-2">ABOUT</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li><a href="#" className="hover:text-pink-400">よくある質問 (Q&A)</a></li>
+                  <li><a href="#" className="hover:text-pink-400">運営事務局・お問い合わせ</a></li>
+                </ul>
+              </div>
             </div>
-
-            <!-- Other Modals Container -->
-            <div id="modal-other-container" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5"></div>
-        </div>
-
-        <!-- ==================== Bottom Navigation Bar ==================== -->
-        <div class="fixed bottom-0 left-0 w-full z-40">
-            <div class="max-w-md mx-auto glass-nav border-t border-gray-200/50 pb-safe pt-2 bg-white/80 backdrop-blur-xl">
-                <div class="flex justify-around items-center h-14 px-2">
-                    <button onclick="appState.navigateTo('home')" id="nav-home" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-pink-500 transform hover:scale-105">
-                        <i data-lucide="home" class="w-6 h-6"></i><span class="text-[9px] font-bold">ホーム</span>
-                    </button>
-                    <button onclick="appState.navigateTo('ranking')" id="nav-ranking" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-gray-400 transform hover:scale-105">
-                        <i data-lucide="trophy" class="w-6 h-6"></i><span class="text-[9px] font-bold">ランキング</span>
-                    </button>
-                    <button onclick="appState.navigateTo('mypage')" id="nav-mypage" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-all text-gray-400 transform hover:scale-105">
-                        <div class="relative">
-                            <i data-lucide="user" class="w-6 h-6"></i>
-                            <div id="nav-mypage-badge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></div>
-                        </div>
-                        <span class="text-[9px] font-bold">マイページ</span>
-                    </button>
-                </div>
+            <div className="max-w-5xl mx-auto px-6 mt-12 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
+              &copy; 2026 もしも私が、アイドルになったら。運営事務局 All Rights Reserved.
             </div>
+          </footer>
+
+          {activeTab === 'home' && (
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-50 md:flex md:justify-center animate-fade-in-up">
+              <div className="max-w-md w-full mx-auto md:mx-0 flex items-center gap-3">
+                <div className="hidden md:block text-sm font-bold text-gray-600 mr-4">次世代アイドル<br/>エントリー受付中！</div>
+                <button className="flex-1 bg-[#06C755] hover:bg-[#05b34c] text-white py-3.5 px-6 rounded-full font-bold text-lg shadow-lg shadow-[#06C755]/30 transition-transform transform hover:scale-[1.02] flex items-center justify-center gap-2 relative overflow-hidden group">
+                  <span className="absolute inset-0 w-full h-full bg-white/20 group-hover:scale-x-100 origin-left scale-x-0 transition-transform duration-300 ease-out"></span>
+                  <i className="fa-brands fa-line text-2xl"></i> LINEで無料エントリー！
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-    </div>
+      );
+    }
 
-    <!-- Application Logic (Mocked DB) -->
-    <script>
-        // Data & State
-        const INITIAL_IDOLS = [
-            { id: 'idol-1', userId: 'mock-1', name: 'Miyu', pt: 12500, votersCount: 45, area: '東京', createdAt: Date.now() - 86400000, image: 'bg-[url(https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=400&fit=crop)] bg-cover bg-center' },
-            { id: 'idol-2', userId: 'mock-2', name: 'RUKA', pt: 10200, votersCount: 38, area: '大阪', createdAt: Date.now() - 172800000, image: 'bg-[url(https://images.unsplash.com/photo-1503185912284-5271ff81b9a8?w=400&h=400&fit=crop)] bg-cover bg-center' },
-            { id: 'idol-3', userId: 'mock-3', name: 'Aoi', pt: 8900, votersCount: 22, area: '福岡', createdAt: Date.now() - 500000, image: 'bg-[url(https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop)] bg-cover bg-center' },
-            { id: 'idol-4', userId: 'mock-4', name: 'Sakura', pt: 4500, votersCount: 15, area: '北海道', createdAt: Date.now() - 1000000, image: 'bg-[url(https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop)] bg-cover bg-center' },
-            { id: 'idol-5', userId: 'mock-5', name: 'Nana', pt: 1200, votersCount: 8, area: '愛知', createdAt: Date.now(), image: 'bg-[url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop)] bg-cover bg-center' },
-            { id: 'idol-6', userId: 'mock-6', name: 'Emi', pt: 800, votersCount: 5, area: '東京', createdAt: Date.now(), image: 'bg-[url(https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=400&h=400&fit=crop)] bg-cover bg-center' }
-        ];
-
-        const INITIAL_POSTS = [
-            { id: 'post-1', idolId: 'idol-1', content: '今日はレッスン頑張ったよ！みんな応援よろしくね🥺💕', likes: 124, createdAt: Date.now() - 3600000, postImg: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=600&h=600&fit=crop' },
-            { id: 'post-2', idolId: 'idol-2', content: '絶対表紙になりたい！力を貸してください🔥', likes: 89, createdAt: Date.now() - 7200000, postImg: 'https://images.unsplash.com/photo-1508214751196-bfd1436c4ae9?w=600&h=600&fit=crop' },
-            { id: 'post-3', idolId: 'idol-3', content: '新しいお洋服買っちゃった✨どうかな？', likes: 56, createdAt: Date.now() - 14400000, postImg: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&h=600&fit=crop' }
-        ];
-
-        window.appState = {
-            activeTab: 'home',
-            idols: INITIAL_IDOLS.map(i => ({...i, isRookie: (i.votersCount < 10)})),
-            posts: INITIAL_POSTS,
-            myIdolData: null,
-            myProducerData: null,
-            voteTargetIdol: null,
-            rankingCategory: 'overall',
-            mypageDiagStep: 0,
-            
-            navigateTo: function(tab, extraProps = {}) {
-                this.activeTab = tab;
-                if(extraProps.startDiagnosis) this.mypageDiagStep = 1;
-                ui.renderTabs();
-                ui.updateNav();
-                ui.renderCurrentTab();
-                window.scrollTo(0,0);
-            }
-        };
-
-        // UI Engine
-        window.ui = {
-            init: function() {
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    this.renderTabs();
-                    this.updateNav();
-                    this.renderCurrentTab();
-                }, 1000); // Fake load time
-            },
-            renderTabs: function() {
-                ['home', 'ranking', 'mypage'].forEach(tab => {
-                    const el = document.getElementById(`tab-${tab}`);
-                    if (el) el.classList.toggle('active', tab === appState.activeTab);
-                });
-            },
-            updateNav: function() {
-                ['home', 'ranking', 'mypage'].forEach(tab => {
-                    const btn = document.getElementById(`nav-${tab}`);
-                    if(btn) {
-                        btn.classList.toggle('text-pink-500', tab === appState.activeTab);
-                        btn.classList.toggle('text-gray-400', tab !== appState.activeTab);
-                    }
-                });
-                lucide.createIcons();
-            },
-            openModal: function(type) {
-                document.getElementById('modal-overlay').style.display = 'block';
-                document.getElementById('modal-vote').classList.add('hidden');
-                document.getElementById('modal-other-container').classList.add('hidden');
-
-                if (type === 'vote') {
-                    document.getElementById('modal-vote').classList.remove('hidden');
-                    document.getElementById('vote-idol-name').innerText = appState.voteTargetIdol.name;
-                    document.getElementById('vote-idol-pt').innerText = appState.voteTargetIdol.pt.toLocaleString();
-                    document.getElementById('vote-idol-image').className = `w-16 h-16 rounded-full border-2 border-white shadow-md ${appState.voteTargetIdol.image}`;
-                    
-                    if (appState.myProducerData) {
-                        document.getElementById('vote-producer-points').classList.remove('hidden');
-                        document.getElementById('vote-my-points').innerText = appState.myProducerData.points.toLocaleString();
-                    }
-                } else if (type === 'card' || type === 'signup') {
-                    const container = document.getElementById('modal-other-container');
-                    container.classList.remove('hidden');
-                    
-                    if (type === 'card') {
-                        container.innerHTML = `
-                            <div class="bg-white w-full max-w-sm rounded-3xl p-5 animate-slide-up shadow-2xl">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="font-black text-gray-800">おねだりカード生成</h3>
-                                    <button onclick="ui.closeModals()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i data-lucide="x" class="w-4 h-4"></i></button>
-                                </div>
-                                <div class="bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl p-5 text-white mb-5 aspect-[4/5] flex flex-col justify-between relative overflow-hidden shadow-inner">
-                                    <div class="absolute -top-4 -right-4 opacity-10"><i data-lucide="crown" class="w-40 h-40"></i></div>
-                                    <div class="relative z-10">
-                                        <span class="bg-white text-pink-500 text-[10px] font-black px-3 py-1.5 rounded-full mb-3 inline-block shadow-sm">もしアイ 創刊号 参加中</span>
-                                        <h2 class="text-3xl font-black leading-tight mb-2 tracking-tight drop-shadow-md">お願い！<br/>私を押し上げて🥺</h2>
-                                    </div>
-                                    <div class="relative z-10 bg-white/20 backdrop-blur-md p-4 rounded-2xl border border-white/40 flex items-center gap-4 shadow-lg">
-                                        <div class="w-14 h-14 rounded-full border-2 border-white shadow-sm ${appState.myIdolData.image}"></div>
-                                        <div>
-                                            <p class="font-black text-xl leading-none mb-1.5 drop-shadow-sm">${appState.myIdolData.name}</p>
-                                            <p class="text-[10px] font-bold bg-black/30 px-2 py-0.5 rounded text-white/90 w-max">目標まであと少し！</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3">
-                                    <button onclick="ui.closeModals()" class="flex-[1] bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-sm transition-colors"><i data-lucide="download" class="w-4 h-4"></i> 保存</button>
-                                    <button onclick="ui.closeModals()" class="flex-[2] bg-gray-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95 shadow-md text-sm transition-transform"><i data-lucide="share-2" class="w-4 h-4"></i> Xでシェアする</button>
-                                </div>
-                            </div>
-                        `;
-                    } else if (type === 'signup') {
-                        container.innerHTML = `
-                            <div class="bg-white rounded-3xl p-6 w-full max-w-sm relative animate-slide-up shadow-2xl">
-                                <button onclick="ui.closeModals()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><i data-lucide="x" class="w-4 h-4"></i></button>
-                                <div class="w-16 h-16 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center mb-4"><i data-lucide="gift" class="w-8 h-8"></i></div>
-                                <h3 class="text-xl font-black text-gray-900 leading-tight mb-2">今すぐ登録して、<br/><span class="text-pink-600">150pt</span>をGET🎁</h3>
-                                <p class="text-xs text-gray-500 mb-6 leading-relaxed">登録すると150ptが無料でもらえます。このポイントを使って <strong class="text-gray-800">${appState.voteTargetIdol.name}</strong> さんを助けませんか？</p>
-                                <form onsubmit="logic.handleProducerRegister(event)">
-                                    <input type="text" id="input-producer-name" placeholder="プロデューサー名を入力" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-pink-400 mb-4" required />
-                                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform flex justify-center items-center gap-2">
-                                        <i data-lucide="check-circle" class="w-4 h-4"></i> 登録して150pt受け取る
-                                    </button>
-                                </form>
-                            </div>
-                        `;
-                    }
-                }
-                lucide.createIcons();
-            },
-            closeModals: function() {
-                document.getElementById('modal-overlay').style.display = 'none';
-            },
-            renderCurrentTab: function() {
-                if (appState.activeTab === 'home') this.renderHome();
-                else if (appState.activeTab === 'ranking') this.renderRanking();
-                else if (appState.activeTab === 'mypage') this.renderMyPage();
-                lucide.createIcons();
-            },
-            renderHome: function() {
-                const sorted = [...appState.idols].sort((a, b) => b.pt - a.pt);
-                
-                // Horizontal Hot Idols
-                let hotHtml = '';
-                sorted.slice(0, 5).forEach(idol => {
-                    hotHtml += `
-                        <div class="flex flex-col items-center gap-2 snap-center shrink-0 w-20 cursor-pointer" onclick="logic.initiateVote('${idol.id}')">
-                            <div class="relative">
-                                <div class="w-16 h-16 rounded-full border-[3px] border-pink-400 p-[2px] shadow-sm">
-                                    <div class="w-full h-full rounded-full ${idol.image} shadow-inner"></div>
-                                </div>
-                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] font-black px-2 py-0.5 rounded-full border border-white shadow-sm">
-                                    ${(idol.pt/1000).toFixed(1)}k
-                                </div>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-700 truncate w-full text-center">${idol.name}</span>
-                        </div>
-                    `;
-                });
-                document.getElementById('home-hot-idols').innerHTML = hotHtml;
-
-                // Timeline Feed (MixChannel/Instagram style)
-                let postsHtml = '';
-                appState.posts.forEach(post => {
-                    const idol = appState.idols.find(i => i.id === post.idolId);
-                    const isCleared = idol.votersCount >= 10;
-                    
-                    postsHtml += `
-                        <div class="bg-white border-b border-gray-100 pb-5">
-                            <div class="px-5 py-3 flex justify-between items-center">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full ${idol.image} border border-gray-100 shadow-sm"></div>
-                                    <div>
-                                        <h4 class="font-bold text-sm text-gray-900 flex items-center gap-1">
-                                            ${idol.name}
-                                            ${isCleared ? '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-pink-500"></i>' : ''}
-                                        </h4>
-                                        <p class="text-[10px] text-gray-400 font-medium">1時間前 ・ ${idol.area}</p>
-                                    </div>
-                                </div>
-                                <button class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
-                            </div>
-                            
-                            <!-- Post Image -->
-                            <div class="w-full aspect-square bg-gray-100 relative overflow-hidden group">
-                                <img src="${post.postImg}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="post">
-                                
-                                <!-- Glassmorphism overlay for status -->
-                                <div class="absolute bottom-3 left-3 right-3 glass-dark p-3.5 rounded-2xl">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-white text-xs font-bold flex items-center gap-1.5"><i data-lucide="crown" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> 現在 ${idol.pt.toLocaleString()} pt</span>
-                                    </div>
-                                    <p class="text-white/90 text-xs font-medium leading-snug drop-shadow-sm">${post.content}</p>
-                                </div>
-                            </div>
-
-                            <div class="px-5 pt-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <div class="flex gap-4">
-                                        <button class="text-gray-800 hover:text-pink-500 transition-colors"><i data-lucide="heart" class="w-6 h-6"></i></button>
-                                        <button class="text-gray-800 hover:text-gray-500 transition-colors"><i data-lucide="message-circle" class="w-6 h-6"></i></button>
-                                        <button class="text-gray-800 hover:text-gray-500 transition-colors"><i data-lucide="send" class="w-6 h-6"></i></button>
-                                    </div>
-                                    <button onclick="logic.initiateVote('${idol.id}')" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transform active:scale-95 transition-all flex items-center gap-1.5">
-                                        <i data-lucide="gift" class="w-4 h-4"></i> 応援する
-                                    </button>
-                                </div>
-                                <p class="font-bold text-xs text-gray-900">${post.likes} 件のいいね</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('home-feed-container').innerHTML = postsHtml;
-            },
-            renderRanking: function() {
-                // Tabs
-                const cats = [
-                    { id: 'overall', label: '総合ランキング' },
-                    { id: 'rookie', label: '新人枠🔰' }
-                ];
-                let catHtml = '';
-                cats.forEach(c => {
-                    const isActive = appState.rankingCategory === c.id;
-                    const cClass = isActive ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700';
-                    catHtml += `<button onclick="appState.rankingCategory='${c.id}'; ui.renderRanking();" class="flex-1 text-xs font-bold py-2 rounded-full transition-all ${cClass}">${c.label}</button>`;
-                });
-                document.getElementById('ranking-category-tabs').innerHTML = catHtml;
-
-                let list = [...appState.idols].sort((a, b) => b.pt - a.pt);
-                if (appState.rankingCategory === 'rookie') list = list.filter(i => i.isRookie);
-
-                const top3 = list.slice(0, 3);
-                const others = list.slice(3);
-
-                // Podium
-                let podiumHtml = '';
-                if(top3[1]) podiumHtml += this.createPodium(top3[1], 2, 'from-gray-300 to-gray-100', 'text-gray-600', 'h-24');
-                if(top3[0]) podiumHtml += this.createPodium(top3[0], 1, 'from-yellow-300 to-yellow-100', 'text-yellow-700', 'h-32');
-                if(top3[2]) podiumHtml += this.createPodium(top3[2], 3, 'from-orange-300 to-orange-100', 'text-orange-800', 'h-20');
-                document.getElementById('ranking-top3-container').innerHTML = podiumHtml;
-
-                // List
-                let listHtml = '';
-                others.forEach((item, idx) => {
-                    const rank = idx + 4;
-                    const isMe = appState.myIdolData && item.id === appState.myIdolData.id;
-                    const bClass = isMe ? 'border-pink-300 bg-pink-50' : 'border-transparent bg-white shadow-sm';
-                    listHtml += `
-                        <div class="p-3.5 rounded-2xl flex items-center gap-3 border transition-transform active:scale-[0.98] ${bClass}">
-                            <div class="w-8 text-center"><span class="font-black italic text-lg text-gray-400">${rank}</span></div>
-                            <div class="w-12 h-12 rounded-full border border-gray-100 shadow-sm shrink-0 ${item.image}"></div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-bold text-gray-900 text-sm truncate flex items-center gap-1.5">
-                                    ${item.name}
-                                    ${isMe ? '<span class="text-[8px] bg-pink-500 text-white px-1.5 py-0.5 rounded-full">You</span>' : ''}
-                                </h3>
-                                <p class="text-[10px] text-gray-500 mt-0.5"><i data-lucide="map-pin" class="w-2.5 h-2.5 inline pb-0.5"></i> ${item.area}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-black text-gray-900">${item.pt.toLocaleString()}</p>
-                                <p class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">points</p>
-                            </div>
-                            <button onclick="logic.initiateVote('${item.id}')" class="w-10 h-10 bg-gray-50 hover:bg-pink-50 text-pink-500 rounded-full flex items-center justify-center transition-colors ml-1 border border-gray-100">
-                                <i data-lucide="gift" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    `;
-                });
-                document.getElementById('ranking-list-container').innerHTML = listHtml;
-            },
-            createPodium: function(idol, rank, bgGradient, textColor, heightClass) {
-                return `
-                    <div class="flex flex-col items-center flex-1 relative">
-                        ${rank === 1 ? '<i data-lucide="crown" class="w-8 h-8 text-yellow-400 fill-yellow-400 absolute -top-10 animate-float drop-shadow-md"></i>' : ''}
-                        <div class="relative z-10 mb-[-12px]">
-                            <div class="w-16 h-16 rounded-full border-4 border-white shadow-md ${idol.image} flex items-center justify-center relative bg-white">
-                                <div class="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
-                                    <span class="text-xs font-black ${textColor}">${rank}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-full ${heightClass} bg-gradient-to-t ${bgGradient} rounded-t-xl flex flex-col items-center justify-end pb-3 shadow-inner relative overflow-hidden">
-                            <div class="absolute inset-0 bg-white/20"></div>
-                            <span class="text-[10px] font-bold ${textColor} truncate w-full text-center px-1 relative z-10 drop-shadow-sm">${idol.name}</span>
-                            <span class="text-xs font-black ${textColor} relative z-10 drop-shadow-sm">${(idol.pt/1000).toFixed(1)}k</span>
-                        </div>
-                    </div>
-                `;
-            },
-            renderMyPage: function() {
-                const container = document.getElementById('mypage-container');
-                const { myIdolData, myProducerData, mypageDiagStep } = appState;
-
-                if (!myIdolData && !myProducerData) {
-                    // Registration Flow
-                    if (mypageDiagStep === 0) {
-                        container.innerHTML = `
-                            <div class="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center animate-fade-in">
-                                <div class="w-24 h-24 bg-gradient-to-br from-pink-400 to-purple-500 rounded-3xl flex items-center justify-center mb-6 shadow-xl transform rotate-3">
-                                    <i data-lucide="sparkles" class="w-10 h-10 text-white"></i>
-                                </div>
-                                <h2 class="text-2xl font-black text-gray-900 mb-3 leading-tight tracking-tight">さあ、あなたの<br>ストーリーを始めよう</h2>
-                                <p class="text-sm text-gray-500 mb-10 leading-relaxed">たった30秒の診断で、あなたの隠れたアイドルタイプがわかります。</p>
-                                <button onclick="appState.mypageDiagStep=1; ui.renderMyPage();" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
-                                    診断をスタート <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else if (mypageDiagStep === 1) {
-                        container.innerHTML = `
-                            <div class="px-6 pt-12 animate-slide-up">
-                                <div class="w-full bg-gray-200 h-1.5 rounded-full mb-8"><div class="bg-pink-500 w-1/2 h-full rounded-full"></div></div>
-                                <h2 class="text-2xl font-black text-gray-900 mb-8 leading-tight">休日の過ごし方で、<br>一番好きなのは？</h2>
-                                <div class="space-y-3">
-                                    ${['おしゃれなカフェ巡り☕️', '家でネトフリ＆ゴロゴロ🛌', '友達とカラオケで騒ぐ🎤'].map(ans => `
-                                        <button onclick="appState.mypageDiagStep=2; ui.renderMyPage();" class="w-full bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-2xl hover:border-pink-400 hover:bg-pink-50 transition-all text-left px-5 shadow-sm">${ans}</button>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `;
-                    } else if (mypageDiagStep === 2) {
-                        container.innerHTML = `
-                            <div class="px-5 pt-10 pb-20 animate-fade-in">
-                                <div class="text-center mb-8">
-                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Result</p>
-                                    <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 mb-3">愛され小悪魔 系</h2>
-                                    <p class="text-xs text-gray-500 leading-relaxed">ミステリアスな魅力がファンを惹きつけます。<br>今ならライバルが少なくて狙い目！</p>
-                                </div>
-                                <div class="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
-                                    <div class="flex items-center gap-2 mb-4">
-                                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
-                                        <h3 class="font-bold text-gray-900 text-sm">そのままデビュー登録！</h3>
-                                    </div>
-                                    <form onsubmit="logic.handleEntry(document.getElementById('entry-name').value); return false;">
-                                        <label class="block text-[10px] font-bold text-gray-500 mb-1.5 ml-1">アイドル名</label>
-                                        <input type="text" id="entry-name" placeholder="例: Miyu" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-pink-400 mb-6 outline-none transition-all" required />
-                                        <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-4 rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
-                                            候補生としてエントリーする
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        `;
-                    }
-                } else if (myProducerData && !myIdolData) {
-                    // Producer Dashboard
-                    container.innerHTML = `
-                        <div class="px-5 pt-8 animate-fade-in pb-20">
-                            <h1 class="text-2xl font-black text-gray-900 mb-6">Producer Dashboard</h1>
-                            
-                            <!-- License Card -->
-                            <div class="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 text-white shadow-2xl mb-8 relative overflow-hidden border border-gray-700">
-                                <div class="absolute -right-10 -top-10 w-40 h-40 bg-pink-500/20 rounded-full blur-3xl"></div>
-                                <div class="relative z-10 flex justify-between items-start mb-8">
-                                    <div>
-                                        <p class="text-[9px] font-bold text-gray-400 tracking-widest mb-1">PRODUCER LICENSE</p>
-                                        <h2 class="text-lg font-black text-yellow-500 flex items-center gap-1.5"><i data-lucide="crown" class="w-4 h-4"></i> トレーニー</h2>
-                                    </div>
-                                    <i data-lucide="scan" class="w-6 h-6 text-white/30"></i>
-                                </div>
-                                <div class="relative z-10">
-                                    <p class="text-[10px] text-gray-400 font-bold mb-0.5">NAME</p>
-                                    <p class="text-2xl font-black tracking-tight mb-6">${myProducerData.name}</p>
-                                    <div class="border-t border-white/10 pt-4 flex justify-between items-end">
-                                        <div class="text-right">
-                                            <p class="text-[10px] text-gray-400 font-bold mb-0.5">WALLET</p>
-                                            <p class="text-xl font-black font-mono flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4"></i> ${myProducerData.points.toLocaleString()} <span class="text-[10px] text-gray-500">pt</span></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 text-center">
-                                <div class="w-12 h-12 bg-pink-50 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-3"><i data-lucide="mic" class="w-6 h-6"></i></div>
-                                <h3 class="font-bold text-gray-900 text-sm mb-1">あなたも表舞台へ</h3>
-                                <p class="text-xs text-gray-500 mb-4">プロデュースするだけでなく、自分もアイドルとしてデビューしませんか？</p>
-                                <button onclick="appState.mypageDiagStep=2; ui.renderMyPage();" class="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold py-3 rounded-xl text-sm transition-colors">デビュー登録へ進む</button>
-                            </div>
-                        </div>
-                    `;
-                } else if (myIdolData) {
-                    // ★ Idol Dashboard (MixChannel Style, Gamification rich)
-                    const pt = myIdolData.pt;
-                    const nextReq = 5000;
-                    const progress = Math.min((pt / nextReq) * 100, 100);
-
-                    container.innerHTML = `
-                        <div class="animate-fade-in">
-                            <!-- Cover & Header -->
-                            <div class="relative h-48 bg-gradient-to-br from-pink-400 to-purple-500 overflow-hidden">
-                                <img src="https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&fit=crop" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
-                                <div class="absolute top-4 right-4 flex gap-2">
-                                    <button class="w-8 h-8 glass rounded-full flex items-center justify-center text-white"><i data-lucide="share" class="w-4 h-4"></i></button>
-                                    <button class="w-8 h-8 glass rounded-full flex items-center justify-center text-white"><i data-lucide="settings" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                            
-                            <!-- Profile Info -->
-                            <div class="px-5 relative -mt-16 mb-6">
-                                <div class="flex justify-between items-end mb-3">
-                                    <div class="w-[100px] h-[100px] rounded-full border-4 border-white ${myIdolData.image} shadow-lg bg-white"></div>
-                                    <button class="bg-gray-900 text-white px-5 py-2 rounded-full text-[10px] font-bold shadow-md hover:bg-black transition-colors">プロフィール編集</button>
-                                </div>
-                                <div>
-                                    <h2 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-1.5 mb-1">
-                                        ${myIdolData.name}
-                                        <i data-lucide="check-decagram" class="w-5 h-5 text-blue-500 fill-blue-500"></i>
-                                    </h2>
-                                    <p class="text-[11px] text-gray-500 font-bold flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> 東京 ・ 第3回もしアイ参加中</p>
-                                </div>
-                                <div class="flex gap-4 mt-4 bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
-                                    <div class="flex-1 text-center border-r border-gray-100">
-                                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">獲得ポイント</p>
-                                        <p class="text-lg font-black text-gray-900">${pt.toLocaleString()}</p>
-                                    </div>
-                                    <div class="flex-1 text-center">
-                                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">ファン</p>
-                                        <p class="text-lg font-black text-gray-900">142</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dashboard Content -->
-                            <div class="px-5 space-y-4 pb-24">
-                                
-                                <!-- Rank Card -->
-                                <div class="bg-gradient-to-br from-pink-500 to-rose-500 rounded-3xl p-5 text-white shadow-md relative overflow-hidden">
-                                    <div class="absolute -right-6 -bottom-6 opacity-20"><i data-lucide="trending-up" class="w-32 h-32"></i></div>
-                                    <div class="relative z-10">
-                                        <p class="text-[10px] font-bold tracking-widest text-white/80 mb-1">現在の予想ランク</p>
-                                        <div class="flex items-baseline gap-2 mb-4">
-                                            <span class="text-4xl font-black italic">A</span>
-                                            <span class="text-sm font-bold opacity-90">ランク (1/4P掲載)</span>
-                                        </div>
-                                        <div class="flex justify-between text-[10px] font-bold mb-1.5">
-                                            <span>Sランクまで</span>
-                                            <span>あと ${(nextReq - pt).toLocaleString()} pt</span>
-                                        </div>
-                                        <div class="h-2.5 bg-black/20 rounded-full overflow-hidden">
-                                            <div class="h-full bg-white rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Alert -->
-                                <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 shadow-sm relative overflow-hidden">
-                                    <div class="absolute left-0 top-0 w-1 h-full bg-red-500"></div>
-                                    <i data-lucide="siren" class="w-5 h-5 text-red-500 shrink-0 mt-0.5 animate-pulse-soft"></i>
-                                    <div>
-                                        <h4 class="text-sm font-bold text-red-600 mb-1">RUKAさんが猛追中！(差:120pt)</h4>
-                                        <p class="text-[10px] text-red-500/80 mb-3 leading-snug">ランクダウンの危機です。SOSおねだりカードを発行してシェアしましょう。</p>
-                                        <button onclick="ui.openModal('card')" class="bg-red-500 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-red-600 transition-colors">SOSを発信する</button>
-                                    </div>
-                                </div>
-
-                                <!-- Missions -->
-                                <div class="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
-                                    <h3 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
-                                        <i data-lucide="check-square" class="w-4 h-4 text-pink-500"></i> 今日のミッション
-                                    </h3>
-                                    <div class="space-y-4">
-                                        <div class="flex justify-between items-center">
-                                            <div class="flex gap-3 items-center">
-                                                <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-pink-500"><i data-lucide="camera" class="w-4 h-4"></i></div>
-                                                <div>
-                                                    <p class="text-xs font-bold text-gray-900">タイムラインに投稿</p>
-                                                    <p class="text-[10px] text-pink-500 font-bold">+10 pt</p>
-                                                </div>
-                                            </div>
-                                            <button class="bg-gray-100 text-gray-600 text-[10px] font-bold px-4 py-2 rounded-xl">投稿</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        };
-
-        // Logic (Mocked interactions)
-        window.logic = {
-            initiateVote: function(id) {
-                appState.voteTargetIdol = appState.idols.find(i => i.id === id);
-                if(appState.myProducerData || appState.myIdolData) {
-                    ui.openModal('vote');
-                } else {
-                    ui.openModal('signup');
-                }
-            },
-            handleProducerRegister: function(e) {
-                e.preventDefault();
-                appState.myProducerData = { name: document.getElementById('input-producer-name').value, points: 150 };
-                ui.closeModals();
-                ui.openModal('vote');
-            },
-            executeVote: function(points) {
-                const spinner = document.getElementById('vote-spinner');
-                spinner.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    // Update mock data
-                    appState.voteTargetIdol.pt += points;
-                    if(appState.myProducerData) appState.myProducerData.points -= points;
-                    if(appState.myIdolData && appState.myIdolData.id === appState.voteTargetIdol.id) appState.myIdolData.pt += points;
-                    
-                    spinner.classList.add('hidden');
-                    ui.closeModals();
-                    ui.renderCurrentTab();
-                }, 800);
-            },
-            handleEntry: function(name) {
-                appState.myIdolData = {
-                    id: 'my-idol', name: name, pt: 0, votersCount: 0, area: '東京', image: 'bg-[url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop)] bg-cover bg-center'
-                };
-                appState.idols.push(appState.myIdolData);
-                appState.mypageDiagStep = 0;
-                ui.renderCurrentTab();
-            }
-        };
-
-        // Start App
-        ui.init();
-
-    </script>
+    // --- Reactのマウント ---
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
