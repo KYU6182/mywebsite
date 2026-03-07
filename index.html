@@ -445,12 +445,18 @@
                   <div className="flex flex-col md:flex-row items-center gap-10">
                     <div className="flex-1 space-y-6 text-center md:text-left z-10">
                       <span className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
-                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-serif leading-tight">
-                        もしも私が、<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">アイドルになったら。</span>
-                      </h1>
-                      <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
-                        自撮り1枚から始まった物語。<br className="hidden md:block"/>普通の女の子だった彼女たちが、今、ここで輝いています。<br/>次は、あなたの推しを見つける番。
-                      </p>
+                      
+                      {/* --- 画像・テキスト切り替え部分 --- */}
+                      <img src="./top.png" alt="もしも私が、アイドルになったら。" className="w-full max-w-xl mx-auto md:mx-0 object-contain drop-shadow-md" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                      <div style={{display: 'none'}} className="space-y-6">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-serif leading-tight">
+                          もしも私が、<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">アイドルになったら。</span>
+                        </h1>
+                        <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
+                          自撮り1枚から始まった物語。<br className="hidden md:block"/>普通の女の子だった彼女たちが、今、ここで輝いています。<br/>次は、あなたの推しを見つける番。
+                        </p>
+                      </div>
+
                       <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                         <button onClick={() => scrollTo('ranking')} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-500/30 transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
                           <i className="fa-solid fa-crown text-xl"></i> 投票して応援する
