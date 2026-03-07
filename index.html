@@ -446,7 +446,7 @@
                     <div className="flex-1 space-y-6 text-center md:text-left z-10">
                       
                       {/* --- キャッチフレーズ画像切り替え部分 --- */}
-                      <img src="./catchphrase.png" alt="あなたのスマホから始まる" className="h-6 md:h-8 object-contain mb-2 mx-auto md:mx-0" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline-block'; }} />
+                      <img src="./catchphrase.png" alt="あなたのスマホから始まる" className="h-auto w-4/5 max-w-[320px] md:max-w-none md:h-16 lg:h-20 object-contain mb-4 mx-auto md:mx-0 drop-shadow-sm" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline-block'; }} />
                       <span style={{display: 'none'}} className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
                       
                       {/* --- 画像・テキスト切り替え部分 --- */}
