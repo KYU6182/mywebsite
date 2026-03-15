@@ -35,7 +35,6 @@
       left: 0;
       width: 100%;
       height: 100%;
-      /* GitHubにアップする背景画像 */
       background-image: url('./bg.png'); 
       background-size: cover;
       background-position: center top;
@@ -60,28 +59,29 @@
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* ランキング写真のエフェクト */
+    /* ランキング写真のゆっくりズームエフェクト */
     @keyframes slow-zoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+      50% { transform: scale(1.15); }
     }
     .animate-slow-zoom {
       animation: slow-zoom 8s ease-in-out infinite;
     }
 
-    @keyframes sparkle {
+    /* キラキラエフェクト */
+    @keyframes sparkle-anim {
       0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-      50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+      50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
     }
     .sparkle {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       background-color: white;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       pointer-events: none;
-      z-index: 25;
-      filter: drop-shadow(0 0 2px rgba(255,255,255,0.8));
+      z-index: 20;
+      filter: drop-shadow(0 0 3px rgba(255,255,255,0.9));
     }
   </style>
 </head>
@@ -233,7 +233,7 @@
       );
     };
 
-    // --- アイドル詳細（個別プロフィール） ---
+    // --- アイドル詳細 ---
     const IdolDetailView = ({ idol, onBack }) => {
       const [activeDetailTab, setActiveDetailTab] = useState('story'); 
 
@@ -619,12 +619,23 @@
                         <div key={index} onClick={() => idol && openIdolDetail(idol)} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
                           <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-30 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>{item.rank}</div>
                           
-                          {/* 額縁と写真のコンテナ */}
-                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/50 backdrop-blur-sm p-1">
+                          {/* --- 額縁と写真のレイアウト修正 --- */}
+                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/30 backdrop-blur-sm p-1">
                             
-                            {/* アイドル写真 (背面に配置、額縁の内側サイズに合わせる) */}
-                            {/* insetの値を調整して額縁の中に完璧に収めます */}
-                            <div className="absolute inset-[15%] overflow-hidden z-0 flex items-center justify-center bg-gray-50">
+                            {/* 写真を額縁の「下」ではなく、上に重なる「中」のレイヤーとして配置 */}
+                            {/* 透過なし画像に対応するため z-index を調整 */}
+                            
+                            {/* 1. まず背面にフレーム画像を置く（背景として） */}
+                            <img 
+                                src="./rank_frame.png" 
+                                alt="frame" 
+                                className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" 
+                                onError={(e) => { e.target.src = './rank_frame.jpg'; }}
+                            />
+
+                            {/* 2. フレームの内側に収まるように写真を z-10 で配置 */}
+                            {/* inset-[15%] で枠の縁の内側に潜り込ませる */}
+                            <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
                                 <img 
                                   src={`./profile${item.rank}.png`} 
                                   alt={item.name} 
@@ -636,23 +647,12 @@
                                 </div>
                             </div>
 
-                            {/* 額縁画像（前面に配置） - ファイル名を.pngに統一 */}
-                            <img 
-                                src="./rank_frame.png" 
-                                alt="frame" 
-                                className="absolute inset-0 w-full h-full object-fill z-10 pointer-events-none drop-shadow-md" 
-                                onError={(e) => { 
-                                    // 万が一PNGで見つからなかった場合はJPGを試すか、ボーダーで代用
-                                    if(e.target.src.endsWith('.png')) e.target.src = './rank_frame.jpg';
-                                }}
-                            />
-
-                            {/* キラキラエフェクト */}
-                            {[...Array(8)].map((_, i) => (
+                            {/* 3. キラキラエフェクト */}
+                            {[...Array(6)].map((_, i) => (
                               <div key={i} className="sparkle" style={{
                                 top: `${Math.random() * 50 + 25}%`,
                                 left: `${Math.random() * 50 + 25}%`,
-                                animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`
+                                animation: `sparkle-anim ${2 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`
                               }}></div>
                             ))}
                           </div>
