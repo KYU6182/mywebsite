@@ -35,6 +35,7 @@
       left: 0;
       width: 100%;
       height: 100%;
+      /* GitHubにアップする背景画像 */
       background-image: url('./bg.png'); 
       background-size: cover;
       background-position: center top;
@@ -56,22 +57,22 @@
     .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
     .animate-float { animation: float 3s ease-in-out infinite; }
     
+    /* カスタムスクロールバー（フィルタ部分用） */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* ランキング写真のゆっくりズームエフェクト */
     @keyframes slow-zoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
+      50% { transform: scale(1.1); }
     }
     .animate-slow-zoom {
       animation: slow-zoom 8s ease-in-out infinite;
     }
 
-    /* キラキラエフェクト */
     @keyframes sparkle-anim {
       0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-      50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
+      50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
     }
     .sparkle {
       position: absolute;
@@ -233,7 +234,7 @@
       );
     };
 
-    // --- アイドル詳細 ---
+    // --- アイドル詳細（個別プロフィール） ---
     const IdolDetailView = ({ idol, onBack }) => {
       const [activeDetailTab, setActiveDetailTab] = useState('story'); 
 
@@ -245,6 +246,7 @@
 
           <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative">
             <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100">
+              {/* 一覧と同じファイルパス ./idol{id}.png を参照 */}
               <img 
                 src={`./idol${idol.id}.png`} 
                 alt={idol.name} 
@@ -619,13 +621,10 @@
                         <div key={index} onClick={() => idol && openIdolDetail(idol)} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
                           <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-30 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>{item.rank}</div>
                           
-                          {/* --- 額縁と写真のレイアウト修正 --- */}
+                          {/* 額縁と写真のレイアウト */}
                           <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/30 backdrop-blur-sm p-1">
                             
-                            {/* 写真を額縁の「下」ではなく、上に重なる「中」のレイヤーとして配置 */}
-                            {/* 透過なし画像に対応するため z-index を調整 */}
-                            
-                            {/* 1. まず背面にフレーム画像を置く（背景として） */}
+                            {/* 1. フレーム画像を背面に配置（枠のベース） */}
                             <img 
                                 src="./rank_frame.png" 
                                 alt="frame" 
@@ -633,8 +632,7 @@
                                 onError={(e) => { e.target.src = './rank_frame.jpg'; }}
                             />
 
-                            {/* 2. フレームの内側に収まるように写真を z-10 で配置 */}
-                            {/* inset-[15%] で枠の縁の内側に潜り込ませる */}
+                            {/* 2. 写真を「中」に配置（枠の縁より少し内側に収める） */}
                             <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
                                 <img 
                                   src={`./profile${item.rank}.png`} 
@@ -752,7 +750,7 @@
             <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
               <div>
                 <div className="flex items-center justify-center md:justify-start mb-4">
-                  <img src="./logo.png" alt="もしアイ" className="h-12 md:h-16 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                  <img src="./logo.png" alt="もしアイ" className="h-14 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
                   <span style={{display: 'none'}} className="text-2xl font-bold font-serif">もしアイ</span>
                 </div>
                 <p className="text-gray-300 text-sm font-medium">もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。</p>
