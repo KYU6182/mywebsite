@@ -89,16 +89,16 @@
   <div id="root"></div>
 
   <script type="text/babel" data-type="module">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
 
-    // --- IDOLS データ (videoUrlを追加) ---
+    // --- 各種データ定義 ---
     const IDOLS = [
       { 
         id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", 
         color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", 
         story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", 
         titleBadge: "第1号 表紙抜擢", producerCount: "986", 
-        videoUrl: "", // 例: "https://example.com/kirara.mp4"
+        videoUrl: "", 
         topProducers: [{name: "たかひろ", pt: "85,400 pt"}, {name: "ゆうき@きらら推し", pt: "72,100 pt"}, {name: "Kazu", pt: "54,800 pt"}] 
       },
       { 
@@ -106,7 +106,7 @@
         color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", 
         story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", 
         titleBadge: "注目ルーキー", producerCount: "1,540", 
-        videoUrl: "", // ここに動画の直リンクを入れると動きます
+        videoUrl: "", 
         topProducers: [{name: "くるみん隊長", pt: "95,400 pt"}, {name: "DJ_T", pt: "88,100 pt"}, {name: "あやか", pt: "74,800 pt"}] 
       },
       { 
@@ -138,6 +138,12 @@
         titleBadge: "第3号 特集確定", producerCount: "720", 
         topProducers: [{name: "Aqua", pt: "49,500 pt"}, {name: "博多っ子", pt: "35,200 pt"}, {name: "Nemo", pt: "22,100 pt"}] 
       },
+    ];
+
+    const BANNERS = [
+      { id: 1, image: "./banner1.png", label: "Featured", title: "第3号表紙争奪戦 開催中！", subtitle: "あなたの1票が未来を決める", linkText: "Check Details" },
+      { id: 2, image: "./banner2.png", label: "Audition", title: "新規エントリー受付中", subtitle: "公式LINEから1分で応募", linkText: "Check Details" },
+      { id: 3, image: "./banner3.png", label: "Ranking", title: "プロデューサーランキング更新", subtitle: "上位入賞者に限定特典", linkText: "Check Details" }
     ];
 
     const MAGAZINES = [
@@ -208,13 +214,10 @@
       </div>
     );
 
-    // --- 詳細表示用コンポーネント ---
     const IdolDetailView = ({ idol, onBack }) => {
       const [copySuccess, setCopySuccess] = useState(false);
-
       const handleCopyTemplate = () => {
         const templateText = `私がプロデュースしている【${idol.name}】ちゃん！\n"${idol.catchphrase}"\n\n『もしも私が、アイドルになったら。』\nみんなもプロデューサーになって一緒に応援してね✨\n\n#もしアイ #アイドルオーディション #${idol.name}\nhttps://moshi-ai.example.com`;
-        
         const textArea = document.createElement("textarea");
         textArea.value = templateText;
         document.body.appendChild(textArea);
@@ -223,9 +226,7 @@
           document.execCommand('copy');
           setCopySuccess(true);
           setTimeout(() => setCopySuccess(false), 2500);
-        } catch (err) {
-          console.error('コピーに失敗しました', err);
-        }
+        } catch (err) { console.error('コピーに失敗しました', err); }
         document.body.removeChild(textArea);
       };
 
@@ -237,26 +238,21 @@
           
           <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative text-center">
             <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100 aspect-[3/4] sm:aspect-[4/5] mx-auto">
-              
               {idol.titleBadge && (
                 <div className="absolute top-3 right-3 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform rotate-6 border-2 border-white z-20 flex items-center gap-1">
                   <i className="fa-solid fa-crown text-[10px]"></i> {idol.titleBadge}
                 </div>
               )}
-
-              {/* 動画がある場合は詳細でも動画を表示 */}
               {idol.videoUrl ? (
                 <video src={idol.videoUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline></video>
               ) : (
                 <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
               )}
               <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-pink-100 text-pink-300"><i className="fa-solid fa-camera text-4xl"></i></div>
-              
               <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 text-left">
                 <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
               </div>
             </div>
-            
             <div className="flex justify-around items-center mt-6 mb-2">
               <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">順位</p><p className="text-xl md:text-2xl font-bold text-pink-500 font-serif">12位</p></div>
               <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">ポイント</p><p className="text-xl md:text-2xl font-bold text-purple-500 font-serif">12,450pt</p></div>
@@ -270,20 +266,13 @@
           </div>
 
           <div className="mb-6 relative px-2">
-            <button 
-              onClick={handleCopyTemplate} 
-              className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 text-white py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-3 font-bold hover:opacity-90 transition-all transform hover:-translate-y-1"
-            >
-              <div className="flex gap-1.5">
-                <i className="fa-brands fa-instagram text-xl"></i>
-                <i className="fa-brands fa-tiktok text-xl"></i>
-              </div>
+            <button onClick={handleCopyTemplate} className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 text-white py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-3 font-bold hover:opacity-90 transition-all transform hover:-translate-y-1">
+              <div className="flex gap-1.5"><i className="fa-brands fa-instagram text-xl"></i><i className="fa-brands fa-tiktok text-xl"></i></div>
               <span>拡散用テンプレートをコピー</span>
             </button>
             {copySuccess && (
               <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-lg animate-fade-in shadow-xl whitespace-nowrap z-50 flex items-center gap-2">
                 <i className="fa-solid fa-check text-green-400"></i> コピーしました！
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
               </div>
             )}
           </div>
@@ -302,9 +291,7 @@
           <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-10">
             <div className="flex justify-between items-end mb-4 border-b border-pink-100 pb-2">
               <h3 className="text-lg font-bold text-gray-800 border-l-4 border-blue-500 pl-3">プロデューサー陣</h3>
-              <span className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-200 shadow-sm">
-                パトロン総数: {idol.producerCount} 人
-              </span>
+              <span className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-200 shadow-sm">パトロン総数: {idol.producerCount} 人</span>
             </div>
             <div className="space-y-3">
               {idol.topProducers.map((p, index) => (
@@ -314,9 +301,7 @@
                       {index === 0 ? <i className="fa-solid fa-crown text-xs"></i> : index + 1}
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold text-gray-500 leading-none mb-1">
-                        {index === 0 ? 'エグゼクティブ・プロデューサー' : 'トップ・プロデューサー'}
-                      </p>
+                      <p className="text-[9px] font-bold text-gray-500 leading-none mb-1">{index === 0 ? 'エグゼクティブ・プロデューサー' : 'トップ・プロデューサー'}</p>
                       <span className="font-bold text-gray-800 text-sm">{p.name}</span>
                     </div>
                   </div>
@@ -347,10 +332,8 @@
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
       const [selectedProducer, setSelectedProducer] = useState(null);
-      
       const [eventTab, setEventTab] = useState('ranking'); 
       const [activeRankingTab, setActiveRankingTab] = useState('overall');
-
       const [idolSearchText, setIdolSearchText] = useState('');
       const [idolFilterType, setIdolFilterType] = useState('all'); 
       const [idolFilterPref, setIdolFilterPref] = useState('東京'); 
@@ -400,27 +383,49 @@
             ) : (
               <div className="animate-fade-in">
                 
-                {/* HERO SECTION */}
-                <section id="home" className="py-10 md:py-20 max-w-5xl mx-auto px-4">
-                  <div className="flex flex-col md:flex-row items-center gap-10">
-                    <div className="flex-1 text-center md:text-left z-10">
-                      <img src="./catchphrase.png" className="h-16 object-contain mb-4 mx-auto md:mx-0 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
-                      <img src="./top.png" className="w-full max-w-xl mx-auto md:mx-0 object-contain drop-shadow-md" onError={(e) => e.target.style.display='none'} />
-                      <div className="pt-4">
-                        <button onClick={() => scrollToSection('ranking')} className="bg-pink-500 text-white px-10 py-4 rounded-full font-bold shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 mx-auto md:mx-0">
-                          <i className="fa-solid fa-crown"></i> 投票して応援する
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex-1 w-full max-w-md mx-auto">
-                      <div className="relative bg-white/80 backdrop-blur-sm p-2 rounded-[3rem] shadow-xl border border-white">
-                        <img src="./hero.png" className="w-full h-96 md:h-[32rem] object-cover rounded-[2.5rem]" />
-                      </div>
+                {/* HERO SECTION (top.png復活 & 中央寄せ) */}
+                <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
+                  <div className="flex flex-col items-center">
+                    <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
+                    
+                    {/* メインロゴ・タイトル画像 */}
+                    <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md mb-10" onError={(e) => e.target.style.display='none'} />
+                    
+                    {/* バナーギャラリー (修正版: 画像の下にテキスト) */}
+                    <div className="w-full max-w-6xl overflow-hidden relative group">
+                       <div className="flex gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 pb-10">
+                         {BANNERS.map(banner => (
+                           <div key={banner.id} className="flex-shrink-0 w-[85%] md:w-[45%] snap-center">
+                             {/* バナー画像 */}
+                             <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-lg border-4 border-white mb-4 transition-transform hover:scale-[1.02]">
+                               <img src={banner.image} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://via.placeholder.com/800x450/fdf2f8/db2777?text=Banner+Image'; }} />
+                               <div className="absolute top-4 left-4">
+                                 <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{banner.label}</span>
+                               </div>
+                             </div>
+                             {/* バナー情報テキスト (画像の下) */}
+                             <div className="text-left px-4">
+                               <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight mb-1">{banner.title}</h3>
+                               <p className="text-xs md:text-sm text-gray-500 font-medium mb-3">{banner.subtitle}</p>
+                               <button className="flex items-center gap-1.5 text-pink-500 font-bold text-xs hover:gap-3 transition-all">
+                                 {banner.linkText} <i className="fa-solid fa-arrow-right-long"></i>
+                               </button>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                       
+                       {/* ガイドアイコン (ドット) */}
+                       <div className="flex justify-center gap-2 -mt-4">
+                         {BANNERS.map((_, i) => (
+                           <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === 0 ? 'bg-pink-500' : 'bg-pink-200'}`}></div>
+                         ))}
+                       </div>
                     </div>
                   </div>
                 </section>
 
-                {/* IDOL CARD SLIDER (動画対応アップデート) */}
+                {/* IDOL CARD SLIDER */}
                 <section id="idol-slider" className="py-8 bg-white/20 backdrop-blur-sm border-y border-white/50 mb-10">
                   <div className="max-w-6xl mx-auto">
                     <div className="flex items-center gap-2 px-6 mb-4">
@@ -430,30 +435,19 @@
                     <div className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-4">
                       {IDOLS.map((idol, i) => (
                         <div key={idol.id} className="w-48 shrink-0 relative rounded-3xl overflow-hidden shadow-lg group bg-white border border-white">
-                          
-                          {/* 称号バッジ (スライダー内) */}
                           {idol.titleBadge && (
                             <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[8px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
                               <i className="fa-solid fa-crown"></i>
                             </div>
                           )}
-
                           <div className="aspect-[2/3] overflow-hidden relative">
-                            {/* 動画がある場合は動画、なければ画像を表示 */}
                             {idol.videoUrl ? (
-                              <video 
-                                src={idol.videoUrl} 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                autoPlay muted loop playsInline
-                              ></video>
+                              <video src={idol.videoUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" autoPlay muted loop playsInline></video>
                             ) : (
                               <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             )}
-                            {/* 動画であることを示すアイコン (オプション) */}
                             {idol.videoUrl && (
-                                <div className="absolute bottom-2 right-2 text-white/50 text-xs">
-                                    <i className="fa-solid fa-play"></i>
-                                </div>
+                                <div className="absolute bottom-2 right-2 text-white/50 text-xs"><i className="fa-solid fa-play"></i></div>
                             )}
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
@@ -485,43 +479,25 @@
                   </div>
                 </section>
 
+                {/* EVENT DASHBOARD */}
                 <section id="ranking" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="EVENT DASHBOARD" subtitle="最新の戦況とイベント詳細を確認" iconClass="fa-solid fa-trophy" />
-                  
                   <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-1 mb-10 shadow-sm border border-white max-w-lg mx-auto">
-                    {[
-                      {id: 'ranking', label: 'ランキング', icon: 'fa-list-ol'},
-                      {id: 'about', label: '概要', icon: 'fa-circle-info'},
-                      {id: 'benefits', label: '特典', icon: 'fa-gift'}
-                    ].map(t => (
-                      <button 
-                        key={t.id}
-                        onClick={() => setEventTab(t.id)}
-                        className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all
-                          ${eventTab === t.id ? 'bg-pink-500 text-white shadow-md' : 'text-gray-500 hover:text-pink-500'}`}
-                      >
+                    {[{id:'ranking',label:'ランキング',icon:'fa-list-ol'},{id:'about',label:'概要',icon:'fa-circle-info'},{id:'benefits',label:'特典',icon:'fa-gift'}].map(t=>(
+                      <button key={t.id} onClick={()=>setEventTab(t.id)} className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${eventTab===t.id?'bg-pink-500 text-white shadow-md':'text-gray-500 hover:text-pink-500'}`}>
                         <i className={`fa-solid ${t.icon}`}></i> {t.label}
                       </button>
                     ))}
                   </div>
-
                   <div className="animate-fade-in min-h-[400px]">
                     {eventTab === 'ranking' && (
                       <div className="space-y-8 animate-fade-in-up">
                         <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar justify-center">
                           {RANKING_TABS.map(tab => (
-                            <button 
-                              key={tab.id} 
-                              onClick={() => setActiveRankingTab(tab.id)} 
-                              className={`px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap transition-all border-2 
-                                ${activeRankingTab === tab.id ? 'bg-pink-500 text-white border-pink-500 shadow-sm transform scale-105' : 'bg-white/80 text-gray-500 border-white hover:border-pink-200'}`}
-                            >
+                            <button key={tab.id} onClick={() => setActiveRankingTab(tab.id)} className={`px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap transition-all border-2 ${activeRankingTab === tab.id ? 'bg-pink-500 text-white border-pink-500 shadow-sm transform scale-105' : 'bg-white/80 text-gray-500 border-white hover:border-pink-200'}`}>
                               <i className={`fa-solid ${tab.icon} mr-2`}></i>{tab.label}
                             </button>
                           ))}
-                        </div>
-                        <div className="bg-white/60 rounded-2xl p-4 text-center mb-8 max-w-2xl mx-auto shadow-sm text-pink-700 text-xs border border-white">
-                          {RANKING_TABS.find(t=>t.id===activeRankingTab).desc}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12" key={activeRankingTab}>
                           {(RANKING_DATA[activeRankingTab] || []).map((item, index) => (
@@ -532,9 +508,6 @@
                                   <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
                                       <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover animate-slow-zoom" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'} />
                                   </div>
-                                  {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="sparkle" style={{ top: `${Math.random()*50+25}%`, left: `${Math.random()*50+25}%`, animation: `sparkle-anim ${2+Math.random()*2}s infinite ${Math.random()*2}s` }}></div>
-                                  ))}
                                 </div>
                                 <div className="text-center mt-4"><h4 className="font-bold text-lg text-gray-800 mb-1 drop-shadow-sm">{item.name}</h4><p className="text-pink-600 font-mono font-bold text-sm">{item.value}</p></div>
                               </div>
@@ -542,71 +515,33 @@
                         </div>
                       </div>
                     )}
-                    {eventTab === 'about' && (
-                      <div className="max-w-2xl mx-auto bg-white/90 p-8 rounded-[2rem] border shadow-sm animate-fade-in-up">
-                        <h3 className="font-bold text-xl mb-4 border-l-4 border-pink-500 pl-4">イベント概要</h3>
-                        <p className="text-gray-600 leading-relaxed">応援ポイントと投票数で決定する「もしアイ」第3号の表紙争奪戦。あなたの1票が、彼女たちの運命を変えます！</p>
-                      </div>
-                    )}
-                    {eventTab === 'benefits' && (
-                      <div className="max-w-4xl mx-auto grid gap-4 animate-fade-in-up">
-                        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-2xl border border-yellow-200">
-                          <h4 className="font-bold text-lg text-yellow-800">SSランク（1-3位）: 雑誌表紙 & 4P巻頭特集</h4>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl border border-pink-100">
-                          <h4 className="font-bold text-lg text-pink-600">Sランク（TOP10）: 雑誌1ページフル特集</h4>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </section>
 
+                {/* IDOL LIST */}
                 <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
-                  
                   <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
                     <div className="relative mb-4">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i className="fa-solid fa-magnifying-glass text-gray-400"></i>
-                      </div>
-                      <input 
-                        type="text" 
-                        placeholder="名前で検索..." 
-                        value={idolSearchText} 
-                        onChange={(e) => setIdolSearchText(e.target.value)} 
-                        className="w-full pl-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm" 
-                      />
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i className="fa-solid fa-magnifying-glass text-gray-400"></i></div>
+                      <input type="text" placeholder="名前で検索..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full pl-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm" />
                     </div>
                     <div className="flex flex-wrap gap-2">
                        {['all', 'rookie', 'pref', 'style'].map(type => (
-                         <button 
-                           key={type} 
-                           onClick={() => setIdolFilterType(type)} 
-                           className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}
-                         >
+                         <button key={type} onClick={() => setIdolFilterType(type)} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
                            {type === 'all' ? 'すべて' : type === 'rookie' ? '新人' : type === 'pref' ? '都道府県別' : '系統別'}
                          </button>
                        ))}
                     </div>
-                    {idolFilterType === 'pref' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniquePrefs.map(p => <button key={p} onClick={() => setIdolFilterPref(p)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterPref === p ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500'}`}>{p}</button>)}</div>}
-                    {idolFilterType === 'style' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniqueStyles.map(s => <button key={s} onClick={() => setIdolFilterStyle(s)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterStyle === s ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-500'}`}>{s}</button>)}</div>}
                   </div>
-
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                     {filteredIdols.map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 p-1 border border-white">
-                          
                           {idol.titleBadge && (
-                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
-                              <i className="fa-solid fa-crown"></i>
-                            </div>
+                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20"><i className="fa-solid fa-crown"></i></div>
                           )}
-
                           <img src={`./idol${idol.id}.png`} className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=IDOL'} />
-                          <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
-                            <span className="bg-black/60 backdrop-blur-sm text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full">{idol.type}</span>
-                          </div>
                         </div>
                         <div className="px-2">
                           <h4 className="font-bold text-gray-800 text-lg group-hover:text-pink-500 transition-colors drop-shadow-sm">{idol.name}</h4>
@@ -617,6 +552,7 @@
                   </div>
                 </section>
                 
+                {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -638,13 +574,11 @@
                       <div key={mag.id} className="flex flex-col items-center group">
                         <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transition-transform group-hover:-translate-y-2">
                           <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover rounded shadow-inner" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                          <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">No Image</div>
                           <div className="absolute top-4 left-0 bg-pink-500 text-white text-[10px] font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
                         </div>
                         <div className="text-center mt-6 px-2">
                           <span className={`text-[10px] font-bold px-2 py-1 rounded-full shadow-sm border border-white ${mag.status === '発売中' ? 'bg-white text-gray-600' : 'bg-pink-100 text-pink-600'}`}>{mag.status}</span>
                           <h4 className="font-bold text-base mt-2 text-gray-800 line-clamp-1">{mag.title}</h4>
-                          <p className="text-[10px] text-gray-500 mt-1">Cover: {mag.coverModel}</p>
                         </div>
                       </div>
                     ))}
@@ -660,8 +594,6 @@
                 <img src="./logo.png" className="h-16 md:h-20 object-contain mb-4 mx-auto md:mx-0" onError={(e)=>e.target.style.display='none'} />
                 <p className="text-gray-300 text-sm font-medium">もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。</p>
               </div>
-              <div><h4 className="font-bold border-b border-gray-700 pb-2 mb-4 uppercase tracking-wider">Contents</h4><ul className="space-y-2 text-sm text-gray-400"><li><button onClick={() => scrollToSection('home')} className="hover:text-pink-400">HOME</button></li></ul></div>
-              <div><h4 className="font-bold border-b border-gray-700 pb-2 mb-4 uppercase tracking-wider">About</h4><ul className="space-y-2 text-sm text-gray-400"><li><a href="#" className="hover:text-pink-400 transition-colors">Q&A</a></li></ul></div>
             </div>
           </footer>
 
