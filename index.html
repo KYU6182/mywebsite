@@ -522,19 +522,28 @@
                 <section id="ranking" className="py-16">
                   <SectionTitle title="CURRENT RANKING" subtitle="応援して表紙モデルを決めよう！第3号表紙争奪戦" iconClass="fa-solid fa-trophy" />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {RANKING.map((item, index) => (
-                      <div key={index} className={`relative bg-white rounded-3xl p-1 shadow-lg border-2 ${index === 0 ? 'border-yellow-300 md:-translate-y-4' : index === 1 ? 'border-gray-300' : 'border-orange-200'}`}>
-                        <div className={`absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-10 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>
-                          {item.rank}
+                    {RANKING.map((item, index) => {
+                      const idolColor = IDOLS.find(i => i.id === item.idolId)?.color;
+                      return (
+                        <div key={index} className={`relative bg-white rounded-3xl p-1 shadow-lg border-2 ${index === 0 ? 'border-yellow-300 md:-translate-y-4' : index === 1 ? 'border-gray-300' : 'border-orange-200'}`}>
+                          <div className={`absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-10 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>
+                            {item.rank}
+                          </div>
+                          <div className="bg-white rounded-[1.3rem] overflow-hidden p-4 pt-8 h-full flex flex-col items-center text-center">
+                            
+                            {/* --- ランキングプロフィール画像切り替え部分 --- */}
+                            <img src={`./profile${item.rank}.png`} alt={item.name} className="w-24 h-24 rounded-full mb-4 shadow-inner object-cover border-4 border-white ring-2 ring-pink-100" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+                            <div style={{display: 'none'}}>
+                              <MockImage text={`[${item.name}]`} className="w-24 h-24 rounded-full mb-4 shadow-inner" bgClass={`bg-gradient-to-tr ${idolColor}`} />
+                            </div>
+
+                            <h4 className="font-bold text-lg mb-1">{item.name}</h4>
+                            <p className="text-sm text-gray-500 mb-4 font-mono font-medium">{item.votes} pt</p>
+                            <button className={`mt-auto w-full py-2 rounded-xl font-bold text-sm transition-colors ${index === 0 ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' : 'bg-pink-50 text-pink-600 hover:bg-pink-100'}`}>投票する</button>
+                          </div>
                         </div>
-                        <div className="bg-white rounded-[1.3rem] overflow-hidden p-4 pt-8 h-full flex flex-col items-center text-center">
-                          <MockImage text={`[${item.name}]`} className="w-24 h-24 rounded-full mb-4 shadow-inner" bgClass={`bg-gradient-to-tr ${IDOLS.find(i => i.id === item.idolId)?.color}`} />
-                          <h4 className="font-bold text-lg mb-1">{item.name}</h4>
-                          <p className="text-sm text-gray-500 mb-4 font-mono font-medium">{item.votes} pt</p>
-                          <button className={`mt-auto w-full py-2 rounded-xl font-bold text-sm transition-colors ${index === 0 ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' : 'bg-pink-50 text-pink-600 hover:bg-pink-100'}`}>投票する</button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </section>
 
