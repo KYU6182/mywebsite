@@ -1055,7 +1055,18 @@
                     {MAGAZINES.map((mag) => (
                       <div key={mag.id} className="flex flex-col items-center group">
                         <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-1">
-                          <MockImage text={`[表紙: ${mag.title}]`} className="w-full h-full rounded shadow-inner" bgClass="bg-gradient-to-b from-gray-50 to-gray-200" />
+                          
+                          {/* --- マガジン画像切り替え部分 --- */}
+                          <img 
+                            src={`./mag${mag.id}.png`} 
+                            alt={mag.title} 
+                            className="w-full h-full object-cover rounded shadow-inner" 
+                            onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} 
+                          />
+                          <div style={{display: 'none'}} className="w-full h-full">
+                            <MockImage text={`[表紙: ${mag.title}]`} className="w-full h-full rounded shadow-inner" bgClass="bg-gradient-to-b from-gray-50 to-gray-200" />
+                          </div>
+
                           <div className="absolute top-4 left-0 bg-pink-500 text-white text-xs font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
                         </div>
                         <div className="text-center mt-6">
