@@ -28,7 +28,6 @@
       overflow-x: hidden;
     }
 
-    /* --- スマホ対応の背景固定設定 --- */
     body::before {
       content: "";
       position: fixed;
@@ -85,27 +84,60 @@
 </head>
 <body class="antialiased selection:bg-pink-200 selection:text-pink-900 text-gray-800">
 
-  <!-- 背景オーバーレイ -->
   <div class="fixed inset-0 bg-white/40 backdrop-blur-[2px] pointer-events-none z-[-1]"></div>
 
   <div id="root"></div>
 
   <script type="text/babel" data-type="module">
-    // --- Firebase 連携 ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
     const { useState, useEffect, useMemo } = React;
 
-    // --- 各種データ定義 ---
+    // --- IDOLS データ (videoUrlを追加) ---
     const IDOLS = [
-      { id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！" },
-      { id: 2, name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。" },
-      { id: 3, name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸" },
-      { id: 4, name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。" },
-      { id: 5, name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！" },
-      { id: 6, name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑" },
+      { 
+        id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", 
+        color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", 
+        story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", 
+        titleBadge: "第1号 表紙抜擢", producerCount: "986", 
+        videoUrl: "", // 例: "https://example.com/kirara.mp4"
+        topProducers: [{name: "たかひろ", pt: "85,400 pt"}, {name: "ゆうき@きらら推し", pt: "72,100 pt"}, {name: "Kazu", pt: "54,800 pt"}] 
+      },
+      { 
+        id: 5, name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", 
+        color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", 
+        story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", 
+        titleBadge: "注目ルーキー", producerCount: "1,540", 
+        videoUrl: "", // ここに動画の直リンクを入れると動きます
+        topProducers: [{name: "くるみん隊長", pt: "95,400 pt"}, {name: "DJ_T", pt: "88,100 pt"}, {name: "あやか", pt: "74,800 pt"}] 
+      },
+      { 
+        id: 6, name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", 
+        color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", 
+        story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", 
+        titleBadge: "SNSバズり中", producerCount: "2,100", 
+        videoUrl: "", 
+        topProducers: [{name: "ナイト騎士", pt: "112,000 pt"}, {name: "りあ信者", pt: "98,500 pt"}, {name: "Pinky", pt: "86,200 pt"}] 
+      },
+      { 
+        id: 2, name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", 
+        color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", 
+        story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", 
+        titleBadge: "第2号 掲載確定", producerCount: "1,204", 
+        topProducers: [{name: "結衣推し1号", pt: "62,200 pt"}, {name: "うさぎ", pt: "48,100 pt"}, {name: "Sato", pt: "31,000 pt"}] 
+      },
+      { 
+        id: 3, name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", 
+        color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", 
+        story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", 
+        titleBadge: "第2号 表紙抜擢", producerCount: "850", 
+        topProducers: [{name: "道民の星", pt: "55,000 pt"}, {name: "ひなまる", pt: "42,300 pt"}, {name: "Yoshi", pt: "29,800 pt"}] 
+      },
+      { 
+        id: 4, name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", 
+        color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", 
+        story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", 
+        titleBadge: "第3号 特集確定", producerCount: "720", 
+        topProducers: [{name: "Aqua", pt: "49,500 pt"}, {name: "博多っ子", pt: "35,200 pt"}, {name: "Nemo", pt: "22,100 pt"}] 
+      },
     ];
 
     const MAGAZINES = [
@@ -129,12 +161,12 @@
         { rank: 3, idolId: 4, name: "水瀬 あい", value: "10,800 pt" },
       ],
       producers: [
-        { rank: 1, idolId: 2, name: "月見 結衣", value: "1,204 人" },
-        { rank: 2, idolId: 1, name: "星野 きらら", value: "986 人" },
-        { rank: 3, idolId: 3, name: "桜井 ひな", value: "850 人" },
+        { rank: 1, idolId: 6, name: "姫宮 りあ", value: "2,100 人" },
+        { rank: 2, idolId: 5, name: "天音 くるみ", value: "1,540 人" },
+        { rank: 3, idolId: 2, name: "月見 結衣", value: "1,204 人" },
       ],
       regional: [
-        { rank: 1, idolId: 4, name: "水瀬 あい", value: "北海道 1位" },
+        { rank: 1, idolId: 4, name: "水瀬 あい", value: "九州 1位" },
         { rank: 2, idolId: 1, name: "星野 きらら", value: "関東 1位" },
         { rank: 3, idolId: 2, name: "月見 結衣", value: "関西 1位" },
       ],
@@ -157,12 +189,10 @@
     ];
 
     const PRODUCERS = [
-      { id: 1, rank: 1, name: "たかひろ", value: "85,400 pt", title: "👑 筆頭プロデューサー", iconColor: "from-yellow-400 to-yellow-600" },
-      { id: 2, rank: 2, name: "ゆうき@きらら推し", value: "72,100 pt", title: "✨ 敏腕プロデューサー", iconColor: "from-blue-400 to-blue-600" },
-      { id: 3, rank: 3, name: "Kazu", value: "54,800 pt", title: "🌟 敏腕プロデューサー", iconColor: "from-green-400 to-green-600" },
+      { id: 1, rank: 1, name: "たかひろ", value: "85,400 pt", title: "👑 筆頭プロデューサー", iconColor: "from-yellow-400 to-yellow-600", oshi: "星野 きらら" },
+      { id: 2, rank: 2, name: "ゆうき@きらら推し", value: "72,100 pt", title: "✨ 敏腕プロデューサー", iconColor: "from-blue-400 to-blue-600", oshi: "星野 きらら" },
+      { id: 3, rank: 3, name: "Kazu", value: "54,800 pt", title: "🌟 敏腕プロデューサー", iconColor: "from-green-400 to-green-600", oshi: "星野 きらら" },
     ];
-
-    // --- 共通コンポーネント ---
 
     const SectionTitle = ({ title, subtitle, iconClass }) => (
       <div className="text-center mb-10">
@@ -178,48 +208,126 @@
       </div>
     );
 
-    const MockImage = ({ text, className, bgClass = "bg-gray-100", iconClass }) => (
-      <div className={`flex flex-col items-center justify-center text-gray-400 overflow-hidden relative ${bgClass} ${className}`}>
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-        <i className={`${iconClass || 'fa-solid fa-camera'} text-4xl mb-2 drop-shadow-sm`}></i>
-        <span className="text-xs md:text-sm font-medium z-10 px-4 text-center text-gray-600 drop-shadow-sm">{text}</span>
-      </div>
-    );
-
     // --- 詳細表示用コンポーネント ---
-    const IdolDetailView = ({ idol, onBack }) => (
-      <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
-        <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 backdrop-blur-sm shadow-sm">
-          <i className="fa-solid fa-arrow-left"></i> 一覧に戻る
-        </button>
-        <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative text-center">
-          <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100 aspect-[3/4] sm:aspect-[4/5] mx-auto">
-            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-            <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-pink-100 text-pink-300"><i className="fa-solid fa-camera text-4xl"></i></div>
-            <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 text-left">
-              <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
+    const IdolDetailView = ({ idol, onBack }) => {
+      const [copySuccess, setCopySuccess] = useState(false);
+
+      const handleCopyTemplate = () => {
+        const templateText = `私がプロデュースしている【${idol.name}】ちゃん！\n"${idol.catchphrase}"\n\n『もしも私が、アイドルになったら。』\nみんなもプロデューサーになって一緒に応援してね✨\n\n#もしアイ #アイドルオーディション #${idol.name}\nhttps://moshi-ai.example.com`;
+        
+        const textArea = document.createElement("textarea");
+        textArea.value = templateText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2500);
+        } catch (err) {
+          console.error('コピーに失敗しました', err);
+        }
+        document.body.removeChild(textArea);
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
+          <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 backdrop-blur-sm shadow-sm">
+            <i className="fa-solid fa-arrow-left"></i> 一覧に戻る
+          </button>
+          
+          <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative text-center">
+            <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100 aspect-[3/4] sm:aspect-[4/5] mx-auto">
+              
+              {idol.titleBadge && (
+                <div className="absolute top-3 right-3 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform rotate-6 border-2 border-white z-20 flex items-center gap-1">
+                  <i className="fa-solid fa-crown text-[10px]"></i> {idol.titleBadge}
+                </div>
+              )}
+
+              {/* 動画がある場合は詳細でも動画を表示 */}
+              {idol.videoUrl ? (
+                <video src={idol.videoUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline></video>
+              ) : (
+                <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+              )}
+              <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-pink-100 text-pink-300"><i className="fa-solid fa-camera text-4xl"></i></div>
+              
+              <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 text-left">
+                <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
+              </div>
+            </div>
+            
+            <div className="flex justify-around items-center mt-6 mb-2">
+              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">順位</p><p className="text-xl md:text-2xl font-bold text-pink-500 font-serif">12位</p></div>
+              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">ポイント</p><p className="text-xl md:text-2xl font-bold text-purple-500 font-serif">12,450pt</p></div>
+              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">プロデューサー</p><p className="text-xl md:text-2xl font-bold text-blue-500 font-serif">{idol.producerCount}人</p></div>
             </div>
           </div>
-          <div className="flex justify-around items-center mt-6 mb-2">
-            <div className="text-center"><p className="text-xs text-gray-500 font-bold">順位</p><p className="text-2xl font-bold text-pink-500 font-serif">12位</p></div>
-            <div className="text-center"><p className="text-xs text-gray-500 font-bold">ポイント</p><p className="text-2xl font-bold text-purple-500 font-serif">12,450pt</p></div>
+
+          <div className="text-center mb-6 px-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 font-serif">{idol.name}</h1>
+            <p className="text-pink-600 font-bold text-sm bg-white/80 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full mb-4 shadow-sm border border-pink-100">"{idol.catchphrase}"</p>
+          </div>
+
+          <div className="mb-6 relative px-2">
+            <button 
+              onClick={handleCopyTemplate} 
+              className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 text-white py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-3 font-bold hover:opacity-90 transition-all transform hover:-translate-y-1"
+            >
+              <div className="flex gap-1.5">
+                <i className="fa-brands fa-instagram text-xl"></i>
+                <i className="fa-brands fa-tiktok text-xl"></i>
+              </div>
+              <span>拡散用テンプレートをコピー</span>
+            </button>
+            {copySuccess && (
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-lg animate-fade-in shadow-xl whitespace-nowrap z-50 flex items-center gap-2">
+                <i className="fa-solid fa-check text-green-400"></i> コピーしました！
+                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 mb-10 px-2">
+            <button className="flex-1 bg-pink-500 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-heart mb-1"></i><span className="text-[10px] font-bold">投票</span></button>
+            <button className="flex-1 bg-amber-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-gift mb-1"></i><span className="text-[10px] font-bold">ギフト</span></button>
+            <button className="flex-1 bg-blue-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-share-nodes mb-1"></i><span className="text-[10px] font-bold">シェア</span></button>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+            <h3 className="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-3">私の物語</h3>
+            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap bg-pink-50/30 p-4 rounded-2xl border border-pink-50">{idol.story}</p>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-10">
+            <div className="flex justify-between items-end mb-4 border-b border-pink-100 pb-2">
+              <h3 className="text-lg font-bold text-gray-800 border-l-4 border-blue-500 pl-3">プロデューサー陣</h3>
+              <span className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-200 shadow-sm">
+                パトロン総数: {idol.producerCount} 人
+              </span>
+            </div>
+            <div className="space-y-3">
+              {idol.topProducers.map((p, index) => (
+                <div key={index} className="flex items-center justify-between bg-gradient-to-r from-blue-50/50 to-transparent p-3 rounded-2xl border border-blue-50/50 hover:bg-blue-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm font-bold text-sm border-2 border-white ${index === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 'bg-gradient-to-br from-orange-300 to-orange-500'}`}>
+                      {index === 0 ? <i className="fa-solid fa-crown text-xs"></i> : index + 1}
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-gray-500 leading-none mb-1">
+                        {index === 0 ? 'エグゼクティブ・プロデューサー' : 'トップ・プロデューサー'}
+                      </p>
+                      <span className="font-bold text-gray-800 text-sm">{p.name}</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-mono font-bold text-blue-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-blue-100">{p.pt}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="text-center mb-8 px-4">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 font-serif">{idol.name}</h1>
-          <p className="text-pink-600 font-bold text-sm bg-white/80 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full mb-4 shadow-sm border border-pink-100">"{idol.catchphrase}"</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mb-10 px-2">
-          <button className="flex-1 bg-pink-500 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-heart mb-1"></i><span className="text-[10px] font-bold">投票</span></button>
-          <button className="flex-1 bg-amber-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-gift mb-1"></i><span className="text-[10px] font-bold">ギフト</span></button>
-          <button className="flex-1 bg-blue-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-share-nodes mb-1"></i><span className="text-[10px] font-bold">シェア</span></button>
-        </div>
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-10">
-          <h3 className="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-3">私の物語</h3>
-          <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap bg-pink-50/30 p-4 rounded-2xl border border-pink-50">{idol.story}</p>
-        </div>
-      </div>
-    );
+      );
+    };
 
     const ProducerDetailView = ({ producer, onBack }) => (
       <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
@@ -235,17 +343,14 @@
       </div>
     );
 
-    // --- メイン App コンポーネント ---
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
       const [selectedProducer, setSelectedProducer] = useState(null);
       
-      // ランキング・イベント用
       const [eventTab, setEventTab] = useState('ranking'); 
       const [activeRankingTab, setActiveRankingTab] = useState('overall');
 
-      // IDOL LIST 検索・フィルタ用
       const [idolSearchText, setIdolSearchText] = useState('');
       const [idolFilterType, setIdolFilterType] = useState('all'); 
       const [idolFilterPref, setIdolFilterPref] = useState('東京'); 
@@ -270,11 +375,9 @@
 
       return (
         <div className="pb-24">
-          
           <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-sm py-2">
             <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
-                {/* ロゴサイズを拡大 */}
                 <img src="./logo.png" alt="もしアイ" className="h-14 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
                 <span style={{display: 'none'}} className="text-xl font-bold text-pink-500 font-serif">もしアイ</span>
               </div>
@@ -317,7 +420,7 @@
                   </div>
                 </section>
 
-                {/* IDOL CARD SLIDER */}
+                {/* IDOL CARD SLIDER (動画対応アップデート) */}
                 <section id="idol-slider" className="py-8 bg-white/20 backdrop-blur-sm border-y border-white/50 mb-10">
                   <div className="max-w-6xl mx-auto">
                     <div className="flex items-center gap-2 px-6 mb-4">
@@ -327,14 +430,37 @@
                     <div className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-4">
                       {IDOLS.map((idol, i) => (
                         <div key={idol.id} className="w-48 shrink-0 relative rounded-3xl overflow-hidden shadow-lg group bg-white border border-white">
-                          <div className="aspect-[2/3] overflow-hidden">
-                            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          
+                          {/* 称号バッジ (スライダー内) */}
+                          {idol.titleBadge && (
+                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[8px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
+                              <i className="fa-solid fa-crown"></i>
+                            </div>
+                          )}
+
+                          <div className="aspect-[2/3] overflow-hidden relative">
+                            {/* 動画がある場合は動画、なければ画像を表示 */}
+                            {idol.videoUrl ? (
+                              <video 
+                                src={idol.videoUrl} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                autoPlay muted loop playsInline
+                              ></video>
+                            ) : (
+                              <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            )}
+                            {/* 動画であることを示すアイコン (オプション) */}
+                            {idol.videoUrl && (
+                                <div className="absolute bottom-2 right-2 text-white/50 text-xs">
+                                    <i className="fa-solid fa-play"></i>
+                                </div>
+                            )}
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
                             <h3 className="font-bold text-base mb-1">{idol.name}</h3>
                             <p className="text-[10px] opacity-90 line-clamp-1 mb-3">"{idol.catchphrase}"</p>
                             <button onClick={() => openIdolDetail(idol)} className="w-full py-1.5 bg-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center gap-1 shadow-inner">
-                              <i className="fa-solid fa-heart"></i> 投票する
+                              <i className="fa-solid fa-heart"></i> プロデュースする
                             </button>
                           </div>
                         </div>
@@ -359,7 +485,6 @@
                   </div>
                 </section>
 
-                {/* --- EVENT DASHBOARD (RANKING / ABOUT / BENEFITS) --- */}
                 <section id="ranking" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="EVENT DASHBOARD" subtitle="最新の戦況とイベント詳細を確認" iconClass="fa-solid fa-trophy" />
                   
@@ -417,7 +542,6 @@
                         </div>
                       </div>
                     )}
-                    {/* (ABOUT/BENEFITSセクションは簡略化して継続) */}
                     {eventTab === 'about' && (
                       <div className="max-w-2xl mx-auto bg-white/90 p-8 rounded-[2rem] border shadow-sm animate-fade-in-up">
                         <h3 className="font-bold text-xl mb-4 border-l-4 border-pink-500 pl-4">イベント概要</h3>
@@ -437,11 +561,9 @@
                   </div>
                 </section>
 
-                {/* --- IDOL LIST SECTION (SEARCH & FILTER RESTORED) --- */}
                 <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
                   
-                  {/* 検索とフィルター機能の復活 */}
                   <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
                     <div className="relative mb-4">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -474,6 +596,13 @@
                     {filteredIdols.map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 p-1 border border-white">
+                          
+                          {idol.titleBadge && (
+                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
+                              <i className="fa-solid fa-crown"></i>
+                            </div>
+                          )}
+
                           <img src={`./idol${idol.id}.png`} className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=IDOL'} />
                           <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
                             <span className="bg-black/60 backdrop-blur-sm text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full">{idol.type}</span>
@@ -488,7 +617,6 @@
                   </div>
                 </section>
                 
-                {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -503,7 +631,6 @@
                   </div>
                 </section>
 
-                {/* --- MAGAZINE ARCHIVE (RESTORED) --- */}
                 <section id="magazine" className="py-16 bg-white/40 backdrop-blur-md rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden max-w-6xl mx-auto">
                   <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。過去の表紙をチェック" iconClass="fa-solid fa-book-open" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
