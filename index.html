@@ -40,7 +40,7 @@
       background-size: cover;
       background-position: center top;
       background-repeat: no-repeat;
-      z-index: -2; /* 一番背面に配置 */
+      z-index: -2; 
     }
 
     .font-serif { font-family: 'Noto Serif JP', serif; }
@@ -57,7 +57,6 @@
     .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
     .animate-float { animation: float 3s ease-in-out infinite; }
     
-    /* カスタムスクロールバー（フィルタ部分用） */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -76,12 +75,13 @@
     }
     .sparkle {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       background-color: white;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       pointer-events: none;
       z-index: 25;
+      filter: drop-shadow(0 0 2px rgba(255,255,255,0.8));
     }
   </style>
 </head>
@@ -620,10 +620,11 @@
                           <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-30 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>{item.rank}</div>
                           
                           {/* 額縁と写真のコンテナ */}
-                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white">
+                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/50 backdrop-blur-sm p-1">
                             
                             {/* アイドル写真 (背面に配置、額縁の内側サイズに合わせる) */}
-                            <div className="absolute inset-[13%] overflow-hidden z-0">
+                            {/* insetの値を調整して額縁の中に完璧に収めます */}
+                            <div className="absolute inset-[15%] overflow-hidden z-0 flex items-center justify-center bg-gray-50">
                                 <img 
                                   src={`./profile${item.rank}.png`} 
                                   alt={item.name} 
@@ -635,23 +636,31 @@
                                 </div>
                             </div>
 
-                            {/* 額縁画像（前面に配置） */}
-                            <img src="./rank_frame.jpg" alt="frame" className="absolute inset-0 w-full h-full object-fill z-10 pointer-events-none" />
+                            {/* 額縁画像（前面に配置） - ファイル名を.pngに統一 */}
+                            <img 
+                                src="./rank_frame.png" 
+                                alt="frame" 
+                                className="absolute inset-0 w-full h-full object-fill z-10 pointer-events-none drop-shadow-md" 
+                                onError={(e) => { 
+                                    // 万が一PNGで見つからなかった場合はJPGを試すか、ボーダーで代用
+                                    if(e.target.src.endsWith('.png')) e.target.src = './rank_frame.jpg';
+                                }}
+                            />
 
                             {/* キラキラエフェクト */}
-                            {[...Array(6)].map((_, i) => (
+                            {[...Array(8)].map((_, i) => (
                               <div key={i} className="sparkle" style={{
-                                top: `${Math.random() * 60 + 20}%`,
-                                left: `${Math.random() * 60 + 20}%`,
+                                top: `${Math.random() * 50 + 25}%`,
+                                left: `${Math.random() * 50 + 25}%`,
                                 animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`
                               }}></div>
                             ))}
                           </div>
 
                           <div className="text-center mt-4">
-                            <h4 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-pink-600 transition-colors">{item.name}</h4>
-                            <p className="text-pink-500 font-mono font-bold text-sm">{item.value}</p>
-                            <button className="mt-4 px-6 py-1.5 rounded-full bg-pink-500 text-white text-xs font-bold shadow-md">応援する</button>
+                            <h4 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-pink-600 transition-colors drop-shadow-sm">{item.name}</h4>
+                            <p className="text-pink-600 font-mono font-bold text-sm drop-shadow-sm">{item.value}</p>
+                            <button className="mt-4 px-6 py-1.5 rounded-full bg-pink-500 text-white text-xs font-bold shadow-md hover:bg-pink-600 transition-colors">応援する</button>
                           </div>
                         </div>
                       );
