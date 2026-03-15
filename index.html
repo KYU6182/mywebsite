@@ -57,31 +57,31 @@
     .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
     .animate-float { animation: float 3s ease-in-out infinite; }
     
+    /* カスタムスクロールバー（フィルタ部分用） */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* ランキング写真のエフェクト */
     @keyframes slow-zoom {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.1); }
     }
     .animate-slow-zoom {
-      animation: slow-zoom 10s ease-in-out infinite;
+      animation: slow-zoom 8s ease-in-out infinite;
     }
 
     @keyframes sparkle {
-      0%, 100% { opacity: 0; transform: scale(0); }
-      50% { opacity: 1; transform: scale(1); }
+      0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
     }
     .sparkle {
       position: absolute;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
+      width: 10px;
+      height: 10px;
       background-color: white;
-      box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       pointer-events: none;
-      opacity: 0;
+      z-index: 25;
     }
   </style>
 </head>
@@ -245,7 +245,6 @@
 
           <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative">
             <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100">
-              {/* 一覧と同じファイルパス ./idol{id}.png を参照 */}
               <img 
                 src={`./idol${idol.id}.png`} 
                 alt={idol.name} 
@@ -621,32 +620,34 @@
                           <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-30 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>{item.rank}</div>
                           
                           {/* 額縁と写真のコンテナ */}
-                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg">
+                          <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white">
                             
-                            {/* 額縁画像（背景として配置） */}
-                            <img src="./rank_frame.jpg" alt="frame" className="absolute inset-0 w-full h-full object-fill z-10 pointer-events-none" />
-                            
-                            {/* アイドル写真 */}
-                            <img 
-                              src={`./profile${item.rank}.png`} 
-                              alt={item.name} 
-                              className="w-full h-full object-cover z-0 animate-slow-zoom" 
-                              onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} 
-                            />
-                            <div style={{display: 'none'}} className="w-full h-full z-0 animate-slow-zoom"><MockImage text={item.name} className="w-full h-full" bgClass={`bg-gradient-to-tr ${idol?.color || 'from-pink-100 to-pink-200'}`} /></div>
+                            {/* アイドル写真 (背面に配置、額縁の内側サイズに合わせる) */}
+                            <div className="absolute inset-[13%] overflow-hidden z-0">
+                                <img 
+                                  src={`./profile${item.rank}.png`} 
+                                  alt={item.name} 
+                                  className="w-full h-full object-cover animate-slow-zoom" 
+                                  onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} 
+                                />
+                                <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center">
+                                  <MockImage text={item.name} className="w-full h-full" bgClass={`bg-gradient-to-tr ${idol?.color || 'from-pink-100 to-pink-200'}`} />
+                                </div>
+                            </div>
 
-                            {/* キラキラエフェクト (簡易的な実装例) */}
-                            {[...Array(5)].map((_, i) => (
+                            {/* 額縁画像（前面に配置） */}
+                            <img src="./rank_frame.jpg" alt="frame" className="absolute inset-0 w-full h-full object-fill z-10 pointer-events-none" />
+
+                            {/* キラキラエフェクト */}
+                            {[...Array(6)].map((_, i) => (
                               <div key={i} className="sparkle" style={{
-                                top: `${Math.random() * 100}%`,
-                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 60 + 20}%`,
+                                left: `${Math.random() * 60 + 20}%`,
                                 animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite ${Math.random() * 2}s`
                               }}></div>
                             ))}
-
                           </div>
 
-                          {/* 名前とポイント、ボタン（額縁の外に移動） */}
                           <div className="text-center mt-4">
                             <h4 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-pink-600 transition-colors">{item.name}</h4>
                             <p className="text-pink-500 font-mono font-bold text-sm">{item.value}</p>
@@ -676,7 +677,6 @@
                     {filteredIdols.map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 backdrop-blur-sm p-1 border border-white">
-                          {/* --- アイドルリストの画像パスを共通化 --- */}
                           <img 
                             src={`./idol${idol.id}.png`} 
                             alt={idol.name} 
