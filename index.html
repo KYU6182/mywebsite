@@ -1,786 +1,765 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>もしも私が, アイドルになったら。 | 公式ポータルサイト</title>
-  
-  <!-- Tailwind CSS (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- FontAwesome (アイコン用) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-  <!-- React & ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- Babel (ブラウザ内でJSXを変換) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap');
-    
-    body { 
-      font-family: sans-serif; 
-      background-color: #fdf2f8; 
-      margin: 0;
-      overflow-x: hidden;
-    }
+// --- 各種データ定義 ---
+const IDOLS = [
+  { 
+    id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", 
+    color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", 
+    story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", 
+    titleBadge: "第1号 表紙抜擢", producerCount: "986", 
+    videoUrl: "", 
+    birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道",
+    topProducers: [{name: "たかひろ", pt: "85,400 pt"}, {name: "ゆうき@きらら推し", pt: "72,100 pt"}, {name: "Kazu", pt: "54,800 pt"}] 
+  },
+  { 
+    id: 5, name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", 
+    color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", 
+    story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", 
+    titleBadge: "注目ルーキー", producerCount: "1,540", 
+    videoUrl: "", 
+    birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語",
+    topProducers: [{name: "くるみん隊長", pt: "95,400 pt"}, {name: "DJ_T", pt: "88,100 pt"}, {name: "あやか", pt: "74,800 pt"}] 
+  },
+  { 
+    id: 6, name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", 
+    color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", 
+    story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", 
+    titleBadge: "SNSバズり中", producerCount: "2,100", 
+    videoUrl: "", 
+    birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り",
+    topProducers: [{name: "ナイト騎士", pt: "112,000 pt"}, {name: "りあ信者", pt: "98,500 pt"}, {name: "Pinky", pt: "86,200 pt"}] 
+  },
+  { 
+    id: 2, name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", 
+    color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", 
+    story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", 
+    titleBadge: "第2号 掲載確定", producerCount: "1,204", 
+    videoUrl: "", 
+    birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き",
+    topProducers: [{name: "結衣推し1号", pt: "62,200 pt"}, {name: "うさぎ", pt: "48,100 pt"}, {name: "Sato", pt: "31,000 pt"}] 
+  },
+  { 
+    id: 3, name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", 
+    color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", 
+    story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", 
+    titleBadge: "第2号 表紙抜擢", producerCount: "850", 
+    videoUrl: "", 
+    birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー",
+    topProducers: [{name: "道民の星", pt: "55,000 pt"}, {name: "ひなまる", pt: "42,300 pt"}, {name: "Yoshi", pt: "29,800 pt"}] 
+  },
+  { 
+    id: 4, name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", 
+    color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", 
+    story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", 
+    titleBadge: "第3号 特集確定", producerCount: "720", 
+    videoUrl: "", 
+    birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話",
+    topProducers: [{name: "Aqua", pt: "49,500 pt"}, {name: "博多っ子", pt: "35,200 pt"}, {name: "Nemo", pt: "22,100 pt"}] 
+  },
+];
 
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('./bg.png'); 
-      background-size: cover;
-      background-position: center top;
-      background-repeat: no-repeat;
-      z-index: -2; 
-    }
+const BANNERS = [
+  { id: 1, image: "./banner1.png", label: "Featured", title: "第3号表紙争奪戦 開催中！", subtitle: "あなたの1票が未来を決める", linkText: "Check Details" },
+  { id: 2, image: "./banner2.png", label: "Audition", title: "新規エントリー受付中", subtitle: "公式LINEから1分で応募", linkText: "Check Details" },
+  { id: 3, image: "./banner3.png", label: "Ranking", title: "プロデューサーランキング更新", subtitle: "上位入賞者に限定特典", linkText: "Check Details" }
+];
 
-    .font-serif { font-family: 'Noto Serif JP', serif; }
-    
-    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-    @keyframes fever-glow {
-      0% { text-shadow: 0 0 5px #ff00de, 0 0 10px #ff00de; }
-      50% { text-shadow: 0 0 20px #ff00de, 0 0 30px #ff00de; }
-      100% { text-shadow: 0 0 5px #ff00de, 0 0 10px #ff00de; }
-    }
-    
-    .animate-fade-in { animation: fade-in 0.5s ease-out; }
-    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-    .animate-float { animation: float 3s ease-in-out infinite; }
-    .animate-fever { animation: fever-glow 1.5s infinite; }
-    
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+const TOPICS_DATA = [
+  { id: 1, date: "2026.02.20", label: "NEWS", title: "LARME特別編集カワラボBOOKが今年も登場♡" },
+  { id: 2, date: "2026.01.15", label: "NEWS", title: "星野 きらら 記念イベント開催決定！" },
+  { id: 3, date: "2025.12.17", label: "OTHER", title: "michelMacaron × 桜井 ひな 誌面タイアップ" },
+  { id: 4, date: "2025.12.10", label: "NEWS", title: "天音 くるみ 独占インタビュー公開中！" },
+];
 
-    @keyframes slow-zoom {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    .animate-slow-zoom { animation: slow-zoom 8s ease-in-out infinite; }
+const MAGAZINES = [
+  { id: 3, issue: "第3号 (最新号)", title: "夏色アイドル宣言！", coverModel: "投票で決定！", status: "投票受付中" },
+  { id: 2, issue: "第2号", title: "キラキラ輝く、私の原石", coverModel: "桜井 ひな", status: "発売中" },
+  { id: 1, issue: "第1号", title: "あなたの新しい物語のスタート", coverModel: "星野 きらら", status: "発売中" },
+];
 
-    @keyframes sparkle-anim {
-      0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-      50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
-    }
-    .sparkle {
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      background-color: white;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      pointer-events: none;
-      z-index: 20;
-      filter: drop-shadow(0 0 3px rgba(255,255,255,0.9));
-    }
-  </style>
-</head>
-<body class="antialiased selection:bg-pink-200 selection:text-pink-900 text-gray-800">
+const RANKING_TABS = [
+  { id: 'overall', label: 'アイドル総合', icon: 'fa-crown', desc: 'プロデューサーの熱い応援ポイントで決まる、王道の総合ランキング！' },
+  { id: 'producers', label: 'ファン数', icon: 'fa-users', desc: '応援してくれるファンの『人数』で勝負！支持層の厚さが強みです✨' },
+  { id: 'regional', label: 'エリア別', icon: 'fa-map-location-dot', desc: '地元から全国へ！あなたの街の推しを見つけて応援しよう🗼' },
+  { id: 'style', label: 'スタイル系統', icon: 'fa-ribbon', desc: '好みの系統別に原石を発見🎀' },
+  { id: 'rookie', label: 'ルーキー(新人)', icon: 'fa-seedling', desc: '登録1週間未満のフレッシュな候補生！🐣' },
+];
 
-  <div class="fixed inset-0 bg-white/40 backdrop-blur-[2px] pointer-events-none z-[-1]"></div>
+const RANKING_DATA = {
+  overall: [{ rank: 1, idolId: 5, name: "天音 くるみ", value: "12,450 pt" }, { rank: 2, idolId: 6, name: "姫宮 りあ", value: "11,200 pt" }, { rank: 3, idolId: 4, name: "水瀬 あい", value: "10,800 pt" }],
+  producers: [{ rank: 1, idolId: 6, name: "姫宮 りあ", value: "2,100 人" }, { rank: 2, idolId: 5, name: "天音 くるみ", value: "1,540 人" }, { rank: 3, idolId: 2, name: "月見 結衣", value: "1,204 人" }],
+  regional: [{ rank: 1, idolId: 4, name: "水瀬 あい", value: "九州 1位" }, { rank: 2, idolId: 1, name: "星野 きらら", value: "関東 1位" }, { rank: 3, idolId: 2, name: "月見 結衣", value: "関西 1位" }],
+  style: [{ rank: 1, idolId: 6, name: "姫宮 りあ", value: "王道アイドル 1位" }, { rank: 2, idolId: 5, name: "天音 くるみ", value: "K-POP系 1位" }, { rank: 3, idolId: 3, name: "桜井 ひな", value: "清楚系 1位" }],
+  rookie: [{ rank: 1, idolId: 5, name: "天音 くるみ", value: "登録3日目" }, { rank: 2, idolId: 6, name: "姫宮 りあ", value: "登録5日目" }, { rank: 3, idolId: 4, name: "水瀬 あい", value: "登録6日目" }]
+};
 
-  <div id="root"></div>
+const PRODUCERS = [
+  { id: 1, rank: 1, name: "たかひろ", value: "85,400 pt", title: "👑 筆頭プロデューサー", iconColor: "from-yellow-400 to-yellow-600", oshi: "星野 きらら" },
+  { id: 2, rank: 2, name: "ゆうき@きらら推し", value: "72,100 pt", title: "✨ 敏腕プロデューサー", iconColor: "from-blue-400 to-blue-600", oshi: "星野 きらら" },
+  { id: 3, rank: 3, name: "Kazu", value: "54,800 pt", title: "🌟 敏腕プロデューサー", iconColor: "from-green-400 to-green-600", oshi: "星野 きらら" },
+];
 
-  <script type="text/babel" data-type="module">
-    const { useState, useEffect, useMemo, useRef } = React;
+// --- 共通コンポーネント ---
+const SectionTitle = ({ title, subtitle, iconClass }) => (
+  <div className="text-center mb-10">
+    <div className="flex justify-center items-center gap-2 mb-2 text-pink-500 drop-shadow-sm">
+      <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
+      {iconClass && <i className={`${iconClass} text-2xl`}></i>}
+      <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
+    </div>
+    <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif tracking-wide drop-shadow-sm">
+      {title}
+    </h2>
+    {subtitle && <p className="text-gray-700 mt-2 text-sm md:text-base font-medium drop-shadow-md">{subtitle}</p>}
+  </div>
+);
 
-    // --- 各種データ定義 ---
-    const IDOLS = [
-      { 
-        id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", 
-        color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", 
-        story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", 
-        titleBadge: "第1号 表紙抜擢", producerCount: "986", 
-        videoUrl: "", 
-        topProducers: [{name: "たかひろ", pt: "85,400 pt"}, {name: "ゆうき@きらら推し", pt: "72,100 pt"}, {name: "Kazu", pt: "54,800 pt"}] 
-      },
-      { 
-        id: 5, name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", 
-        color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", 
-        story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", 
-        titleBadge: "注目ルーキー", producerCount: "1,540", 
-        videoUrl: "", 
-        topProducers: [{name: "くるみん隊長", pt: "95,400 pt"}, {name: "DJ_T", pt: "88,100 pt"}, {name: "あやか", pt: "74,800 pt"}] 
-      },
-      { 
-        id: 6, name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", 
-        color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", 
-        story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", 
-        titleBadge: "SNSバズり中", producerCount: "2,100", 
-        videoUrl: "", 
-        topProducers: [{name: "ナイト騎士", pt: "112,000 pt"}, {name: "りあ信者", pt: "98,500 pt"}, {name: "Pinky", pt: "86,200 pt"}] 
-      },
-      { 
-        id: 2, name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", 
-        color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", 
-        story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", 
-        titleBadge: "第2号 掲載確定", producerCount: "1,204", 
-        topProducers: [{name: "結衣推し1号", pt: "62,200 pt"}, {name: "うさぎ", pt: "48,100 pt"}, {name: "Sato", pt: "31,000 pt"}] 
-      },
-      { 
-        id: 3, name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", 
-        color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", 
-        story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", 
-        titleBadge: "第2号 表紙抜擢", producerCount: "850", 
-        topProducers: [{name: "道民の星", pt: "55,000 pt"}, {name: "ひなまる", pt: "42,300 pt"}, {name: "Yoshi", pt: "29,800 pt"}] 
-      },
-      { 
-        id: 4, name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", 
-        color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", 
-        story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", 
-        titleBadge: "第3号 特集確定", producerCount: "720", 
-        topProducers: [{name: "Aqua", pt: "49,500 pt"}, {name: "博多っ子", pt: "35,200 pt"}, {name: "Nemo", pt: "22,100 pt"}] 
-      },
-    ];
+// --- 全アイドル一覧ページ ---
+const AllIdolsView = ({ onBack, onIdolSelect }) => {
+  const sortedIdols = useMemo(() => {
+    return [...IDOLS].sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  }, []);
 
-    const BANNERS = [
-      { id: 1, image: "./banner1.png", label: "Featured", title: "第3号表紙争奪戦 開催中！", subtitle: "あなたの1票が未来を決める", linkText: "Check Details" },
-      { id: 2, image: "./banner2.png", label: "Audition", title: "新規エントリー受付中", subtitle: "公式LINEから1分で応募", linkText: "Check Details" },
-      { id: 3, image: "./banner3.png", label: "Ranking", title: "プロデューサーランキング更新", subtitle: "上位入賞者に限定特典", linkText: "Check Details" }
-    ];
-
-    const MAGAZINES = [
-      { id: 3, issue: "第3号 (最新号)", title: "夏色アイドル宣言！", coverModel: "投票で決定！", status: "投票受付中" },
-      { id: 2, issue: "第2号", title: "キラキラ輝く、私の原石", coverModel: "桜井 ひな", status: "発売中" },
-      { id: 1, issue: "第1号", title: "あなたの新しい物語のスタート", coverModel: "星野 きらら", status: "発売中" },
-    ];
-
-    const RANKING_TABS = [
-      { id: 'overall', label: 'アイドル総合', icon: 'fa-crown', desc: 'プロデューサーの熱い応援ポイントで決まる、王道の総合ランキング！' },
-      { id: 'producers', label: 'ファン数', icon: 'fa-users', desc: '応援してくれるファンの『人数』で勝負！少額でも支持層の厚さが強みです✨' },
-      { id: 'regional', label: 'エリア別', icon: 'fa-map-location-dot', desc: '地元から全国へ！あなたの街の推しを見つけて応援しよう🗼' },
-      { id: 'style', label: 'スタイル系統', icon: 'fa-ribbon', desc: '王道キュート、K-POP風ガールズクラッシュなど、好みの系統別に原石を発見🎀' },
-      { id: 'rookie', label: 'ルーキー(新人)', icon: 'fa-seedling', desc: '登録1週間未満のフレッシュな候補生たち！古参になるなら今がチャンス🐣' },
-    ];
-
-    const RANKING_DATA = {
-      overall: [
-        { rank: 1, idolId: 5, name: "天音 くるみ", value: "12,450 pt" },
-        { rank: 2, idolId: 6, name: "姫宮 りあ", value: "11,200 pt" },
-        { rank: 3, idolId: 4, name: "水瀬 あい", value: "10,800 pt" },
-      ],
-      producers: [
-        { rank: 1, idolId: 6, name: "姫宮 りあ", value: "2,100 人" },
-        { rank: 2, idolId: 5, name: "天音 くるみ", value: "1,540 人" },
-        { rank: 3, idolId: 2, name: "月見 結衣", value: "1,204 人" },
-      ],
-      regional: [
-        { rank: 1, idolId: 4, name: "水瀬 あい", value: "九州 1位" },
-        { rank: 2, idolId: 1, name: "星野 きらら", value: "関東 1位" },
-        { rank: 3, idolId: 2, name: "月見 結衣", value: "関西 1位" },
-      ],
-      style: [
-        { rank: 1, idolId: 6, name: "姫宮 りあ", value: "王道アイドル 1位" },
-        { rank: 2, idolId: 5, name: "天音 くるみ", value: "K-POP系 1位" },
-        { rank: 3, idolId: 3, name: "桜井 ひな", value: "清楚系 1位" },
-      ],
-      rookie: [
-        { rank: 1, idolId: 5, name: "天音 くるみ", value: "登録3日目" },
-        { rank: 2, idolId: 6, name: "姫宮 りあ", value: "登録5日目" },
-        { rank: 3, idolId: 4, name: "水瀬 あい", value: "登録6日目" },
-      ]
-    };
-
-    const TOPICS_DATA = [
-      { id: 1, date: "2026.02.20", label: "NEWS", title: "LARME特別編集カワラボBOOKが今年も登場♡" },
-      { id: 2, date: "2026.01.15", label: "NEWS", title: "LARME 067 記念イベント開催決定！" },
-      { id: 3, date: "2025.12.17", label: "OTHER", title: "michelMacaron × 高嶺のなでしこ 誌面タイアップ" },
-    ];
-
-    const PRODUCERS = [
-      { id: 1, rank: 1, name: "たかひろ", value: "85,400 pt", title: "👑 筆頭プロデューサー", iconColor: "from-yellow-400 to-yellow-600", oshi: "星野 きらら" },
-      { id: 2, rank: 2, name: "ゆうき@きらら推し", value: "72,100 pt", title: "✨ 敏腕プロデューサー", iconColor: "from-blue-400 to-blue-600", oshi: "星野 きらら" },
-      { id: 3, rank: 3, name: "Kazu", value: "54,800 pt", title: "🌟 敏腕プロデューサー", iconColor: "from-green-400 to-green-600", oshi: "星野 きらら" },
-    ];
-
-    const SectionTitle = ({ title, subtitle, iconClass }) => (
-      <div className="text-center mb-10">
-        <div className="flex justify-center items-center gap-2 mb-2 text-pink-500 drop-shadow-sm">
-          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
-          {iconClass && <i className={`${iconClass} text-2xl`}></i>}
-          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
-        </div>
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif tracking-wide drop-shadow-sm">
-          {title}
-        </h2>
-        {subtitle && <p className="text-gray-700 mt-2 text-sm md:text-base font-medium drop-shadow-md">{subtitle}</p>}
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in">
+      <button onClick={onBack} className="mb-8 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 shadow-sm border border-pink-100">
+        <i className="fa-solid fa-arrow-left"></i> トップに戻る
+      </button>
+      
+      <SectionTitle title="ALL IDOLS" subtitle="あいうえお順で見つける、あなたの推し" iconClass="fa-solid fa-address-book" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedIdols.map((idol) => (
+          <div 
+            key={idol.id} 
+            onClick={() => onIdolSelect(idol)}
+            className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-white shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all group"
+          >
+            <div className="w-20 h-20 rounded-xl overflow-hidden border-2 border-pink-100 flex-shrink-0">
+              <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e)=>e.target.src='https://via.placeholder.com/200/fdf2f8/db2777?text=IDOL'} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-bold text-gray-800 text-lg">{idol.name}</h3>
+                <span className="text-[10px] bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-bold">{idol.type}</span>
+              </div>
+              <p className="text-xs text-gray-500 line-clamp-1 italic">"{idol.catchphrase}"</p>
+              <div className="flex gap-2 mt-2">
+                <span className="text-[10px] text-gray-400 font-bold"><i className="fa-solid fa-location-dot mr-1"></i>{idol.pref}</span>
+                <span className="text-[10px] text-gray-400 font-bold"><i className="fa-solid fa-ribbon mr-1"></i>{idol.style}</span>
+              </div>
+            </div>
+            <i className="fa-solid fa-chevron-right text-pink-200 group-hover:text-pink-400 transition-colors pr-2"></i>
+          </div>
+        ))}
       </div>
-    );
+    </div>
+  );
+};
 
-    const IdolDetailView = ({ idol, onBack }) => {
-      const [copySuccess, setCopySuccess] = useState(false);
-      const handleCopyTemplate = () => {
-        const templateText = `私がプロデュースしている【${idol.name}】ちゃん！\n"${idol.catchphrase}"\n\n『もしも私が、アイドルになったら。』\nみんなもプロデューサーになって一緒に応援してね✨\n\n#もしアイ #アイドルオーディション #${idol.name}\nhttps://moshi-ai.example.com`;
-        const textArea = document.createElement("textarea");
-        textArea.value = templateText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-          document.execCommand('copy');
-          setCopySuccess(true);
-          setTimeout(() => setCopySuccess(false), 2500);
-        } catch (err) { console.error('コピーに失敗しました', err); }
-        document.body.removeChild(textArea);
-      };
+// --- 詳細表示用コンポーネント ---
+const IdolDetailView = ({ idol, onBack }) => {
+  const [copySuccess, setCopySuccess] = useState(false);
+  
+  const relatedArticles = useMemo(() => {
+    return TOPICS_DATA.filter(topic => topic.title.includes(idol.name));
+  }, [idol.name]);
 
-      return (
-        <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
-          <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 backdrop-blur-sm shadow-sm">
-            <i className="fa-solid fa-arrow-left"></i> 一覧に戻る
-          </button>
-          
-          <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative text-center">
-            <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100 aspect-[3/4] sm:aspect-[4/5] mx-auto">
-              {idol.titleBadge && (
-                <div className="absolute top-3 right-3 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform rotate-6 border-2 border-white z-20 flex items-center gap-1">
-                  <i className="fa-solid fa-crown text-[10px]"></i> {idol.titleBadge}
-                </div>
-              )}
-              {idol.videoUrl ? (
-                <video src={idol.videoUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline></video>
-              ) : (
-                <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-              )}
-              <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-pink-100 text-pink-300"><i className="fa-solid fa-camera text-4xl"></i></div>
-              <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 text-left">
-                <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
-              </div>
+  const handleCopyTemplate = () => {
+    const templateText = `私がプロデュースしている【${idol.name}】ちゃん！\n"${idol.catchphrase}"\n\n『もしも私が、アイドルになったら。』\nみんなもプロデューサーになって一緒に応援してね✨\n\n#もしアイ #アイドルオーディション #${idol.name}\nhttps://moshi-ai.example.com`;
+    const textArea = document.createElement("textarea");
+    textArea.value = templateText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2500);
+    } catch (err) { console.error('コピーに失敗しました', err); }
+    document.body.removeChild(textArea);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up pb-32">
+      <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 backdrop-blur-sm shadow-sm border border-pink-100">
+        <i className="fa-solid fa-arrow-left"></i> 前の画面に戻る
+      </button>
+      
+      <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative text-center">
+        <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100 aspect-[3/4] sm:aspect-[4/5] mx-auto">
+          {idol.titleBadge && (
+            <div className="absolute top-3 right-3 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform rotate-6 border-2 border-white z-20 flex items-center gap-1">
+              <i className="fa-solid fa-crown text-[10px]"></i> {idol.titleBadge}
             </div>
-            <div className="flex justify-around items-center mt-6 mb-2">
-              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">順位</p><p className="text-xl md:text-2xl font-bold text-pink-500 font-serif">12位</p></div>
-              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">ポイント</p><p className="text-xl md:text-2xl font-bold text-purple-500 font-serif">12,450pt</p></div>
-              <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">プロデューサー</p><p className="text-xl md:text-2xl font-bold text-blue-500 font-serif">{idol.producerCount}人</p></div>
-            </div>
-          </div>
-
-          <div className="text-center mb-6 px-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2 font-serif">{idol.name}</h1>
-            <p className="text-pink-600 font-bold text-sm bg-white/80 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full mb-4 shadow-sm border border-pink-100">"{idol.catchphrase}"</p>
-          </div>
-
-          <div className="mb-6 relative px-2">
-            <button onClick={handleCopyTemplate} className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 text-white py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-3 font-bold hover:opacity-90 transition-all transform hover:-translate-y-1">
-              <div className="flex gap-1.5"><i className="fa-brands fa-instagram text-xl"></i><i className="fa-brands fa-tiktok text-xl"></i></div>
-              <span>拡散用テンプレートをコピー</span>
-            </button>
-            {copySuccess && (
-              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-lg animate-fade-in shadow-xl whitespace-nowrap z-50 flex items-center gap-2">
-                <i className="fa-solid fa-check text-green-400"></i> コピーしました！
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 mb-10 px-2">
-            <button className="flex-1 bg-pink-500 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-heart mb-1"></i><span className="text-[10px] font-bold">投票</span></button>
-            <button className="flex-1 bg-amber-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-gift mb-1"></i><span className="text-[10px] font-bold">ギフト</span></button>
-            <button className="flex-1 bg-blue-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center"><i className="fa-solid fa-share-nodes mb-1"></i><span className="text-[10px] font-bold">シェア</span></button>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-3">私の物語</h3>
-            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap bg-pink-50/30 p-4 rounded-2xl border border-pink-50">{idol.story}</p>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-10">
-            <div className="flex justify-between items-end mb-4 border-b border-pink-100 pb-2">
-              <h3 className="text-lg font-bold text-gray-800 border-l-4 border-blue-500 pl-3">プロデューサー陣</h3>
-              <span className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-200 shadow-sm">パトロン総数: {idol.producerCount} 人</span>
-            </div>
-            <div className="space-y-3">
-              {idol.topProducers.map((p, index) => (
-                <div key={index} className="flex items-center justify-between bg-gradient-to-r from-blue-50/50 to-transparent p-3 rounded-2xl border border-blue-50/50 hover:bg-blue-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm font-bold text-sm border-2 border-white ${index === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 'bg-gradient-to-br from-orange-300 to-orange-500'}`}>
-                      {index === 0 ? <i className="fa-solid fa-crown text-xs"></i> : index + 1}
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-gray-500 leading-none mb-1">{index === 0 ? 'エグゼクティブ・プロデューサー' : 'トップ・プロデューサー'}</p>
-                      <span className="font-bold text-gray-800 text-sm">{p.name}</span>
-                    </div>
-                  </div>
-                  <span className="text-sm font-mono font-bold text-blue-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-blue-100">{p.pt}</span>
-                </div>
-              ))}
-            </div>
+          )}
+          {idol.videoUrl ? (
+            <video src={idol.videoUrl} className="w-full h-full object-cover" autoPlay muted loop playsInline></video>
+          ) : (
+            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+          )}
+          <div style={{display: 'none'}} className="w-full h-full flex items-center justify-center bg-pink-100 text-pink-300"><i className="fa-solid fa-camera text-4xl"></i></div>
+          <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 text-left">
+            <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
           </div>
         </div>
-      );
-    };
-
-    const ProducerDetailView = ({ producer, onBack }) => (
-      <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
-        <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full bg-white/80 shadow-sm"><i className="fa-solid fa-arrow-left"></i> 戻る</button>
-        <div className="bg-white/90 rounded-3xl p-6 shadow-sm border text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-24 bg-gray-900"></div>
-          <div className={`w-24 h-24 mx-auto rounded-full mb-4 shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-4 border-white relative z-10`}><i className="fa-solid fa-user-tie text-4xl text-white"></i></div>
-          <div className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full mb-2">{producer.title}</div>
-          <h2 className="text-2xl font-bold text-gray-800">{producer.name}</h2>
-          <p className="text-gray-500 text-sm mb-4">推しメン: <span className="font-bold text-pink-500">{producer.oshi}</span></p>
-          <div className="bg-gray-50/80 rounded-2xl p-4 inline-block min-w-[200px]"><p className="text-xs font-bold mb-1">累計応援ポイント</p><p className="text-2xl font-bold text-purple-500 font-serif">{producer.value}</p></div>
+        <div className="flex justify-around items-center mt-6 mb-2">
+          <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">順位</p><p className="text-xl md:text-2xl font-bold text-pink-500 font-serif">12位</p></div>
+          <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">ポイント</p><p className="text-xl md:text-2xl font-bold text-purple-500 font-serif">12,450pt</p></div>
+          <div className="text-center"><p className="text-[10px] text-gray-500 font-bold">プロデューサー</p><p className="text-xl md:text-2xl font-bold text-blue-500 font-serif">{idol.producerCount}人</p></div>
         </div>
       </div>
-    );
 
-    function App() {
-      const [activeTab, setActiveTab] = useState('home'); 
-      const [selectedIdol, setSelectedIdol] = useState(null);
-      const [selectedProducer, setSelectedProducer] = useState(null);
-      const [eventTab, setEventTab] = useState('ranking'); 
-      const [activeRankingTab, setActiveRankingTab] = useState('overall');
-      const [idolSearchText, setIdolSearchText] = useState('');
-      const [idolFilterType, setIdolFilterType] = useState('all'); 
-      const [idolFilterPref, setIdolFilterPref] = useState('東京'); 
-      const [idolFilterStyle, setIdolFilterStyle] = useState('王道キュート'); 
+      <div className="text-center mb-6 px-4">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2 font-serif">{idol.name}</h1>
+        <p className="text-pink-600 font-bold text-sm bg-white/80 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full mb-4 shadow-sm border border-pink-100">"{idol.catchphrase}"</p>
+      </div>
 
-      const uniquePrefs = useMemo(() => [...new Set(IDOLS.map(i => i.pref))], []);
-      const uniqueStyles = useMemo(() => [...new Set(IDOLS.map(i => i.style))], []);
+      <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-pink-500 pl-3">Profile</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-pink-50/50 p-3 rounded-2xl flex flex-col items-center">
+            <i className="fa-solid fa-cake-candles text-pink-400 mb-1"></i>
+            <p className="text-[10px] text-gray-400 font-bold">生年月日</p>
+            <p className="text-xs font-bold text-gray-700">{idol.birthday}</p>
+          </div>
+          <div className="bg-pink-50/50 p-3 rounded-2xl flex flex-col items-center">
+            <i className="fa-solid fa-map-pin text-pink-400 mb-1"></i>
+            <p className="text-[10px] text-gray-400 font-bold">出身地</p>
+            <p className="text-xs font-bold text-gray-700">{idol.hometown}</p>
+          </div>
+          <div className="bg-pink-50/50 p-3 rounded-2xl flex flex-col items-center">
+            <i className="fa-solid fa-star text-pink-400 mb-1"></i>
+            <p className="text-[10px] text-gray-400 font-bold">特技</p>
+            <p className="text-xs font-bold text-gray-700">{idol.specialSkill}</p>
+          </div>
+        </div>
+      </div>
 
-      const filteredIdols = useMemo(() => {
-        return IDOLS.filter(idol => {
-          if (idolSearchText && !idol.name.includes(idolSearchText)) return false;
-          if (idolFilterType === 'rookie' && !idol.isRookie) return false;
-          if (idolFilterType === 'pref' && idol.pref !== idolFilterPref) return false;
-          if (idolFilterType === 'style' && idol.style !== idolFilterStyle) return false;
-          return true;
-        });
-      }, [idolSearchText, idolFilterType, idolFilterPref, idolFilterStyle]);
+      <div className="mb-6 relative px-2">
+        <button onClick={handleCopyTemplate} className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-rose-400 text-white py-3.5 rounded-2xl shadow-md flex items-center justify-center gap-3 font-bold hover:opacity-90 transition-all transform hover:-translate-y-1">
+          <div className="flex gap-1.5"><i className="fa-brands fa-instagram text-xl"></i><i className="fa-brands fa-tiktok text-xl"></i></div>
+          <span>拡散用テンプレートをコピー</span>
+        </button>
+        {copySuccess && (
+          <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs font-bold px-4 py-2 rounded-lg animate-fade-in shadow-xl whitespace-nowrap z-50 flex items-center gap-2">
+            <i className="fa-solid fa-check text-green-400"></i> コピーしました！
+          </div>
+        )}
+      </div>
 
-      const openIdolDetail = (idol) => { setSelectedIdol(idol); setActiveTab('idolDetail'); window.scrollTo(0,0); };
-      const openProducerDetail = (producer) => { setSelectedProducer(producer); setActiveTab('producerDetail'); window.scrollTo(0,0); };
-      const scrollToSection = (id) => { if(activeTab !== 'home') setActiveTab('home'); setTimeout(() => { const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100); };
+      <div className="grid grid-cols-3 gap-2 mb-8 px-2">
+        <button className="flex-1 bg-pink-500 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"><i className="fa-solid fa-heart mb-1"></i><span className="text-[10px] font-bold">投票</span></button>
+        <button className="flex-1 bg-amber-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"><i className="fa-solid fa-gift mb-1"></i><span className="text-[10px] font-bold">ギフト</span></button>
+        <button className="flex-1 bg-blue-400 text-white py-3 rounded-2xl shadow-lg flex flex-col items-center hover:scale-105 active:scale-95 transition-transform"><i className="fa-solid fa-share-nodes mb-1"></i><span className="text-[10px] font-bold">シェア</span></button>
+      </div>
 
-      return (
-        <div className="pb-24">
-          <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-sm py-2">
-            <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
-                <img src="./logo.png" alt="もしアイ" className="h-14 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                <span style={{display: 'none'}} className="text-xl font-bold text-pink-500 font-serif">もしアイ</span>
+      <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+        <h3 className="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-3">私の物語</h3>
+        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap bg-pink-50/30 p-4 rounded-2xl border border-pink-50">{idol.story}</p>
+      </div>
+
+      {relatedArticles.length > 0 && (
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">{idol.name} の関連記事</h3>
+          <div className="space-y-3">
+            {relatedArticles.map(topic => (
+              <div key={topic.id} className="flex gap-3 items-center p-3 hover:bg-blue-50 rounded-2xl cursor-pointer transition-colors border border-transparent hover:border-blue-100 group">
+                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-500 flex-shrink-0">
+                  <i className="fa-solid fa-newspaper text-xl"></i>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] text-gray-400 font-bold mb-0.5">{topic.date} | <span className="text-blue-500">{topic.label}</span></p>
+                  <h4 className="text-xs font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">{topic.title}</h4>
+                </div>
+                <i className="fa-solid fa-chevron-right text-gray-200 group-hover:text-blue-400 text-xs"></i>
               </div>
-              <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-                {['HOME', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
-                  <button key={item} onClick={() => {
-                    if(item === 'MAGAZINE') scrollToSection('magazine');
-                    else scrollToSection(item.toLowerCase().replace(' ', '-'));
-                  }} className="hover:text-pink-500 transition-colors uppercase font-bold tracking-wider">{item}</button>
-                ))}
-              </nav>
-            </div>
-          </header>
+            ))}
+          </div>
+        </div>
+      )}
 
-          <main className="pt-24">
-            {activeTab === 'idolDetail' && selectedIdol ? (
-              <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} />
-            ) : activeTab === 'producerDetail' && selectedProducer ? (
-              <ProducerDetailView producer={selectedProducer} onBack={() => setActiveTab('home')} />
-            ) : (
-              <div className="animate-fade-in">
-                
-                {/* HERO SECTION */}
-                <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
-                  <div className="flex flex-col items-center">
-                    <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
-                    <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md mb-10" onError={(e) => e.target.style.display='none'} />
-                    <div className="w-full max-w-6xl overflow-hidden relative group">
-                       <div className="flex gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 pb-10">
-                         {BANNERS.map(banner => (
-                           <div key={banner.id} className="flex-shrink-0 w-[85%] md:w-[45%] snap-center">
-                             <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-lg border-4 border-white mb-4 transition-transform hover:scale-[1.02]">
-                               <img src={banner.image} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://via.placeholder.com/800x450/fdf2f8/db2777?text=Banner+Image'; }} />
-                               <div className="absolute top-4 left-4">
-                                 <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{banner.label}</span>
-                               </div>
-                             </div>
-                             <div className="text-left px-4">
-                               <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight mb-1">{banner.title}</h3>
-                               <p className="text-xs md:text-sm text-gray-500 font-medium mb-3">{banner.subtitle}</p>
-                               <button className="flex items-center gap-1.5 text-pink-500 font-bold text-xs hover:gap-3 transition-all">
-                                 {banner.linkText} <i className="fa-solid fa-arrow-right-long"></i>
-                               </button>
-                             </div>
+      <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-10">
+        <div className="flex justify-between items-end mb-4 border-b border-pink-100 pb-2">
+          <h3 className="text-lg font-bold text-gray-800 border-l-4 border-amber-500 pl-3">プロデューサー陣</h3>
+          <span className="text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full border border-blue-200 shadow-sm">パトロン総数: {idol.producerCount} 人</span>
+        </div>
+        <div className="space-y-3">
+          {idol.topProducers.map((p, index) => (
+            <div key={index} className="flex items-center justify-between bg-gradient-to-r from-amber-50/30 to-transparent p-3 rounded-2xl border border-amber-50/50">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm font-bold text-sm border-2 border-white ${index === 0 ? 'bg-gradient-to-br from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' : 'bg-gradient-to-br from-orange-300 to-orange-500'}`}>
+                  {index === 0 ? <i className="fa-solid fa-crown text-xs"></i> : index + 1}
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-gray-500 leading-none mb-1">{index === 0 ? 'エグゼクティブ・プロデューサー' : 'トップ・プロデューサー'}</p>
+                  <span className="font-bold text-gray-800 text-sm">{p.name}</span>
+                </div>
+              </div>
+              <span className="text-sm font-mono font-bold text-blue-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-blue-100">{p.pt}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- プロデューサー詳細 ---
+const ProducerDetailView = ({ producer, onBack }) => (
+  <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
+    <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full bg-white/80 shadow-sm"><i className="fa-solid fa-arrow-left"></i> 戻る</button>
+    <div className="bg-white/90 rounded-3xl p-6 shadow-sm border text-center relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-24 bg-gray-900"></div>
+      <div className={`w-24 h-24 mx-auto rounded-full mb-4 shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-4 border-white relative z-10`}><i className="fa-solid fa-user-tie text-4xl text-white"></i></div>
+      <div className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full mb-2">{producer.title}</div>
+      <h2 className="text-2xl font-bold text-gray-800">{producer.name}</h2>
+      <p className="text-gray-500 text-sm mb-4">推しメン: <span className="font-bold text-pink-500">{producer.oshi}</span></p>
+      <div className="bg-gray-50/80 rounded-2xl p-4 inline-block min-w-[200px]"><p className="text-xs font-bold mb-1">累計応援ポイント</p><p className="text-2xl font-bold text-purple-500 font-serif">{producer.value}</p></div>
+    </div>
+  </div>
+);
+
+function App() {
+  const [activeTab, setActiveTab] = useState('home'); 
+  const [selectedIdol, setSelectedIdol] = useState(null);
+  const [selectedProducer, setSelectedProducer] = useState(null);
+  const [eventTab, setEventTab] = useState('ranking'); 
+  const [activeRankingTab, setActiveRankingTab] = useState('overall');
+  const [idolSearchText, setIdolSearchText] = useState('');
+  const [idolFilterType, setIdolFilterType] = useState('all'); 
+  const [idolFilterPref, setIdolFilterPref] = useState('東京'); 
+  const [idolFilterStyle, setIdolFilterStyle] = useState('王道キュート'); 
+
+  const uniquePrefs = useMemo(() => [...new Set(IDOLS.map(i => i.pref))], []);
+  const uniqueStyles = useMemo(() => [...new Set(IDOLS.map(i => i.style))], []);
+
+  const filteredIdols = useMemo(() => {
+    return IDOLS.filter(idol => {
+      if (idolSearchText && !idol.name.includes(idolSearchText)) return false;
+      if (idolFilterType === 'rookie' && !idol.isRookie) return false;
+      if (idolFilterType === 'pref' && idol.pref !== idolFilterPref) return false;
+      if (idolFilterType === 'style' && idol.style !== idolFilterStyle) return false;
+      return true;
+    });
+  }, [idolSearchText, idolFilterType, idolFilterPref, idolFilterStyle]);
+
+  const openIdolDetail = (idol) => { setSelectedIdol(idol); setActiveTab('idolDetail'); window.scrollTo(0,0); };
+  const openProducerDetail = (producer) => { setSelectedProducer(producer); setActiveTab('producerDetail'); window.scrollTo(0,0); };
+  const scrollToSection = (id) => { if(activeTab !== 'home') setActiveTab('home'); setTimeout(() => { const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100); };
+
+  return (
+    <div className="pb-24">
+      <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-sm py-2">
+        <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
+            <img src="./logo.png" alt="もしアイ" className="h-14 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+            <span style={{display: 'none'}} className="text-xl font-bold text-pink-500 font-serif">もしアイ</span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
+            {['HOME', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
+              <button key={item} onClick={() => {
+                if(item === 'MAGAZINE') scrollToSection('magazine');
+                else scrollToSection(item.toLowerCase().replace(' ', '-'));
+              }} className="hover:text-pink-500 transition-colors uppercase font-bold tracking-wider">{item}</button>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main className="pt-24">
+        {activeTab === 'idolDetail' && selectedIdol ? (
+          <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} />
+        ) : activeTab === 'allIdolsList' ? (
+          <AllIdolsView onBack={() => setActiveTab('home')} onIdolSelect={openIdolDetail} />
+        ) : activeTab === 'producerDetail' && selectedProducer ? (
+          <ProducerDetailView producer={selectedProducer} onBack={() => setActiveTab('home')} />
+        ) : (
+          <div className="animate-fade-in">
+            
+            {/* HERO SECTION */}
+            <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
+              <div className="flex flex-col items-center">
+                <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
+                <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md mb-10" onError={(e) => e.target.style.display='none'} />
+                <div className="w-full max-w-6xl overflow-hidden relative group">
+                   <div className="flex gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 pb-10">
+                     {BANNERS.map(banner => (
+                       <div key={banner.id} className="flex-shrink-0 w-[85%] md:w-[45%] snap-center">
+                         <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-lg border-4 border-white mb-4 transition-transform hover:scale-[1.02]">
+                           <img src={banner.image} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://via.placeholder.com/800x450/fdf2f8/db2777?text=Banner+Image'; }} />
+                           <div className="absolute top-4 left-4">
+                             <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{banner.label}</span>
                            </div>
-                         ))}
+                         </div>
+                         <div className="text-left px-4">
+                           <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight mb-1">{banner.title}</h3>
+                           <p className="text-xs md:text-sm text-gray-500 font-medium mb-3">{banner.subtitle}</p>
+                           <button className="flex items-center gap-1.5 text-pink-500 font-bold text-xs hover:gap-3 transition-all">
+                             {banner.linkText} <i className="fa-solid fa-arrow-right-long"></i>
+                           </button>
+                         </div>
                        </div>
-                    </div>
-                  </div>
-                </section>
+                     ))}
+                   </div>
+                </div>
+              </div>
+            </section>
 
-                {/* IDOL CARD SLIDER */}
-                <section id="idol-slider" className="py-8 bg-white/20 backdrop-blur-sm border-y border-white/50 mb-10">
-                  <div className="max-w-6xl mx-auto">
-                    <div className="flex items-center gap-2 px-6 mb-4">
-                      <i className="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
-                      <h2 className="text-lg font-bold text-gray-800 font-serif uppercase tracking-widest">Pick Up Idols</h2>
-                    </div>
-                    <div className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-4">
-                      {IDOLS.map((idol, i) => (
-                        <div key={idol.id} className="w-48 shrink-0 relative rounded-3xl overflow-hidden shadow-lg group bg-white border border-white">
-                          {idol.titleBadge && (
-                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[8px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
-                              <i className="fa-solid fa-crown"></i>
-                            </div>
-                          )}
-                          <div className="aspect-[2/3] overflow-hidden relative">
-                            {idol.videoUrl ? (
-                              <video src={idol.videoUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" autoPlay muted loop playsInline></video>
-                            ) : (
-                              <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                            )}
-                          </div>
-                          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
-                            <h3 className="font-bold text-base mb-1">{idol.name}</h3>
-                            <p className="text-[10px] opacity-90 line-clamp-1 mb-3">"{idol.catchphrase}"</p>
-                            <button onClick={() => openIdolDetail(idol)} className="w-full py-1.5 bg-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center gap-1 shadow-inner">
-                              <i className="fa-solid fa-heart"></i> プロデュースする
-                            </button>
-                          </div>
+            {/* IDOL CARD SLIDER */}
+            <section id="idol-slider" className="py-8 bg-white/20 backdrop-blur-sm border-y border-white/50 mb-10">
+              <div className="max-w-6xl mx-auto">
+                <div className="flex items-center gap-2 px-6 mb-4">
+                  <i className="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
+                  <h2 className="text-lg font-bold text-gray-800 font-serif uppercase tracking-widest">Pick Up Idols</h2>
+                </div>
+                <div className="flex gap-4 overflow-x-auto hide-scrollbar px-6 pb-4">
+                  {IDOLS.map((idol, i) => (
+                    <div key={idol.id} className="w-48 shrink-0 relative rounded-3xl overflow-hidden shadow-lg group bg-white border border-white">
+                      {idol.titleBadge && (
+                        <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[8px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20">
+                          <i className="fa-solid fa-crown"></i>
                         </div>
+                      )}
+                      <div className="aspect-[2/3] overflow-hidden relative">
+                        {idol.videoUrl ? (
+                          <video src={idol.videoUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" autoPlay muted loop playsInline></video>
+                        ) : (
+                          <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        )}
+                      </div>
+                      <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+                        <h3 className="font-bold text-base mb-1">{idol.name}</h3>
+                        <p className="text-[10px] opacity-90 line-clamp-1 mb-3">"{idol.catchphrase}"</p>
+                        <button onClick={() => openIdolDetail(idol)} className="w-full py-1.5 bg-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center gap-1 shadow-inner">
+                          <i className="fa-solid fa-heart"></i> プロデュースする
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* TOPICS SECTION */}
+            <section id="topics" className="py-12 max-w-6xl mx-auto px-4">
+              <div className="text-center mb-10"><h2 className="text-4xl font-serif text-gray-800 uppercase tracking-widest drop-shadow-sm">Topics</h2></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {TOPICS_DATA.map((topic) => (
+                  <div key={topic.id} className="group cursor-pointer">
+                    <div className="relative overflow-hidden rounded-2xl mb-4 shadow-sm bg-white/80 aspect-[16/10] border border-white p-1">
+                      <img src={`./topic${topic.id}.png`} className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/400x250/fdf2f8/db2777?text=NEWS'} />
+                    </div>
+                    <div className="px-1 text-[10px] font-bold text-gray-400 mb-1">{topic.date} | <span className="text-pink-500 font-bold">{topic.label}</span></div>
+                    <h3 className="font-bold text-gray-800 text-sm md:text-base leading-tight group-hover:text-pink-500 transition-colors">{topic.title}</h3>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* EVENT DASHBOARD */}
+            <section id="ranking" className="py-16 max-w-6xl mx-auto px-4">
+              <SectionTitle title="EVENT DASHBOARD" subtitle="最新の戦況とイベント詳細を確認" iconClass="fa-solid fa-trophy" />
+              
+              <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-1 mb-10 shadow-sm border border-white max-w-lg mx-auto">
+                {[
+                  {id: 'ranking', label: 'ランキング', icon: 'fa-list-ol'},
+                  {id: 'about', label: '概要', icon: 'fa-circle-info'},
+                  {id: 'benefits', label: '特典', icon: 'fa-gift'}
+                ].map(t => (
+                  <button key={t.id} onClick={() => setEventTab(t.id)} className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${eventTab === t.id ? 'bg-pink-500 text-white shadow-md' : 'text-gray-500 hover:text-pink-500'}`}>
+                    <i className={`fa-solid ${t.icon}`}></i> {t.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="animate-fade-in min-h-[400px]">
+                {eventTab === 'ranking' && (
+                  <div className="space-y-8 animate-fade-in-up">
+                    <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar justify-center">
+                      {RANKING_TABS.map(tab => (
+                        <button key={tab.id} onClick={() => setActiveRankingTab(tab.id)} className={`px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap transition-all border-2 ${activeRankingTab === tab.id ? 'bg-pink-500 text-white border-pink-500 shadow-sm transform scale-105' : 'bg-white/80 text-gray-500 border-white hover:border-pink-200'}`}>
+                          <i className={`fa-solid ${tab.icon} mr-2`}></i>{tab.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12" key={activeRankingTab}>
+                      {(RANKING_DATA[activeRankingTab] || []).map((item, index) => (
+                          <div key={index} onClick={() => {const idol=IDOLS.find(i=>i.id===item.idolId); if(idol) openIdolDetail(idol)}} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
+                            <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-md z-30 ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-gray-300' : 'bg-orange-300'}`}>{item.rank}</div>
+                            <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/30 backdrop-blur-sm p-1">
+                              <img src="./rank_frame.png" className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'; }} />
+                              <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
+                                  <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover animate-slow-zoom" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'} />
+                              </div>
+                            </div>
+                            <div className="text-center mt-4"><h4 className="font-bold text-lg text-gray-800 mb-1 drop-shadow-sm">{item.name}</h4><p className="text-pink-600 font-mono font-bold text-sm">{item.value}</p></div>
+                          </div>
                       ))}
                     </div>
                   </div>
-                </section>
+                )}
 
-                {/* TOPICS SECTION (復元) */}
-                <section id="topics" className="py-12 max-w-6xl mx-auto px-4">
-                  <div className="text-center mb-10"><h2 className="text-4xl font-serif text-gray-800 uppercase tracking-widest drop-shadow-sm">Topics</h2></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {TOPICS_DATA.map((topic) => (
-                      <div key={topic.id} className="group cursor-pointer">
-                        <div className="relative overflow-hidden rounded-2xl mb-4 shadow-sm bg-white/80 aspect-[16/10] border border-white p-1">
-                          <img src={`./topic${topic.id}.png`} className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/400x250/fdf2f8/db2777?text=NEWS'} />
+                {eventTab === 'about' && (
+                  <div className="max-w-4xl mx-auto space-y-10 animate-fade-in-up">
+                    <div className="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-sm">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                        <span className="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                        ランキングの概要
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-pink-50/50 p-6 rounded-3xl border border-pink-100">
+                          <div className="flex items-center gap-3 mb-3 text-pink-600">
+                            <i className="fa-solid fa-bolt-lightning text-xl"></i>
+                            <h4 className="font-bold">リアルタイム変動</h4>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">応援ポイントによって順位はリアルタイムで変動。最後の1秒まで目が離せません！</p>
                         </div>
-                        <div className="px-1 text-[10px] font-bold text-gray-400 mb-1">{topic.date} | <span className="text-pink-500 font-bold">{topic.label}</span></div>
-                        <h3 className="font-bold text-gray-800 text-sm md:text-base leading-tight group-hover:text-pink-500 transition-colors">{topic.title}</h3>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* EVENT DASHBOARD */}
-                <section id="ranking" className="py-16 max-w-6xl mx-auto px-4">
-                  <SectionTitle title="EVENT DASHBOARD" subtitle="最新の戦況とイベント詳細を確認" iconClass="fa-solid fa-trophy" />
-                  
-                  <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-1 mb-10 shadow-sm border border-white max-w-lg mx-auto">
-                    {[
-                      {id: 'ranking', label: 'ランキング', icon: 'fa-list-ol'},
-                      {id: 'about', label: '概要', icon: 'fa-circle-info'},
-                      {id: 'benefits', label: '特典', icon: 'fa-gift'}
-                    ].map(t => (
-                      <button key={t.id} onClick={() => setEventTab(t.id)} className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${eventTab === t.id ? 'bg-pink-500 text-white shadow-md' : 'text-gray-500 hover:text-pink-500'}`}>
-                        <i className={`fa-solid ${t.icon}`}></i> {t.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="animate-fade-in min-h-[400px]">
-                    {eventTab === 'ranking' && (
-                      <div className="space-y-8 animate-fade-in-up">
-                        <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar justify-center">
-                          {RANKING_TABS.map(tab => (
-                            <button key={tab.id} onClick={() => setActiveRankingTab(tab.id)} className={`px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap transition-all border-2 ${activeRankingTab === tab.id ? 'bg-pink-500 text-white border-pink-500 shadow-sm transform scale-105' : 'bg-white/80 text-gray-500 border-white hover:border-pink-200'}`}>
-                              <i className={`fa-solid ${tab.icon} mr-2`}></i>{tab.label}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12" key={activeRankingTab}>
-                          {(RANKING_DATA[activeRankingTab] || []).map((item, index) => (
-                              <div key={index} onClick={() => {const idol=IDOLS.find(i=>i.id===item.idolId); if(idol) openIdolDetail(idol)}} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
-                                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-md z-30 ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-gray-300' : 'bg-orange-300'}`}>{item.rank}</div>
-                                <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/30 backdrop-blur-sm p-1">
-                                  <img src="./rank_frame.png" className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'; }} />
-                                  <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
-                                      <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover animate-slow-zoom" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'} />
-                                  </div>
-                                </div>
-                                <div className="text-center mt-4"><h4 className="font-bold text-lg text-gray-800 mb-1 drop-shadow-sm">{item.name}</h4><p className="text-pink-600 font-mono font-bold text-sm">{item.value}</p></div>
-                              </div>
-                          ))}
+                        <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
+                          <div className="flex items-center gap-3 mb-3 text-blue-600">
+                            <i className="fa-solid fa-users text-xl"></i>
+                            <h4 className="font-bold">プロデューサー数（支持層）</h4>
+                          </div>
+                          <p className="text-sm text-gray-600 leading-relaxed">ポイントだけでなく、「何人のファンに愛されているか」も重要な評価指標。支持層の厚さでトップを目指しましょう。</p>
                         </div>
                       </div>
-                    )}
-
-                    {eventTab === 'about' && (
-                      <div className="max-w-4xl mx-auto space-y-10 animate-fade-in-up">
-                        <div className="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-sm">
-                          <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                            <span className="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
-                            ランキングの概要
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-pink-50/50 p-6 rounded-3xl border border-pink-100">
-                              <div className="flex items-center gap-3 mb-3 text-pink-600">
-                                <i className="fa-solid fa-bolt-lightning text-xl"></i>
-                                <h4 className="font-bold">リアルタイム変動</h4>
-                              </div>
-                              <p className="text-sm text-gray-600 leading-relaxed">応援ポイントによって順位はリアルタイムで変動。最後の1秒まで目が離せません！</p>
-                            </div>
-                            <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
-                              <div className="flex items-center gap-3 mb-3 text-blue-600">
-                                <i className="fa-solid fa-users text-xl"></i>
-                                <h4 className="font-bold">プロデューサー数（支持層）</h4>
-                              </div>
-                              <p className="text-sm text-gray-600 leading-relaxed">ポイントだけでなく、「何人のファンに愛されているか」も重要な評価指標。支持層の厚さでトップを目指しましょう。</p>
-                            </div>
-                          </div>
-                          <div className="mt-8">
-                            <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><i className="fa-solid fa-star text-amber-400"></i> 多彩なカテゴリー</h4>
-                            <div className="flex flex-wrap gap-2">
-                              {['総合', '都道府県別', '系統別(王道/K-POP等)', '新人', 'アパレルモデル枠', '表紙争奪戦'].map(cat => (
-                                <span key={cat} className="bg-white px-4 py-2 rounded-full text-xs font-bold text-gray-600 border border-gray-100 shadow-sm">{cat}</span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                          <div className="absolute top-0 right-0 p-8 opacity-10"><i className="fa-solid fa-fire-flame-curved text-9xl"></i></div>
-                          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                            <span className="bg-white text-indigo-900 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                            自力で大逆転！システム
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                            <div className="space-y-6">
-                              <div>
-                                <div className="flex justify-between items-end mb-2">
-                                  <h4 className="font-bold flex items-center gap-2"><i className="fa-solid fa-seedling text-green-400"></i> 努力ゲージ</h4>
-                                  <span className="text-xs font-bold text-green-400">MAXでフィーバー！</span>
-                                </div>
-                                <div className="h-4 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/20">
-                                  <div className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full w-[85%] shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
-                                </div>
-                              </div>
-                              <ul className="text-sm space-y-3 opacity-90">
-                                <li className="flex gap-3"><i className="fa-solid fa-camera mt-1"></i> <span><strong>自撮り投稿：</strong> 日々の活動報告でゲージUP</span></li>
-                                <li className="flex gap-3"><i className="fa-solid fa-comment-heart mt-1"></i> <span><strong>ファンへの神対応：</strong> 交流を深めてゲージ加速</span></li>
-                              </ul>
-                            </div>
-                            <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 text-center animate-fever shadow-2xl">
-                              <h4 className="text-3xl font-black italic tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-amber-500">FEVER TIME!!</h4>
-                              <p className="text-xs font-bold leading-relaxed">努力ゲージがMAXになると発動！<br/>獲得応援ポイントが最大<strong>2倍</strong>に爆増。<br/>あなたの頑張りでピンチをひっくり返せ！</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {eventTab === 'benefits' && (
-                      <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                          <div className="lg:col-span-12 bg-gradient-to-br from-amber-50 via-yellow-100 to-amber-200 p-8 rounded-[3rem] border-2 border-amber-300 shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
-                            <div className="absolute -right-4 -top-4 text-amber-500/10 text-[10rem] rotate-12 group-hover:rotate-0 transition-transform"><i className="fa-solid fa-crown"></i></div>
-                            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-                              <div className="text-center md:text-left">
-                                <span className="bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-md mb-4 inline-block">GRAND PRIX</span>
-                                <h3 className="text-4xl font-black text-amber-900 font-serif mb-2">SSランク</h3>
-                                <p className="text-amber-700 font-bold mb-4">総合1〜3位：雑誌表紙 & 4P巻頭特集</p>
-                              </div>
-                              <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {[
-                                  { icon: 'fa-book-open', text: '表紙&巻頭特集' },
-                                  { icon: 'fa-camera-retro', text: 'プロ撮り下ろし' },
-                                  { icon: 'fa-star', text: 'レギュラー就任' },
-                                  { icon: 'fa-shirt', text: 'アパレル公式モデル' },
-                                  { icon: 'fa-tv', text: '大型ビジョン広告' }
-                                ].map((item, i) => (
-                                  <div key={i} className="bg-white/60 backdrop-blur-sm p-3 rounded-2xl flex flex-col items-center text-center">
-                                    <i className={`fa-solid ${item.icon} text-amber-600 mb-1`}></i>
-                                    <span className="text-[10px] font-bold text-amber-900 leading-tight">{item.text}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:col-span-7 bg-white/90 p-8 rounded-[2.5rem] border border-pink-200 shadow-sm relative group overflow-hidden">
-                             <div className="absolute top-0 left-0 w-2 h-full bg-pink-500"></div>
-                             <h3 className="text-2xl font-bold text-pink-600 mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Sランク</h3>
-                             <p className="text-sm font-bold text-gray-500 mb-6">上位層 / TOP10：1ページフル特集</p>
-                             <ul className="space-y-4">
-                               <li className="flex items-start gap-3 bg-pink-50/50 p-3 rounded-2xl">
-                                 <i className="fa-solid fa-magic text-pink-500 mt-1"></i>
-                                 <p className="text-xs font-bold text-gray-700"><strong>完全プロデュース撮影会：</strong> プロのヘアメイク・スタイリストがあなたを別人に！</p>
-                               </li>
-                               <li className="flex items-start gap-3 bg-indigo-50/50 p-3 rounded-2xl">
-                                 <i className="fa-solid fa-mobile-screen text-indigo-500 mt-1"></i>
-                                 <p className="text-xs font-bold text-gray-700"><strong>誌面AR動画：</strong> スマホをかざすと写真が動き出す魔法の仕掛けを搭載！</p>
-                               </li>
-                             </ul>
-                          </div>
-
-                          <div className="lg:col-span-5 space-y-6">
-                            <div className="bg-white/90 p-6 rounded-[2.5rem] border border-blue-200 shadow-sm relative overflow-hidden">
-                              <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
-                              <h3 className="text-xl font-bold text-blue-600 mb-1">Aランク</h3>
-                              <div className="flex items-center gap-3 bg-blue-50/50 p-3 rounded-2xl">
-                                <i className="fa-solid fa-hospital text-blue-500"></i>
-                                <p className="text-[10px] font-bold text-gray-700">美容クリニック・ホワイトニング無料券を贈呈！</p>
-                              </div>
-                            </div>
-                            <div className="bg-white/90 p-6 rounded-[2.5rem] border border-gray-200 shadow-sm relative overflow-hidden">
-                              <div className="absolute top-0 left-0 w-2 h-full bg-gray-400"></div>
-                              <h3 className="text-xl font-bold text-gray-500 mb-1">Bランク</h3>
-                              <div className="flex items-center gap-3 bg-gray-50/50 p-3 rounded-2xl">
-                                <i className="fa-solid fa-qrcode text-gray-500"></i>
-                                <p className="text-[10px] font-bold text-gray-700">SNSへ誘導する「下克上QR」を必ず掲載！</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                {/* IDOL LIST (フィルター復元) */}
-                <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
-                  <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
-                  <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
-                    <div className="relative mb-6">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i className="fa-solid fa-magnifying-glass text-gray-400"></i></div>
-                      <input type="text" placeholder="名前で検索..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full pl-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm" />
                     </div>
-                    {/* フィルターボタンエリア復元 */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                       {['all', 'rookie', 'pref', 'style'].map(type => (
-                         <button 
-                           key={type} 
-                           onClick={() => setIdolFilterType(type)} 
-                           className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}
-                         >
-                           {type === 'all' ? 'すべて' : type === 'rookie' ? '新人' : type === 'pref' ? '都道府県別' : '系統別'}
-                         </button>
-                       ))}
+
+                    <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-8 opacity-10"><i className="fa-solid fa-fire-flame-curved text-9xl"></i></div>
+                      <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                        <span className="bg-white text-indigo-900 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                        自力で大逆転！システム
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div className="space-y-6">
+                          <div>
+                            <div className="flex justify-between items-end mb-2">
+                              <h4 className="font-bold flex items-center gap-2"><i className="fa-solid fa-seedling text-green-400"></i> 努力ゲージ</h4>
+                              <span className="text-xs font-bold text-green-400">MAXでフィーバー！</span>
+                            </div>
+                            <div className="h-4 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/20">
+                              <div className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full w-[85%] shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 text-center animate-fever shadow-2xl">
+                          <h4 className="text-3xl font-black italic tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-amber-500">FEVER TIME!!</h4>
+                          <p className="text-xs font-bold leading-relaxed">努力ゲージがMAXになると発動！<br/>獲得応援ポイントが最大<strong>2倍</strong>に爆増。</p>
+                        </div>
+                      </div>
                     </div>
-                    {/* 詳細選択肢復元 */}
-                    {idolFilterType === 'pref' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniquePrefs.map(p => <button key={p} onClick={() => setIdolFilterPref(p)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterPref === p ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 border-gray-100 shadow-sm'}`}>{p}</button>)}</div>}
-                    {idolFilterType === 'style' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniqueStyles.map(s => <button key={s} onClick={() => setIdolFilterStyle(s)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterStyle === s ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-500 border-gray-100 shadow-sm'}`}>{s}</button>)}</div>}
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    {filteredIdols.map((idol) => (
-                      <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
-                        <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 p-1 border border-white">
-                          <img src={`./idol${idol.id}.png`} className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=IDOL'} />
-                        </div>
-                        <div className="px-2">
-                          <h4 className="font-bold text-gray-800 text-lg group-hover:text-pink-500 transition-colors drop-shadow-sm">{idol.name}</h4>
-                          <p className="text-xs text-gray-700 line-clamp-1 font-medium drop-shadow-sm italic">"{idol.catchphrase}"</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-                
-                {/* PRODUCER RANKING */}
-                <section id="producer-ranking" className="py-16 max-w-6xl mx-auto px-4">
-                  <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {PRODUCERS.map((producer, index) => (
-                      <div key={index} onClick={() => openProducerDetail(producer)} className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-md border-2 border-white cursor-pointer group transition-transform hover:-translate-y-2 text-center">
-                        <div className={`w-20 h-20 rounded-full mb-3 mx-auto shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-2 border-white transition-transform group-hover:scale-105`}><i className="fa-solid fa-user-tie text-3xl text-white opacity-80"></i></div>
-                        <div className="bg-yellow-50 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2">{producer.title}</div>
-                        <h4 className="font-bold text-base group-hover:text-blue-500 transition-colors">{producer.name}</h4>
-                        <p className="text-xs text-gray-500 font-mono font-bold">{producer.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                )}
 
-                <section id="magazine" className="py-16 bg-white/40 backdrop-blur-md rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden max-w-6xl mx-auto">
-                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。過去の表紙をチェック" iconClass="fa-solid fa-book-open" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
-                    {MAGAZINES.map((mag) => (
-                      <div key={mag.id} className="flex flex-col items-center group">
-                        <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transition-transform group-hover:-translate-y-2">
-                          <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover rounded shadow-inner" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                          <div className="absolute top-4 left-0 bg-pink-500 text-white text-[10px] font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
-                        </div>
-                        <div className="text-center mt-6 px-2">
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full shadow-sm border border-white ${mag.status === '発売中' ? 'bg-white text-gray-600' : 'bg-pink-100 text-pink-600'}`}>{mag.status}</span>
-                          <h4 className="font-bold text-base mt-2 text-gray-800 line-clamp-1">{mag.title}</h4>
+                {eventTab === 'benefits' && (
+                  <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                      <div className="lg:col-span-12 bg-gradient-to-br from-amber-50 via-yellow-100 to-amber-200 p-8 rounded-[3rem] border-2 border-amber-300 shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                        <div className="absolute -right-4 -top-4 text-amber-500/10 text-[10rem] rotate-12 group-hover:rotate-0 transition-transform"><i className="fa-solid fa-crown"></i></div>
+                        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                          <div className="text-center md:text-left">
+                            <span className="bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-md mb-4 inline-block">GRAND PRIX</span>
+                            <h3 className="text-4xl font-black text-amber-900 font-serif mb-2">SSランク</h3>
+                            <p className="text-amber-700 font-bold mb-4">総合1〜3位：雑誌表紙 & 4P巻頭特集</p>
+                          </div>
+                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {[
+                              { icon: 'fa-book-open', text: '表紙&巻頭特集' },
+                              { icon: 'fa-camera-retro', text: 'プロ撮り下ろし' },
+                              { icon: 'fa-star', text: 'レギュラー就任' },
+                              { icon: 'fa-shirt', text: 'アパレル公式モデル' },
+                              { icon: 'fa-tv', text: '大型ビジョン広告' }
+                            ].map((item, i) => (
+                              <div key={i} className="bg-white/60 backdrop-blur-sm p-3 rounded-2xl flex flex-col items-center text-center">
+                                <i className={`fa-solid ${item.icon} text-amber-600 mb-1`}></i>
+                                <span className="text-[10px] font-bold text-amber-900 leading-tight">{item.text}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    ))}
+
+                      <div className="lg:col-span-7 bg-white/90 p-8 rounded-[2.5rem] border border-pink-200 shadow-sm relative group overflow-hidden">
+                         <div className="absolute top-0 left-0 w-2 h-full bg-pink-500"></div>
+                         <h3 className="text-2xl font-bold text-pink-600 mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Sランク</h3>
+                         <p className="text-sm font-bold text-gray-500 mb-6">上位層 / TOP10：1ページフル特集</p>
+                         <ul className="space-y-4">
+                           <li className="flex items-start gap-3 bg-pink-50/50 p-3 rounded-2xl">
+                             <i className="fa-solid fa-magic text-pink-500 mt-1"></i>
+                             <p className="text-xs font-bold text-gray-700"><strong>完全プロデュース撮影会：</strong> プロのヘアメイクがあなたを別人に！</p>
+                           </li>
+                         </ul>
+                      </div>
+                    </div>
                   </div>
-                </section>
+                )}
               </div>
-            )}
-          </main>
+            </section>
 
-          {/* フッターセクションのアップデート (スマホ1枚) */}
-          <footer className="mt-40 relative bg-white border-t border-pink-100 overflow-visible">
-            <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center md:items-start justify-between relative">
-              
-              <div className="md:w-1/2 text-center md:text-left z-10 space-y-6">
-                <div className="flex flex-col items-center md:items-start gap-3">
-                  <img src="./logo.png" className="h-16 md:h-20 object-contain" alt="もしアイ ロゴ" onError={(e)=>e.target.style.display='none'} />
-                  <h3 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-500 font-serif">
-                    あなたのスマホから始まる、新しい物語。
-                  </h3>
-                  <p className="text-gray-500 text-sm font-medium">お気に入りの原石とコミュニケーションを楽しもう♪</p>
+            {/* IDOL LIST */}
+            <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
+              <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
+                <div className="relative mb-6">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i className="fa-solid fa-magnifying-glass text-gray-400"></i></div>
+                  <input type="text" placeholder="名前で検索..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full pl-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm" />
                 </div>
-                
-                <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
-                  <a href="#" className="w-40 transition-transform hover:scale-105 active:scale-95">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" className="w-full h-12" />
-                  </a>
-                  <a href="#" className="w-44 transition-transform hover:scale-105 active:scale-95">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="w-full h-12" />
-                  </a>
+                <div className="flex flex-wrap gap-2 mb-4">
+                   {['all', 'rookie', 'pref', 'style'].map(type => (
+                     <button 
+                       key={type} 
+                       onClick={() => setIdolFilterType(type)} 
+                       className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}
+                     >
+                       {type === 'all' ? 'すべて' : type === 'rookie' ? '新人' : type === 'pref' ? '都道府県別' : '系統別'}
+                     </button>
+                   ))}
                 </div>
               </div>
-
-              <div className="md:w-1/2 mt-16 md:mt-0 relative flex justify-center md:justify-end gap-2 overflow-visible h-40">
-                
-                {/* はみ出しバッジ */}
-                <div className="absolute -top-32 right-1/2 md:right-1/4 translate-x-1/2 bg-rose-500 text-white w-24 h-24 rounded-full flex flex-col items-center justify-center shadow-xl border-4 border-white z-30 animate-float text-center p-2 leading-tight">
-                  <span className="text-[14px] font-black">1,800万</span>
-                  <span className="text-[10px] font-bold">ユーザー突破!</span>
-                </div>
-
-                {/* スマホ1枚 (調整) */}
-                <div className="w-44 md:w-64 transform -translate-y-24 md:-translate-y-48 hover:-translate-y-52 transition-transform duration-500 z-20">
-                  <img src="./footer_phone1.png" className="w-full h-auto drop-shadow-2xl" onError={(e)=>e.target.src='https://via.placeholder.com/300x600/fdf2f8/db2777?text=PORTAL+APP'} />
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+                {filteredIdols.slice(0, 6).map((idol) => (
+                  <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
+                    <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 p-1 border border-white">
+                      <img src={`./idol${idol.id}.png`} className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=IDOL'} />
+                    </div>
+                    <div className="px-2 text-center md:text-left">
+                      <h4 className="font-bold text-gray-800 text-lg group-hover:text-pink-500 transition-colors drop-shadow-sm">{idol.name}</h4>
+                      <p className="text-xs text-gray-700 line-clamp-1 font-medium drop-shadow-sm italic">"{idol.catchphrase}"</p>
+                    </div>
+                  </div>
+                ))}
               </div>
 
+              <div className="text-center">
+                <button 
+                  onClick={() => { setActiveTab('allIdolsList'); window.scrollTo(0,0); }} 
+                  className="bg-white/80 backdrop-blur-sm border-2 border-pink-200 text-pink-500 px-10 py-4 rounded-full font-bold shadow-lg hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all flex items-center justify-center gap-3 mx-auto group"
+                >
+                  <i className="fa-solid fa-users-viewfinder group-hover:scale-125 transition-transform"></i>
+                  すべてのアイドルを見る（五十音順）
+                </button>
+              </div>
+            </section>
+            
+            {/* PRODUCER RANKING */}
+            <section id="producer-ranking" className="py-16 max-w-6xl mx-auto px-4">
+              <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {PRODUCERS.map((producer, index) => (
+                  <div key={index} onClick={() => openProducerDetail(producer)} className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-md border-2 border-white cursor-pointer group transition-transform hover:-translate-y-2 text-center">
+                    <div className={`w-20 h-20 rounded-full mb-3 mx-auto shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-2 border-white transition-transform group-hover:scale-105`}><i className="fa-solid fa-user-tie text-3xl text-white opacity-80"></i></div>
+                    <div className="bg-yellow-50 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2">{producer.title}</div>
+                    <h4 className="font-bold text-base group-hover:text-blue-500 transition-colors">{producer.name}</h4>
+                    <p className="text-xs text-gray-500 font-mono font-bold">{producer.value}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section id="magazine" className="py-16 bg-white/40 backdrop-blur-md rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden max-w-6xl mx-auto">
+              <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。過去の表紙をチェック" iconClass="fa-solid fa-book-open" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
+                {MAGAZINES.map((mag) => (
+                  <div key={mag.id} className="flex flex-col items-center group">
+                    <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transition-transform group-hover:-translate-y-2">
+                      <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover rounded shadow-inner" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                      <div className="absolute top-4 left-0 bg-pink-500 text-white text-[10px] font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
+                    </div>
+                    <div className="text-center mt-6 px-2">
+                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full shadow-sm border border-white ${mag.status === '発売中' ? 'bg-white text-gray-600' : 'bg-pink-100 text-pink-600'}`}>{mag.status}</span>
+                      <h4 className="font-bold text-base mt-2 text-gray-800 line-clamp-1">{mag.title}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+      </main>
+
+      {/* --- 更新されたフッターセクション (色の変更) --- */}
+      <footer className="mt-20 bg-gradient-to-b from-pink-50 to-white border-t border-pink-100 py-20 relative overflow-hidden">
+        {/* 背景アクセントの輝き */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-200/20 blur-[100px] pointer-events-none rounded-full"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 blur-[100px] pointer-events-none rounded-full"></div>
+
+        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center text-center space-y-12 relative z-10">
+          
+          {/* ロゴエリア */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20 w-full animate-fade-in">
+            {/* もしアイ ロゴ (大きめ) */}
+            <img 
+              src="./logo.png" 
+              className="h-28 md:h-44 object-contain drop-shadow-sm transition-transform hover:scale-105" 
+              alt="もしアイ ロゴ" 
+              onError={(e)=>e.target.style.display='none'} 
+            />
+            {/* セパレーター */}
+            <div className="h-16 w-px bg-pink-200 hidden md:block opacity-50"></div>
+            {/* オフめろてぃ ロゴ */}
+            <img 
+              src="./off_melty_logo.png" 
+              className="h-16 md:h-28 object-contain opacity-80 hover:opacity-100 transition-opacity" 
+              alt="Off-Melty ロゴ" 
+              onError={(e)=>e.target.src='https://via.placeholder.com/200x80/fdf2f8/db2777?text=Off-Melty'} 
+            />
+          </div>
+
+          {/* メッセージ & SNSエリア */}
+          <div className="space-y-6">
+            <div className="relative inline-block">
+              <p className="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 font-serif tracking-widest px-4">
+                もしアイの最新ニュースを配信中！
+              </p>
+              <div className="absolute -bottom-3 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink-300 to-transparent rounded-full"></div>
             </div>
-
-            <div className="bg-gray-900 text-white py-6">
-              <div className="max-w-6xl mx-auto px-6 text-center text-xs opacity-60">
-                &copy; 2026 もしも私が、アイドルになったら。 Project All Rights Reserved.
-              </div>
-            </div>
-          </footer>
-
-          {(activeTab === 'home' || activeTab === 'idolDetail') && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-transparent z-[100] md:flex md:justify-center animate-fade-in-up">
-              <div className="max-w-md w-full mx-auto md:mx-0 flex items-center gap-3 p-2">
-                <div className="hidden md:block text-sm font-bold text-gray-700 ml-4 mr-2 drop-shadow-sm">次世代アイドル<br/>エントリー受付中！</div>
-                <div className="flex-1 animate-float">
-                  <a href="https://line.me" target="_blank" rel="noreferrer">
-                    <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-20 object-contain cursor-pointer transition-transform transform hover:scale-110 drop-shadow-xl mx-auto" />
-                  </a>
+            
+            {/* Instagramロゴ */}
+            <div className="pt-6">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="group relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 rounded-2xl p-0.5 shadow-lg transform transition-all hover:scale-110 active:scale-95"
+              >
+                <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
+                  <i className="fa-brands fa-instagram text-4xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent group-hover:scale-110 transition-transform"></i>
                 </div>
-              </div>
+              </a>
+              <p className="text-[10px] font-bold text-pink-400 mt-4 tracking-[0.2em] uppercase">Follow us on Instagram</p>
             </div>
-          )}
+          </div>
         </div>
-      );
-    }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-</body>
-</html>
+        {/* コピーライトエリア */}
+        <div className="mt-20 bg-gray-900/95 backdrop-blur-sm text-white py-10">
+          <div className="max-w-6xl mx-auto px-6 text-center">
+            <div className="flex justify-center gap-8 text-xs mb-6 font-medium">
+              <a href="#" className="hover:text-pink-400 transition-colors">利用規約</a>
+              <a href="#" className="hover:text-pink-400 transition-colors">プライバシーポリシー</a>
+              <a href="#" className="hover:text-pink-400 transition-colors">お問い合わせ</a>
+            </div>
+            <p className="text-[10px] opacity-40 tracking-[0.15em]">
+              &copy; 2026 もしも私が、アイドルになったら。 Project All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+
+      {(activeTab === 'home' || activeTab === 'idolDetail' || activeTab === 'allIdolsList') && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-transparent z-[100] md:flex md:justify-center animate-fade-in-up">
+          <div className="max-w-md w-full mx-auto md:mx-0 flex items-center gap-3 p-2">
+            <div className="hidden md:block text-sm font-bold text-gray-700 ml-4 mr-2 drop-shadow-sm">次世代アイドル<br/>エントリー受付中！</div>
+            <div className="flex-1 animate-float">
+              <a href="https://line.me" target="_blank" rel="noreferrer">
+                <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-20 object-contain cursor-pointer transition-transform transform hover:scale-110 drop-shadow-xl mx-auto" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
