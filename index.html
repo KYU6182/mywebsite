@@ -24,12 +24,12 @@
     body { 
       font-family: sans-serif; 
       /* --- 背景画像の設定 --- */
-      background-image: url('./bg.png'); /* GitHubにアップする背景画像 */
+      background-image: url('./bg.png'); 
       background-size: cover;
       background-position: center top;
-      background-attachment: fixed; /* スクロールしても背景を固定 */
+      background-attachment: fixed; 
       background-repeat: no-repeat;
-      background-color: #fdf2f8; /* 画像がない場合の予備色 (pink-50) */
+      background-color: #fdf2f8; 
     }
     .font-serif { font-family: 'Noto Serif JP', serif; }
     
@@ -45,7 +45,6 @@
     .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
     .animate-float { animation: float 3s ease-in-out infinite; }
     
-    /* カスタムスクロールバー（フィルタ部分用） */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -67,7 +66,6 @@
 
     const { useState, useEffect } = React;
 
-    // あなたのFirebaseプロジェクト設定
     const firebaseConfig = {
       apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
       authDomain: "moshiai-5735b.firebaseapp.com",
@@ -77,11 +75,10 @@
       appId: "1:347806317602:web:d25481c7dd1376aa20de7b"
     };
 
-    // Firebaseの初期化
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = 'moshiai-default-app'; // DBのパス用
+    const appId = 'moshiai-default-app';
 
     // --- モックデータ ---
     const IDOLS = [
@@ -99,7 +96,6 @@
       { id: 1, issue: "第1号", title: "あなたの新しい物語のスタート", coverModel: "星野 きらら", status: "発売中" },
     ];
 
-    // プロデューサーデータ
     const PRODUCERS = [
       { id: 1, rank: 1, name: "たかひろ", value: "85,400 pt", title: "👑 筆頭プロデューサー", tier: "SS", comment: "きららちゃん一筋！これからも全力で支えます！", oshi: "星野 きらら", iconColor: "from-yellow-400 to-yellow-600" },
       { id: 2, rank: 2, name: "ゆうき@きらら推し", value: "72,100 pt", title: "✨ 敏腕プロデューサー", tier: "S", comment: "いつも元気をもらってます。みんなでトップを目指そう！", oshi: "星野 きらら", iconColor: "from-blue-400 to-blue-600" },
@@ -167,7 +163,7 @@
       </div>
     );
 
-    // --- プロデューサー詳細コンポーネント ---
+    // --- プロデューサー詳細 ---
     const ProducerDetailView = ({ producer, onBack }) => {
       return (
         <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
@@ -201,22 +197,19 @@
       );
     };
 
-    // --- アイドル詳細（ファン向け）コンポーネント ---
+    // --- アイドル詳細（個別プロフィール） ---
     const IdolDetailView = ({ idol, onBack }) => {
-      const [activeDetailTab, setActiveDetailTab] = useState('story'); // 'story' | 'profile'
+      const [activeDetailTab, setActiveDetailTab] = useState('story'); 
 
       return (
         <div className="max-w-2xl mx-auto px-4 py-6 animate-fade-in-up">
-          {/* 戻るボタン */}
           <button onClick={onBack} className="mb-6 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 backdrop-blur-sm shadow-sm">
             <i className="fa-solid fa-arrow-left"></i> 一覧に戻る
           </button>
 
-          {/* メインビジュアル＆ステータス */}
           <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-3 shadow-xl border border-pink-100 mb-8 relative">
-            
-            {/* 額縁風デザインの写真 */}
             <div className="relative rounded-[2rem] overflow-hidden border-8 border-pink-50 bg-gray-100">
+              {/* 一覧と同じファイルパス ./idol{id}.png を参照 */}
               <img 
                 src={`./idol${idol.id}.png`} 
                 alt={idol.name} 
@@ -227,14 +220,12 @@
                 <MockImage text={`[${idol.name}のメインビジュアル]`} className="w-full h-full" bgClass={`bg-gradient-to-br ${idol.color}`} />
               </div>
               
-              {/* 写真上のバッジ */}
               <div className="absolute top-4 left-4 flex flex-col gap-1.5 items-start z-10">
                 <span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">{idol.type}</span>
                 {idol.isOffMelty && <span className="bg-pink-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Off-Melty公式モデル</span>}
               </div>
             </div>
 
-            {/* ステータスバー */}
             <div className="flex justify-around items-center mt-4 mb-2 px-2 md:px-6">
               <div className="text-center">
                 <p className="text-xs text-gray-500 font-bold mb-0.5">総合ランキング</p>
@@ -248,7 +239,6 @@
             </div>
           </div>
 
-          {/* 基本情報ヘッダー */}
           <div className="text-center mb-8 px-4">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 font-serif drop-shadow-sm">{idol.name}</h1>
             <p className="text-pink-600 font-bold text-sm md:text-base bg-white/80 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full mb-4 shadow-sm border border-pink-100">
@@ -261,26 +251,21 @@
             </div>
           </div>
 
-          {/* アクションボタン群 */}
           <div className="grid grid-cols-3 gap-2 md:gap-4 mb-10 px-2">
             <button className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-b from-pink-400 to-pink-500 text-white shadow-lg shadow-pink-200 transform transition-transform hover:-translate-y-1">
               <i className="fa-solid fa-heart text-2xl mb-1"></i>
               <span className="font-bold text-xs md:text-sm">投票する</span>
-              <span className="text-[10px] opacity-80">(無料/有料)</span>
             </button>
             <button className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-b from-yellow-400 to-amber-500 text-white shadow-lg shadow-yellow-200 transform transition-transform hover:-translate-y-1">
               <i className="fa-solid fa-gift text-2xl mb-1"></i>
-              <span className="font-bold text-xs md:text-sm">ギフトを贈る</span>
-              <span className="text-[10px] opacity-80">(アイテム応援)</span>
+              <span className="font-bold text-xs md:text-sm">ギフト</span>
             </button>
             <button className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-b from-blue-400 to-indigo-500 text-white shadow-lg shadow-blue-200 transform transition-transform hover:-translate-y-1">
               <i className="fa-solid fa-share-nodes text-2xl mb-1"></i>
-              <span className="font-bold text-xs md:text-sm">シェアする</span>
-              <span className="text-[10px] opacity-80">(SNSで拡散)</span>
+              <span className="font-bold text-xs md:text-sm">シェア</span>
             </button>
           </div>
 
-          {/* ストーリー＆プロフィール タブ */}
           <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-10">
             <div className="flex border-b border-gray-100">
               <button 
@@ -303,57 +288,24 @@
                   <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-3">私の物語</h3>
                     <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap bg-pink-50/50 p-4 rounded-2xl border border-pink-50">
-                      {idol.story || "小さい頃からキラキラしたステージに立つのが夢でした。「もしアイ」は私にとって大きな挑戦です。応援よろしくお願いします！"}
+                      {idol.story}
                     </p>
                   </div>
-                  
                   <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-pink-500 pl-3">最近の日記</h3>
-                    <div className="space-y-4">
-                      <div className="bg-gray-50/80 p-4 rounded-2xl">
-                        <p className="text-xs text-pink-500 font-bold mb-1">2026.03.14</p>
-                        <p className="text-gray-700 text-sm">今日は新しい衣装のフィッティングでした！すっごく可愛くて、早くみんなに見せたいな👗✨ 明日の配信で少しだけヒント出すね！</p>
-                      </div>
-                      <div className="bg-gray-50/80 p-4 rounded-2xl">
-                        <p className="text-xs text-pink-500 font-bold mb-1">2026.03.10</p>
-                        <p className="text-gray-700 text-sm">たくさんの投票本当にありがとうございます😭 順位が上がってて、嬉しくて泣いちゃいました。絶対恩返しするからね！</p>
-                      </div>
+                    <div className="bg-gray-50/80 p-4 rounded-2xl mb-4">
+                      <p className="text-xs text-pink-500 font-bold mb-1">2026.03.14</p>
+                      <p className="text-gray-700 text-sm">今日は新しい衣装のフィッティングでした！すっごく可愛くて、早くみんなに見せたいな👗✨ 明日の配信で少しだけヒント出すね！</p>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="animate-fade-in space-y-6">
                   <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
-                    <div className="border-b border-gray-100 pb-2">
-                      <span className="text-gray-400 text-xs block mb-1">年齢</span>
-                      <span className="font-bold text-gray-800">{idol.age || "秘密♡"}</span>
-                    </div>
-                    <div className="border-b border-gray-100 pb-2">
-                      <span className="text-gray-400 text-xs block mb-1">身長</span>
-                      <span className="font-bold text-gray-800">{idol.height || "秘密♡"}</span>
-                    </div>
-                    <div className="border-b border-gray-100 pb-2">
-                      <span className="text-gray-400 text-xs block mb-1">出身地</span>
-                      <span className="font-bold text-gray-800">{idol.pref}</span>
-                    </div>
-                    <div className="border-b border-gray-100 pb-2">
-                      <span className="text-gray-400 text-xs block mb-1">趣味・特技</span>
-                      <span className="font-bold text-gray-800">{idol.hobby || "ヒミツ"}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h3 className="font-bold text-gray-800 mb-3"><i className="fa-solid fa-comment-dots text-pink-400 mr-2"></i>Q&A</h3>
-                    <div className="space-y-3 text-sm">
-                      <div className="bg-gray-50/80 p-3 rounded-xl">
-                        <p className="font-bold text-pink-500 text-xs mb-1">Q. 自分の性格を一言でいうと？</p>
-                        <p className="text-gray-700">負けず嫌いで、一度決めたら最後までやり遂げます！</p>
-                      </div>
-                      <div className="bg-gray-50/80 p-3 rounded-xl">
-                        <p className="font-bold text-pink-500 text-xs mb-1">Q. ファンの方へメッセージ</p>
-                        <p className="text-gray-700">いつも見守ってくれてありがとう。一緒に最高の景色を見ようね！</p>
-                      </div>
-                    </div>
+                    <div className="border-b border-gray-100 pb-2"><span className="text-gray-400 text-xs block mb-1">年齢</span><span className="font-bold text-gray-800">{idol.age}</span></div>
+                    <div className="border-b border-gray-100 pb-2"><span className="text-gray-400 text-xs block mb-1">身長</span><span className="font-bold text-gray-800">{idol.height}</span></div>
+                    <div className="border-b border-gray-100 pb-2"><span className="text-gray-400 text-xs block mb-1">出身地</span><span className="font-bold text-gray-800">{idol.pref}</span></div>
+                    <div className="border-b border-gray-100 pb-2"><span className="text-gray-400 text-xs block mb-1">趣味</span><span className="font-bold text-gray-800">{idol.hobby}</span></div>
                   </div>
                 </div>
               )}
@@ -363,18 +315,11 @@
       );
     };
 
-    // --- キャストマイページ コンポーネント ---
+    // --- キャストマイページ ---
     const MyPageView = ({ currentUser }) => {
       const [loading, setLoading] = useState(true);
       const [isEditing, setIsEditing] = useState(false);
-      
-      const [profile, setProfile] = useState({
-        name: '白鳥 ゆな',
-        catchphrase: 'いつも応援ありがとう！今日も1日がんばろう♡',
-        photoUrl: '',
-        entryNo: '084'
-      });
-      
+      const [profile, setProfile] = useState({ name: '白鳥 ゆな', catchphrase: 'いつも応援ありがとう！今日も1日がんばろう♡', photoUrl: '', entryNo: '084' });
       const [editForm, setEditForm] = useState(profile);
       const [userPoints, setUserPoints] = useState(4800);
       const [missions, setMissions] = useState([
@@ -384,7 +329,6 @@
         { id: 4, title: "プロフィールを充実させる", points: 50, completed: true },
       ]);
 
-      // Firebaseデータ取得
       useEffect(() => {
         if (!currentUser) return;
         const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profileData', 'main');
@@ -397,10 +341,7 @@
             setDoc(docRef, profile).catch(console.error);
           }
           setLoading(false);
-        }, (error) => {
-          console.error("Firestore Error:", error);
-          setLoading(false);
-        });
+        }, (error) => { console.error("Firestore Error:", error); setLoading(false); });
         return () => unsubscribe();
       }, [currentUser]);
 
@@ -410,9 +351,7 @@
           const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profileData', 'main');
           await setDoc(docRef, editForm, { merge: true });
           setIsEditing(false);
-        } catch (error) {
-          console.error("Error saving profile:", error);
-        }
+        } catch (error) { console.error("Error saving profile:", error); }
       };
 
       const handleToggleMission = (id, points) => {
@@ -425,20 +364,14 @@
         }));
       };
 
-      const currentRank = 12;
-      const pointsToNextRank = 1200;
-
       return (
         <div className="max-w-4xl mx-auto px-4 py-10 animate-fade-in">
-          
-          {/* プロフィールヘッダー */}
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100 mb-8 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden min-h-[160px]">
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-50 rounded-full mix-blend-multiply opacity-50"></div>
-            
             <div className="absolute top-4 right-4 z-20">
               {!isEditing && !loading && (
                 <button onClick={() => setIsEditing(true)} className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-pink-500 transition-colors bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
-                  <i className="fa-solid fa-pen text-xs"></i> プロフィール編集
+                  <i className="fa-solid fa-pen text-xs"></i> 編集
                 </button>
               )}
             </div>
@@ -446,157 +379,59 @@
             {loading ? (
               <div className="animate-pulse w-full flex items-center gap-6">
                 <div className="w-24 h-24 bg-gray-200 rounded-full shrink-0"></div>
-                <div className="flex-1 space-y-3">
-                   <div className="h-4 bg-gray-200 w-24 rounded"></div>
-                   <div className="h-6 bg-gray-200 w-48 rounded"></div>
-                   <div className="h-4 bg-gray-200 w-full max-w-sm rounded"></div>
-                </div>
+                <div className="flex-1 space-y-3"><div className="h-4 bg-gray-200 w-24 rounded"></div><div className="h-6 bg-gray-200 w-48 rounded"></div></div>
               </div>
             ) : isEditing ? (
               <div className="w-full flex flex-col md:flex-row gap-6 z-10 bg-white/90 p-2 md:p-4 rounded-2xl backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-3 shrink-0">
-                   <div className="w-24 h-24 rounded-full border-4 border-pink-100 overflow-hidden relative bg-gray-50 flex items-center justify-center shadow-inner">
-                      {editForm.photoUrl ? (
-                        <img src={editForm.photoUrl} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <i className="fa-solid fa-camera text-3xl text-gray-300"></i>
-                      )}
+                   <div className="w-24 h-24 rounded-full border-4 border-pink-100 overflow-hidden bg-gray-50 flex items-center justify-center">
+                      {editForm.photoUrl ? <img src={editForm.photoUrl} alt="Preview" className="w-full h-full object-cover" /> : <i className="fa-solid fa-camera text-3xl text-gray-300"></i>}
                    </div>
-                   <div className="w-full max-w-[180px] relative">
-                     <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                       <i className="fa-solid fa-image text-sm text-gray-400"></i>
-                     </div>
-                     <input type="text" value={editForm.photoUrl || ''} onChange={(e) => setEditForm({...editForm, photoUrl: e.target.value})} placeholder="画像のURLを入力..." className="w-full text-xs pl-8 pr-2 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 bg-gray-50 hover:bg-white" />
-                   </div>
+                   <input type="text" value={editForm.photoUrl || ''} onChange={(e) => setEditForm({...editForm, photoUrl: e.target.value})} placeholder="写真URL" className="w-full text-xs px-2 py-2 border border-gray-200 rounded-lg bg-gray-50" />
                 </div>
-
                 <div className="flex-1 flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">お名前 (ニックネーム)</label>
-                    <input type="text" value={editForm.name || ''} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="w-full md:w-1/2 font-bold text-gray-800 px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 bg-gray-50 hover:bg-white" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">キャッチフレーズ・ひとこと</label>
-                    <textarea value={editForm.catchphrase || ''} onChange={(e) => setEditForm({...editForm, catchphrase: e.target.value})} rows="2" className="w-full text-sm text-gray-700 px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 resize-none bg-gray-50 hover:bg-white" />
-                  </div>
-                  <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
-                    <button onClick={() => {setEditForm(profile); setIsEditing(false);}} className="px-4 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl">キャンセル</button>
-                    <button onClick={handleSaveProfile} className="px-6 py-2.5 text-sm font-bold text-white bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center gap-1.5 shadow-md shadow-pink-200">
-                      <i className="fa-solid fa-floppy-disk text-sm"></i> 保存する
-                    </button>
+                  <input type="text" value={editForm.name || ''} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="w-full md:w-1/2 font-bold px-3 py-2 border border-gray-200 rounded-lg" />
+                  <textarea value={editForm.catchphrase || ''} onChange={(e) => setEditForm({...editForm, catchphrase: e.target.value})} rows="2" className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg" />
+                  <div className="flex justify-end gap-2 mt-2 pt-2 border-t">
+                    <button onClick={() => {setEditForm(profile); setIsEditing(false);}} className="px-4 py-2 text-sm">キャンセル</button>
+                    <button onClick={handleSaveProfile} className="px-6 py-2 text-sm font-bold text-white bg-pink-500 rounded-xl">保存</button>
                   </div>
                 </div>
               </div>
             ) : (
               <>
-                <div className="w-24 h-24 rounded-full border-4 border-pink-100 shadow-md shrink-0 overflow-hidden bg-gradient-to-tr from-pink-200 to-purple-200 flex items-center justify-center">
-                  {profile.photoUrl ? (
-                    <img src={profile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-medium px-2 text-center text-gray-600 drop-shadow-sm">[自撮り未設定]</span>
-                  )}
+                <div className="w-24 h-24 rounded-full border-4 border-pink-100 shadow-md overflow-hidden bg-gradient-to-tr from-pink-200 to-purple-200 flex items-center justify-center">
+                  {profile.photoUrl ? <img src={profile.photoUrl} alt="Profile" className="w-full h-full object-cover" /> : <span className="text-[10px]">No Image</span>}
                 </div>
                 <div className="flex-1 text-center md:text-left z-10">
-                  <div className="inline-block bg-pink-100 text-pink-600 text-xs font-bold px-3 py-1 rounded-full mb-2">エントリーNo. {profile.entryNo}</div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-1">{profile.name} <span className="text-lg font-normal text-gray-500">ちゃん</span></h2>
-                  <p className="text-sm text-gray-500 whitespace-pre-wrap">{profile.catchphrase}</p>
+                  <div className="bg-pink-100 text-pink-600 text-[10px] font-bold px-3 py-1 rounded-full inline-block mb-2">No. {profile.entryNo}</div>
+                  <h2 className="text-2xl font-bold text-gray-800">{profile.name} ちゃん</h2>
+                  <p className="text-sm text-gray-500">{profile.catchphrase}</p>
                 </div>
-                
-                <div className="flex gap-4 w-full md:w-auto z-10">
-                  <div className="flex-1 md:w-32 bg-gray-50/80 p-4 rounded-2xl text-center border border-gray-100">
-                    <p className="text-xs text-gray-500 font-bold mb-1">現在の順位</p>
-                    <p className="text-3xl font-bold text-pink-500">{currentRank}<span className="text-sm text-gray-500 ml-1">位</span></p>
-                  </div>
-                  <div className="flex-1 md:w-32 bg-gray-50/80 p-4 rounded-2xl text-center border border-gray-100">
-                    <p className="text-xs text-gray-500 font-bold mb-1">獲得ポイント</p>
-                    <p className="text-2xl font-bold text-purple-500 mt-1">{userPoints.toLocaleString()}<span className="text-xs text-gray-500 ml-1">pt</span></p>
-                  </div>
+                <div className="bg-gray-50/80 p-4 rounded-2xl text-center border min-w-[120px]">
+                  <p className="text-[10px] font-bold text-gray-500 mb-1">獲得ポイント</p>
+                  <p className="text-2xl font-bold text-purple-500 font-serif">{userPoints.toLocaleString()}</p>
                 </div>
               </>
             )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* ミッション機能 */}
-            <div className="space-y-6">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100 h-full">
-                <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
-                  <i className="fa-solid fa-bullseye text-xl text-pink-500"></i>
-                  <h3 className="text-lg font-bold text-gray-800">今日のミッション</h3>
-                  <span className="ml-auto text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-md font-bold">毎日24時リセット</span>
-                </div>
-                <div className="space-y-3">
-                  {missions.map(mission => (
-                    <div key={mission.id} onClick={() => handleToggleMission(mission.id, mission.points)} className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer select-none group ${mission.completed ? 'bg-gray-50/80 border-transparent opacity-60' : 'bg-white border-pink-100 hover:border-pink-300 shadow-sm'}`}>
-                      <div className="flex items-center gap-3">
-                        <button className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${mission.completed ? 'bg-pink-500 border-pink-500' : 'border-gray-300 group-hover:border-pink-400'}`}>
-                           {mission.completed && <i className="fa-solid fa-check text-sm text-white"></i>}
-                        </button>
-                        <span className={`font-medium text-sm md:text-base ${mission.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{mission.title}</span>
-                      </div>
-                      <div className={`flex items-center gap-1 font-bold shrink-0 ${mission.completed ? 'text-gray-400' : 'text-pink-500'}`}>
-                        <span className="text-xs border px-2 py-0.5 rounded-full border-current">+{mission.points} pt</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100">
+              <h3 className="font-bold text-gray-800 mb-6 border-b pb-4"><i className="fa-solid fa-bullseye text-pink-500 mr-2"></i>今日のミッション</h3>
+              <div className="space-y-3">
+                {missions.map(mission => (
+                  <div key={mission.id} onClick={() => handleToggleMission(mission.id, mission.points)} className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer ${mission.completed ? 'bg-gray-50/80 border-transparent opacity-60' : 'bg-white border-pink-100'}`}>
+                    <span className={`text-sm font-medium ${mission.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>{mission.title}</span>
+                    <span className="text-xs font-bold text-pink-500">+{mission.points} pt</span>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* 掲載シミュレーター */}
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-gray-50/90 to-pink-50/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100 relative overflow-hidden h-full">
-                <div className="flex items-center justify-between mb-6 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <i className="fa-solid fa-columns text-xl text-purple-500"></i>
-                    <h3 className="text-lg font-bold text-gray-800">掲載シミュレーター</h3>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-600 mb-4 z-10 relative">
-                  もし今、雑誌が発売されたら…<br/>あなたは<span className="font-bold text-pink-500 px-1">1/4ページサイズ</span>で掲載されます！
-                </p>
-
-                <div className="overflow-x-auto pb-4 -mx-2 px-2">
-                  <div className="flex gap-4 min-w-max mx-auto justify-center bg-gray-200/50 p-6 rounded-2xl">
-                    <div className="w-40 h-56 bg-white shadow-md flex flex-col p-1.5 gap-1.5 relative">
-                      <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]" style={{writingMode: 'vertical-rl'}}>左ページ</div>
-                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">10位 (1/4P)</div>
-                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">11位 (1/4P)</div>
-                      <div className="flex-1 bg-pink-50 border-2 border-pink-400 rounded flex flex-col items-center justify-center text-[10px] text-pink-600 font-bold relative shadow-inner overflow-hidden">
-                        <div className="absolute inset-0 bg-pink-400 opacity-10 animate-pulse"></div>
-                        <i className="fa-solid fa-wand-magic-sparkles text-sm text-pink-500 mb-0.5"></i> 現在のあなた
-                        <span className="font-normal text-[9px] mt-0.5">12位 (1/4P)</span>
-                      </div>
-                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">13位 (1/4P)</div>
-                    </div>
-                    <div className="w-40 h-56 bg-white shadow-md flex flex-col p-1.5 gap-1.5 relative">
-                      <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]" style={{writingMode: 'vertical-rl'}}>右ページ</div>
-                      <div className="flex-1 bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded flex flex-col items-center justify-center text-xs text-yellow-600 font-bold shadow-sm relative overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
-                        <i className="fa-solid fa-arrow-trend-up text-lg mb-1 group-hover:-translate-y-1 transition-transform"></i> 次の目標枠！
-                        <span className="font-normal text-[10px] mt-1 text-yellow-700">8位・9位 (1/2P)</span>
-                      </div>
-                      <div className="flex-1 bg-gray-50 border border-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400">6位・7位 (1/2P)</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 bg-white/80 p-4 rounded-2xl shadow-sm border border-pink-50 relative z-10">
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className="text-gray-500">現在: 1/4ページ枠</span>
-                    <span className="text-yellow-600 flex items-center gap-1"><i className="fa-solid fa-crown text-xs"></i> 目標: 1/2ページ枠</span>
-                  </div>
-                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
-                    <div className="h-full bg-gradient-to-r from-pink-400 to-purple-500 w-[70%] rounded-full relative">
-                      <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/30 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-                    </div>
-                  </div>
-                  <p className="text-center text-xs text-gray-500">
-                    ランクアップ圏内まであと <span className="text-pink-500 font-bold text-base">{pointsToNextRank.toLocaleString()}</span> pt！
-                  </p>
-                </div>
-
-              </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100 flex flex-col items-center justify-center">
+               <i className="fa-solid fa-columns text-4xl text-purple-500 mb-4"></i>
+               <h3 className="font-bold text-gray-800 mb-2">掲載シミュレーター</h3>
+               <p className="text-sm text-gray-600">あなたは現在 <span className="font-bold text-pink-500">1/4ページ枠</span> です！</p>
             </div>
           </div>
         </div>
@@ -607,17 +442,12 @@
     // --- メインアプリケーション ---
     function App() {
       const [isMenuOpen, setIsMenuOpen] = useState(false);
-      const [activeTab, setActiveTab] = useState('home'); // 'home' | 'mypage' | 'idolDetail' | 'producerDetail'
+      const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
       const [selectedProducer, setSelectedProducer] = useState(null);
-      
       const [currentUser, setCurrentUser] = useState(null);
       const [scrolled, setScrolled] = useState(false);
-
-      // ランキング切り替え用ステート
       const [activeRankingTab, setActiveRankingTab] = useState('overall');
-
-      // IDOL LIST 検索・フィルタ用ステート
       const [idolSearchText, setIdolSearchText] = useState('');
       const [idolFilterType, setIdolFilterType] = useState('all'); 
       const [idolFilterPref, setIdolFilterPref] = useState('東京'); 
@@ -635,15 +465,8 @@
       });
 
       useEffect(() => {
-        const initAuth = async () => {
-          try {
-            await signInAnonymously(auth);
-          } catch (error) {
-            console.error("Authentication Error:", error);
-          }
-        };
+        const initAuth = async () => { try { await signInAnonymously(auth); } catch (e) { console.error(e); } };
         initAuth();
-        
         const unsubscribe = onAuthStateChanged(auth, setCurrentUser);
         return () => unsubscribe();
       }, []);
@@ -655,43 +478,10 @@
       }, []);
 
       const scrollTo = (id) => {
-        if (activeTab !== 'home') {
-          setActiveTab('home');
-          setTimeout(() => {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        } else {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (activeTab !== 'home') { setActiveTab('home'); setTimeout(() => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 100); }
+        else { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth' }); }
         setIsMenuOpen(false);
       };
-
-      const toggleMode = () => {
-        setActiveTab(prev => prev === 'home' ? 'mypage' : 'home');
-        setIsMenuOpen(false);
-        window.scrollTo(0, 0);
-      };
-
-      // アイドル詳細を開く
-      const openIdolDetail = (idol) => {
-        if(!idol) return;
-        setSelectedIdol(idol);
-        setActiveTab('idolDetail');
-        window.scrollTo(0, 0);
-      };
-
-      // プロデューサー詳細を開く
-      const openProducerDetail = (producer) => {
-        if(!producer) return;
-        setSelectedProducer(producer);
-        setActiveTab('producerDetail');
-        window.scrollTo(0, 0);
-      };
-
-      const currentRankingDesc = RANKING_TABS.find(t => t.id === activeRankingTab)?.desc;
-      const currentRankingData = RANKING_DATA[activeRankingTab] || [];
 
       return (
         <div className="pb-24">
@@ -700,24 +490,16 @@
             <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
                 <img src="./logo.png" alt="もしアイ" className="h-8 md:h-10 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                <span style={{display: 'none'}} className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif drop-shadow-sm">
-                  <i className="fa-solid fa-heart text-2xl text-pink-500 animate-pulse mr-2"></i>もしアイ
-                </span>
+                <span style={{display: 'none'}} className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif drop-shadow-sm">もしアイ</span>
               </div>
-
               <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
                 {activeTab === 'home' && ['HOME', 'NEWS', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
-                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="hover:text-pink-500 transition-colors relative group drop-shadow-sm">
-                    {item}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all group-hover:w-full"></span>
-                  </button>
+                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="hover:text-pink-500 transition-colors drop-shadow-sm">{item}</button>
                 ))}
-                
-                <button onClick={toggleMode} className={`ml-4 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition-transform transform hover:scale-105 border ${activeTab === 'mypage' ? 'bg-gray-800 text-white border-gray-800 shadow-md' : 'bg-white/90 text-pink-500 border-pink-200 shadow-sm backdrop-blur-sm'}`}>
-                  {activeTab === 'mypage' ? <><i className="fa-solid fa-arrow-up-right-from-square text-sm"></i> ファン向けサイトへ</> : <><i className="fa-solid fa-user text-sm"></i> キャストログイン</>}
+                <button onClick={() => {setActiveTab(activeTab === 'mypage' ? 'home' : 'mypage'); window.scrollTo(0,0);}} className={`ml-4 px-4 py-2 rounded-full font-bold border ${activeTab === 'mypage' ? 'bg-gray-800 text-white' : 'bg-white/90 text-pink-500 border-pink-200 shadow-sm'}`}>
+                  {activeTab === 'mypage' ? 'ファン向けへ' : 'キャストログイン'}
                 </button>
               </nav>
-
               <button className="md:hidden text-gray-700 drop-shadow-sm p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 {isMenuOpen ? <i className="fa-solid fa-xmark text-2xl"></i> : <i className="fa-solid fa-bars text-2xl"></i>}
               </button>
@@ -726,15 +508,11 @@
 
           {isMenuOpen && (
             <div className="fixed inset-0 z-40 bg-white/95 backdrop-blur-sm pt-24 px-6 flex flex-col gap-6 md:hidden">
-                <button onClick={toggleMode} className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 mb-4 border ${activeTab === 'mypage' ? 'bg-gray-900 text-white border-gray-800' : 'bg-pink-50 text-pink-600 border-pink-200'}`}>
-                  {activeTab === 'mypage' ? <><i className="fa-solid fa-arrow-up-right-from-square text-lg"></i> ファン向けサイトへ戻る</> : <><i className="fa-solid fa-user text-lg"></i> キャスト専用マイページへ</>}
+                <button onClick={() => {setActiveTab(activeTab === 'mypage' ? 'home' : 'mypage'); setIsMenuOpen(false); window.scrollTo(0,0);}} className="w-full py-4 rounded-xl font-bold border border-pink-200">
+                  {activeTab === 'mypage' ? 'ファン向けサイトへ戻る' : 'キャスト専用マイページへ'}
                 </button>
-
                 {activeTab === 'home' && ['HOME', 'NEWS', 'RANKING', 'IDOL LIST', 'MAGAZINE'].map((item) => (
-                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="text-xl font-bold text-gray-700 text-left border-b border-pink-100 pb-4 flex justify-between items-center">
-                    {item}
-                    <i className="fa-solid fa-chevron-right text-lg text-pink-300"></i>
-                  </button>
+                  <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', '-'))} className="text-xl font-bold text-gray-700 text-left border-b border-pink-100 pb-4 flex justify-between items-center">{item}<i className="fa-solid fa-chevron-right text-lg text-pink-300"></i></button>
                 ))}
             </div>
           )}
@@ -743,308 +521,126 @@
             {activeTab === 'mypage' ? (
               <MyPageView currentUser={currentUser} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
-              
-              /* --- アイドル詳細画面 --- */
               <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} />
-
             ) : activeTab === 'producerDetail' && selectedProducer ? (
-
-              /* --- プロデューサー詳細画面 --- */
               <ProducerDetailView producer={selectedProducer} onBack={() => setActiveTab('home')} />
-
             ) : (
               <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 animate-fade-in">
                 {/* HERO SECTION */}
                 <section id="home" className="py-10 md:py-20 relative">
-                  <div className="absolute top-10 left-10 text-pink-300/50 animate-bounce"><i className="fa-solid fa-star text-4xl"></i></div>
-                  <div className="absolute bottom-10 right-10 text-purple-300/50 animate-pulse"><i className="fa-solid fa-wand-magic-sparkles text-4xl"></i></div>
-                  
                   <div className="flex flex-col md:flex-row items-center gap-10">
                     <div className="flex-1 space-y-6 text-center md:text-left z-10">
-                      
-                      {/* --- キャッチフレーズ画像切り替え部分 --- */}
                       <img src="./catchphrase.png" alt="あなたのスマホから始まる" className="h-auto w-4/5 max-w-[320px] md:max-w-none md:h-16 lg:h-20 object-contain mb-4 mx-auto md:mx-0 drop-shadow-sm" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline-block'; }} />
                       <span style={{display: 'none'}} className="inline-block py-1 px-3 rounded-full bg-pink-100 text-pink-600 text-sm font-bold tracking-widest mb-2 border border-pink-200 shadow-sm">あなたのスマホから始まる</span>
-                      
-                      {/* --- 画像・テキスト切り替え部分 --- */}
                       <img src="./top.png" alt="もしも私が、アイドルになったら。" className="w-full max-w-xl mx-auto md:mx-0 object-contain drop-shadow-md" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                      <div style={{display: 'none'}} className="space-y-6">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-serif leading-tight drop-shadow-sm">
-                          もしも私が、<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">アイドルになったら。</span>
-                        </h1>
-                        <p className="text-gray-700 text-lg md:text-xl leading-relaxed drop-shadow-sm font-medium">
-                          自撮り1枚から始まった物語。<br className="hidden md:block"/>普通の女の子だった彼女たちが、今、ここで輝いています。<br/>次は、あなたの推しを見つける番。
-                        </p>
-                      </div>
-
                       <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <button onClick={() => scrollTo('ranking')} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-500/30 transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
-                          <i className="fa-solid fa-crown text-xl"></i> 投票して応援する
-                        </button>
-                        <button onClick={() => scrollTo('idol-list')} className="bg-white/90 backdrop-blur-sm hover:bg-white text-pink-600 px-8 py-3 rounded-full font-bold shadow-md transition-transform transform hover:scale-105 flex items-center justify-center gap-2 border border-pink-100">
-                          <i className="fa-solid fa-users text-xl"></i> アイドルを探す
-                        </button>
+                        <button onClick={() => scrollTo('ranking')} className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-500/30 transition-transform transform hover:scale-105">投票して応援する</button>
+                        <button onClick={() => scrollTo('idol-list')} className="bg-white/90 backdrop-blur-sm text-pink-600 px-8 py-3 rounded-full font-bold shadow-md transition-transform transform hover:scale-105 border border-pink-100">アイドルを探す</button>
                       </div>
                     </div>
-                    
                     <div className="flex-1 w-full max-w-md mx-auto relative">
                       <div className="absolute inset-0 bg-gradient-to-tr from-pink-300 to-purple-300 rounded-[3rem] rotate-3 opacity-30 blur-lg"></div>
                       <div className="relative bg-white/80 backdrop-blur-sm p-2 rounded-[3rem] shadow-xl border border-white">
-                          
-                          {/* --- ヒーロー画像切り替え部分 --- */}
                           <img src="./hero.png" alt="初代グランプリ" className="w-full h-96 md:h-[32rem] object-cover rounded-[2.5rem]" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                          <div style={{display: 'none'}}>
-                            <MockImage text="[初代グランプリの笑顔のポートレート]" className="h-96 md:h-[32rem] rounded-[2.5rem] w-full" bgClass="bg-gradient-to-br from-pink-100 to-purple-100" iconClass="fa-solid fa-heart text-pink-300" />
-                          </div>
-                          
+                          <div style={{display: 'none'}}><MockImage text="初代グランプリ" className="h-96 md:h-[32rem] rounded-[2.5rem] w-full" bgClass="bg-gradient-to-br from-pink-100 to-purple-100" /></div>
                           <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/50">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-bold">1st</div>
-                              <div>
-                                <p className="text-xs text-pink-500 font-bold">初代グランプリ</p>
-                                <p className="font-bold text-gray-800 text-lg">星野 きらら</p>
-                              </div>
-                            </div>
+                            <p className="text-xs text-pink-500 font-bold">初代グランプリ</p>
+                            <p className="font-bold text-gray-800 text-lg">星野 きらら</p>
                           </div>
                       </div>
                     </div>
-                  </div>
-                </section>
-
-                {/* NEWS SECTION */}
-                <section id="news" className="py-12">
-                  <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-sm border border-white">
-                    <h3 className="flex items-center gap-2 font-bold text-xl text-gray-800 mb-6 border-b border-pink-100 pb-4">
-                      <i className="fa-solid fa-tower-broadcast text-xl text-pink-500"></i> NEWS & TOPICS
-                    </h3>
-                    <ul className="space-y-4">
-                      {[
-                        { date: "2026.03.01", label: "MAGAZINE", text: "第3号の表紙モデル投票がスタートしました！" },
-                        { date: "2026.02.25", label: "OFF-MELTY", text: "公式モデルによる春の新作スナップを公開しました。" },
-                        { date: "2026.02.10", label: "INFO", text: "次世代アイドルの新規エントリー受付を再開しました！" }
-                      ].map((news, i) => (
-                        <li key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-white p-2 rounded-lg transition-colors cursor-pointer group">
-                          <div className="flex items-center gap-3 w-48 shrink-0">
-                            <span className="text-sm text-gray-500 font-mono">{news.date}</span>
-                            <span className="text-xs font-bold px-2 py-1 bg-pink-100 text-pink-600 rounded-md">{news.label}</span>
-                          </div>
-                          <p className="text-gray-700 text-sm md:text-base group-hover:text-pink-600 transition-colors font-medium">{news.text}</p>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 </section>
 
                 {/* RANKING SECTION */}
                 <section id="ranking" className="py-16">
                   <SectionTitle title="CURRENT RANKING" subtitle="多様な切り口で原石を発見！応援して表紙モデルを決めよう！" iconClass="fa-solid fa-trophy" />
-                  
-                  {/* --- ランキング タブメニュー --- */}
                   <div className="flex flex-wrap justify-center gap-2 mb-6 px-2">
                     {RANKING_TABS.map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveRankingTab(tab.id)}
-                        className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all duration-300 border-2 flex items-center gap-2 
-                          ${activeRankingTab === tab.id 
-                            ? 'bg-pink-500 text-white border-pink-500 shadow-md transform scale-105' 
-                            : 'bg-white/80 backdrop-blur-sm text-gray-600 border-white hover:border-pink-300 hover:text-pink-500 shadow-sm'}`}
-                      >
-                        <i className={`fa-solid ${tab.icon}`}></i> {tab.label}
+                      <button key={tab.id} onClick={() => setActiveRankingTab(tab.id)} className={`px-4 py-2 rounded-full font-bold text-xs md:text-sm transition-all border-2 ${activeRankingTab === tab.id ? 'bg-pink-500 text-white border-pink-500 shadow-md transform scale-105' : 'bg-white/80 backdrop-blur-sm text-gray-600 border-white hover:border-pink-300 shadow-sm'}`}>
+                        <i className={`fa-solid ${tab.icon} mr-2`}></i>{tab.label}
                       </button>
                     ))}
                   </div>
-
-                  {/* タブの説明文 */}
-                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 text-center mb-8 max-w-2xl mx-auto shadow-sm text-pink-700 font-medium text-xs md:text-sm animate-fade-in mx-4 border border-white">
-                     {currentRankingDesc}
-                  </div>
-
-                  {/* --- ランキング カード一覧 --- */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto animate-fade-in-up" key={activeRankingTab}>
-                    {currentRankingData.map((item, index) => {
-                      const fullIdolData = IDOLS.find(i => i.id === item.idolId);
-                      const idolColor = fullIdolData?.color || "from-gray-300 to-gray-400";
-
+                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 text-center mb-8 max-w-2xl mx-auto shadow-sm text-pink-700 font-medium text-xs border border-white mx-4">{RANKING_TABS.find(t=>t.id===activeRankingTab).desc}</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto animate-fade-in-up" key={activeRankingTab}>
+                    {(RANKING_DATA[activeRankingTab] || []).map((item, index) => {
+                      const idol = IDOLS.find(i => i.id === item.idolId);
                       return (
-                        <div 
-                          key={index} 
-                          onClick={() => openIdolDetail(fullIdolData)}
-                          className={`relative bg-white/90 backdrop-blur-sm rounded-3xl p-1 shadow-md border-2 cursor-pointer group transition-transform hover:-translate-y-2 ${index === 0 ? 'border-yellow-300 md:-translate-y-4 md:hover:-translate-y-6' : index === 1 ? 'border-gray-300' : 'border-orange-200'}`}
-                        >
-                          <div className={`absolute -top-5 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-10 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>
-                            {item.rank}
-                          </div>
-                          <div className="bg-white/80 rounded-[1.3rem] overflow-hidden p-4 pt-8 h-full flex flex-col items-center text-center">
-                            
-                            {/* アイドル用プロフィール画像 */}
-                            <img src={`./profile${item.rank}.png`} alt={item.name} className="w-24 h-24 rounded-full mb-4 shadow-inner object-cover border-4 border-white ring-2 ring-pink-100 transition-transform group-hover:scale-105" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-                            <div style={{display: 'none'}}>
-                              <MockImage text={`[${item.name}]`} className="w-24 h-24 rounded-full mb-4 shadow-inner transition-transform group-hover:scale-105" bgClass={`bg-gradient-to-tr ${idolColor}`} />
+                        <div key={index} onClick={() => idol && openIdolDetail(idol)} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
+                          <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-md z-30 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>{item.rank}</div>
+                          <div className="relative w-full aspect-[3/4] flex items-center justify-center">
+                            <img src="./rank_frame.png" alt="frame" className="absolute inset-0 w-full h-full object-fill z-10 drop-shadow-lg" />
+                            <div className="relative z-20 flex flex-col items-center justify-center p-6 text-center w-full h-full">
+                              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-inner mb-3 transition-transform group-hover:scale-105">
+                                {/* ランキングアイコンは profile{rank}.png を参照 */}
+                                <img src={`./profile${item.rank}.png`} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+                                <div style={{display: 'none'}} className="w-full h-full"><MockImage text={item.name} className="w-full h-full" bgClass={`bg-gradient-to-tr ${idol?.color || 'from-pink-100 to-pink-200'}`} /></div>
+                              </div>
+                              <h4 className="font-bold text-lg text-gray-800 mb-1 group-hover:text-pink-600 transition-colors">{item.name}</h4>
+                              <p className="text-pink-500 font-mono font-bold text-sm">{item.value}</p>
+                              <button className="mt-4 px-6 py-1.5 rounded-full bg-pink-500 text-white text-xs font-bold shadow-md">応援する</button>
                             </div>
-
-                            <h4 className="font-bold text-lg mb-1 group-hover:text-pink-500 transition-colors">{item.name}</h4>
-                            <p className="text-sm text-gray-500 mb-4 font-mono font-medium">{item.value}</p>
-                            <button className={`mt-auto w-full py-2 rounded-xl font-bold text-sm transition-colors shadow-sm ${index === 0 ? 'bg-yellow-50 text-yellow-700 group-hover:bg-yellow-100' : 'bg-pink-50 text-pink-600 group-hover:bg-pink-100'}`}>詳細をみる</button>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-
                 </section>
 
                 {/* IDOL LIST SECTION */}
                 <section id="idol-list" className="py-16">
-                  <SectionTitle title="IDOL LIST" subtitle="検索や条件を絞って、あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
-                  
-                  {/* --- 検索＆フィルター UI --- */}
+                  <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
                   <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
-                    
-                    {/* 検索バー */}
-                    <div className="relative mb-4">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i className="fa-solid fa-magnifying-glass text-gray-400"></i>
-                      </div>
-                      <input 
-                        type="text" 
-                        placeholder="アイドルの名前で検索..." 
-                        value={idolSearchText}
-                        onChange={(e) => setIdolSearchText(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300 focus:bg-white transition-all font-medium text-sm md:text-base shadow-sm"
-                      />
+                    <input type="text" placeholder="名前で検索..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full px-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm mb-4" />
+                    <div className="flex flex-wrap gap-2">
+                       {['all', 'rookie', 'pref', 'style'].map(type => (
+                         <button key={type} onClick={() => setIdolFilterType(type)} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>{type === 'all' ? 'すべて' : type === 'rookie' ? '新人' : type === 'pref' ? '都道府県別' : '系統別'}</button>
+                       ))}
                     </div>
-
-                    {/* フィルタボタン群 */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                       <button onClick={() => setIdolFilterType('all')} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === 'all' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
-                         すべて
-                       </button>
-                       <button onClick={() => setIdolFilterType('rookie')} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors flex items-center gap-1 shadow-sm ${idolFilterType === 'rookie' ? 'bg-green-500 text-white border-green-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
-                         <i className="fa-solid fa-seedling"></i> 新人
-                       </button>
-                       <button onClick={() => setIdolFilterType('pref')} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors flex items-center gap-1 shadow-sm ${idolFilterType === 'pref' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
-                         <i className="fa-solid fa-location-dot"></i> 都道府県別
-                       </button>
-                       <button onClick={() => setIdolFilterType('style')} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors flex items-center gap-1 shadow-sm ${idolFilterType === 'style' ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
-                         <i className="fa-solid fa-ribbon"></i> 系統別
-                       </button>
-                    </div>
-
-                    {/* サブフィルタ（都道府県が選ばれた時） */}
-                    {idolFilterType === 'pref' && (
-                      <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar animate-fade-in pl-1">
-                        {uniquePrefs.map(p => (
-                           <button key={p} onClick={() => setIdolFilterPref(p)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors border shadow-sm ${idolFilterPref === p ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}>
-                             {p}
-                           </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* サブフィルタ（系統が選ばれた時） */}
-                    {idolFilterType === 'style' && (
-                      <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar animate-fade-in pl-1">
-                        {uniqueStyles.map(s => (
-                           <button key={s} onClick={() => setIdolFilterStyle(s)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors border shadow-sm ${idolFilterStyle === s ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}>
-                             {s}
-                           </button>
-                        ))}
-                      </div>
-                    )}
+                    {idolFilterType === 'pref' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniquePrefs.map(p => <button key={p} onClick={() => setIdolFilterPref(p)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterPref === p ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500'}`}>{p}</button>)}</div>}
+                    {idolFilterType === 'style' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniqueStyles.map(s => <button key={s} onClick={() => setIdolFilterStyle(s)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterStyle === s ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-500'}`}>{s}</button>)}</div>}
                   </div>
 
-                  {/* --- フィルタリング結果表示 --- */}
-                  {filteredIdols.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 animate-fade-in">
-                      {filteredIdols.map((idol) => (
-                        <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
-                          <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md group-hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-sm p-1 border border-white">
-                            
-                            {/* --- アイドルリスト画像切り替え部分 --- */}
-                            <img 
-                              src={`./idol${idol.id}.png`} 
-                              alt={idol.name} 
-                              className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" 
-                              onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} 
-                            />
-                            <div style={{display: 'none'}}>
-                              <MockImage text={`[${idol.name}]`} className="w-full aspect-[4/5] rounded-2xl transition-transform duration-500 group-hover:scale-105" bgClass={`bg-gradient-to-br ${idol.color}`} />
-                            </div>
-
-                            {/* 各種ステータスバッジ */}
-                            <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
-                              <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-white/20 shadow-sm">{idol.type}</span>
-                              {idol.isOffMelty && <span className="bg-pink-500/90 backdrop-blur-sm text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full border border-pink-300/50 shadow-sm">Off-Melty公式</span>}
-                            </div>
-                          </div>
-                          
-                          <div className="px-2">
-                            {/* プロフィールタグ（エリア・系統・新人） */}
-                            <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                              <span className="bg-white/80 text-blue-600 text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 border border-blue-100 shadow-sm">
-                                <i className="fa-solid fa-location-dot"></i>{idol.pref}
-                              </span>
-                              <span className="bg-white/80 text-purple-600 text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 border border-purple-100 shadow-sm">
-                                <i className="fa-solid fa-ribbon"></i>{idol.style}
-                              </span>
-                              {idol.isRookie && (
-                                <span className="bg-white/80 text-green-600 text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 border border-green-100 shadow-sm">
-                                  <i className="fa-solid fa-seedling"></i>新人
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="text-xs text-pink-600 font-bold mb-0.5 drop-shadow-sm">{idol.issue}</p>
-                            <h4 className="font-bold text-gray-800 text-lg md:text-xl mb-1 group-hover:text-pink-500 transition-colors drop-shadow-sm">{idol.name}</h4>
-                            <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed font-medium drop-shadow-sm">{idol.catchphrase}</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 animate-fade-in">
+                    {filteredIdols.map((idol) => (
+                      <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
+                        <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 backdrop-blur-sm p-1 border border-white">
+                          {/* 各アイドル固有の ./idol{id}.png を参照 */}
+                          <img 
+                            src={`./idol${idol.id}.png`} 
+                            alt={idol.name} 
+                            className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" 
+                            onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} 
+                          />
+                          <div style={{display: 'none'}}><MockImage text={idol.name} className="w-full aspect-[4/5] rounded-2xl group-hover:scale-105" bgClass={`bg-gradient-to-br ${idol.color}`} /></div>
+                          <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
+                            <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full">{idol.type}</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    // 検索結果が0件の場合
-                    <div className="text-center py-16 bg-white/80 backdrop-blur-sm rounded-3xl border border-dashed border-gray-300 animate-fade-in shadow-sm">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <i className="fa-solid fa-magnifying-glass text-2xl text-gray-300"></i>
+                        <div className="px-2">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                            <span className="bg-white/80 text-blue-600 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-100 shadow-sm"><i className="fa-solid fa-location-dot"></i>{idol.pref}</span>
+                            <span className="bg-white/80 text-purple-600 text-[9px] font-bold px-1.5 py-0.5 rounded border border-purple-100 shadow-sm"><i className="fa-solid fa-ribbon"></i>{idol.style}</span>
+                          </div>
+                          <h4 className="font-bold text-gray-800 text-lg group-hover:text-pink-500 transition-colors">{idol.name}</h4>
+                          <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed font-medium">{idol.catchphrase}</p>
+                        </div>
                       </div>
-                      <p className="text-gray-700 font-bold text-lg mb-1">見つかりませんでした</p>
-                      <p className="text-sm text-gray-500 font-medium">検索条件を変えて、もう一度探してみてください。</p>
-                      <button 
-                        onClick={() => {setIdolSearchText(''); setIdolFilterType('all');}} 
-                        className="mt-6 px-6 py-2 bg-white hover:bg-pink-50 text-pink-500 border border-pink-200 rounded-full font-bold text-sm transition-colors shadow-sm"
-                      >
-                        条件をクリアする
-                      </button>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </section>
                 
-                {/* PRODUCER RANKING SECTION */}
+                {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-16">
-                  <SectionTitle title="PRODUCER RANKING" subtitle="アイドルを熱く支援するトッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto px-4 md:px-0">
+                  <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto px-4">
                     {PRODUCERS.map((producer, index) => (
-                      <div 
-                        key={index} 
-                        onClick={() => openProducerDetail(producer)}
-                        className={`relative bg-white/90 backdrop-blur-sm rounded-3xl p-1 shadow-md border-2 border-white cursor-pointer group transition-transform hover:-translate-y-2`}
-                      >
-                        <div className={`absolute -top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-md z-10 ${index === 0 ? 'bg-gradient-to-b from-yellow-300 to-yellow-500' : index === 1 ? 'bg-gradient-to-b from-gray-300 to-gray-500' : 'bg-gradient-to-b from-orange-300 to-orange-500'}`}>
-                          {producer.rank}
-                        </div>
-                        <div className="bg-white/80 rounded-[1.3rem] overflow-hidden p-4 pt-6 h-full flex flex-col items-center text-center border border-gray-50">
-                          <div className={`w-20 h-20 rounded-full mb-3 shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-2 border-white ring-2 ring-gray-50 transition-transform group-hover:scale-105`}>
-                            <i className="fa-solid fa-user-tie text-3xl text-white opacity-80"></i>
-                          </div>
-                          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full mb-2 shadow-sm">
-                            {producer.title}
-                          </div>
-                          <h4 className="font-bold text-base mb-1 group-hover:text-blue-500 transition-colors">{producer.name}</h4>
-                          <p className="text-xs text-gray-500 mb-3 font-mono font-medium">{producer.value}</p>
-                          <button className="mt-auto w-full py-1.5 rounded-xl font-bold text-xs bg-white text-gray-600 border border-gray-200 group-hover:bg-gray-50 shadow-sm transition-colors">詳細をみる</button>
-                        </div>
+                      <div key={index} onClick={() => { setSelectedProducer(producer); setActiveTab('producerDetail'); window.scrollTo(0,0); }} className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-md border-2 border-white cursor-pointer group transition-transform hover:-translate-y-2 text-center">
+                        <div className={`w-20 h-20 rounded-full mb-3 mx-auto shadow-inner flex items-center justify-center bg-gradient-to-br ${producer.iconColor} border-2 border-white transition-transform group-hover:scale-105`}><i className="fa-solid fa-user-tie text-3xl text-white opacity-80"></i></div>
+                        <div className="bg-yellow-50 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2">{producer.title}</div>
+                        <h4 className="font-bold text-base group-hover:text-blue-500 transition-colors">{producer.name}</h4>
+                        <p className="text-xs text-gray-500 font-mono">{producer.value}</p>
                       </div>
                     ))}
                   </div>
@@ -1052,33 +648,18 @@
 
                 {/* MAGAZINE SECTION */}
                 <section id="magazine" className="py-16 bg-white/40 backdrop-blur-md rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-pink-300/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-300/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                  
-                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。これまでに発売された雑誌たち" iconClass="fa-solid fa-book-open" />
-                  
+                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。" iconClass="fa-solid fa-book-open" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
                     {MAGAZINES.map((mag) => (
                       <div key={mag.id} className="flex flex-col items-center group">
-                        <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transform transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-1">
-                          
-                          {/* --- マガジン画像切り替え部分 --- */}
-                          <img 
-                            src={`./mag${mag.id}.png`} 
-                            alt={mag.title} 
-                            className="w-full h-full object-cover rounded shadow-inner" 
-                            onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} 
-                          />
-                          <div style={{display: 'none'}} className="w-full h-full">
-                            <MockImage text={`[表紙: ${mag.title}]`} className="w-full h-full rounded shadow-inner" bgClass="bg-gradient-to-b from-gray-50 to-gray-200" />
-                          </div>
-
+                        <div className="relative w-4/5 md:w-full aspect-[3/4] bg-white/80 rounded-md shadow-lg border-l-4 border-white p-2 transition-transform group-hover:-translate-y-2">
+                          <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover rounded shadow-inner" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                          <div style={{display: 'none'}} className="w-full h-full"><MockImage text={`[表紙: ${mag.title}]`} className="w-full h-full rounded shadow-inner" bgClass="bg-gradient-to-b from-gray-50 to-gray-200" /></div>
                           <div className="absolute top-4 left-0 bg-pink-500 text-white text-xs font-bold py-1 px-3 rounded-r-full shadow-md">{mag.issue}</div>
                         </div>
                         <div className="text-center mt-6">
                           <span className={`text-xs font-bold px-2 py-1 rounded-full shadow-sm border border-white ${mag.status === '発売中' ? 'bg-white text-gray-600' : 'bg-pink-100 text-pink-600'}`}>{mag.status}</span>
-                          <h4 className="font-bold text-lg mt-2 text-gray-800 drop-shadow-sm">{mag.title}</h4>
-                          <p className="text-sm text-gray-700 mt-1 font-medium drop-shadow-sm">表紙: {mag.coverModel}</p>
+                          <h4 className="font-bold text-lg mt-2 text-gray-800">{mag.title}</h4>
                         </div>
                       </div>
                     ))}
@@ -1088,54 +669,28 @@
             )}
           </main>
 
-          <footer className="bg-gray-900/90 backdrop-blur-md text-white pt-16 pb-32 md:pb-16 mt-20 rounded-t-[3rem] border-t border-white/20 shadow-2xl relative z-10">
+          <footer className="bg-gray-900/90 backdrop-blur-md text-white pt-16 pb-32 md:pb-16 mt-20 rounded-t-[3rem] border-t border-white/20 shadow-2xl">
             <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
               <div>
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-                  {/* --- フッターロゴの修正 --- */}
+                <div className="flex items-center justify-center md:justify-start mb-4">
                   <img src="./logo.png" alt="もしアイ" className="h-12 md:h-16 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-                  <span style={{display: 'none'}} className="text-2xl font-bold font-serif">
-                    <i className="fa-solid fa-heart text-2xl text-pink-400 mr-2"></i>もしアイ
-                  </span>
+                  <span style={{display: 'none'}} className="text-2xl font-bold font-serif">もしアイ</span>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
-                  もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。
-                </p>
+                <p className="text-gray-300 text-sm font-medium">もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。</p>
               </div>
-              <div>
-                <h4 className="font-bold text-lg mb-4 border-b border-gray-700 pb-2">CONTENTS</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li><button onClick={() => {setActiveTab('home'); setTimeout(()=>scrollTo('home'),100);}} className="hover:text-pink-400 transition-colors">ホーム</button></li>
-                  <li><button onClick={toggleMode} className="text-pink-400 hover:text-pink-300 font-bold transition-colors">▶ キャスト用マイページ</button></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-4 border-b border-gray-700 pb-2">ABOUT</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li><a href="#" className="hover:text-pink-400 transition-colors">よくある質問 (Q&A)</a></li>
-                  <li><a href="#" className="hover:text-pink-400 transition-colors">運営事務局・お問い合わせ</a></li>
-                </ul>
-              </div>
-            </div>
-            <div className="max-w-5xl mx-auto px-6 mt-12 pt-6 border-t border-gray-800 text-center text-xs text-gray-500 font-medium">
-              &copy; 2026 もしも私が、アイドルになったら。運営事務局 All Rights Reserved.
+              <div><h4 className="font-bold border-b border-gray-700 pb-2 mb-4">CONTENTS</h4><ul className="space-y-2 text-sm text-gray-400"><li><button onClick={() => {setActiveTab('home'); setTimeout(()=>scrollTo('home'),100);}} className="hover:text-pink-400 transition-colors">ホーム</button></li></ul></div>
+              <div><h4 className="font-bold border-b border-gray-700 pb-2 mb-4">ABOUT</h4><ul className="space-y-2 text-sm text-gray-400"><li><a href="#" className="hover:text-pink-400 transition-colors">よくある質問 (Q&A)</a></li></ul></div>
             </div>
           </footer>
 
           {(activeTab === 'home' || activeTab === 'idolDetail' || activeTab === 'producerDetail') && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/40 backdrop-blur-md border-t border-white/50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-50 md:flex md:justify-center animate-fade-in-up">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/40 backdrop-blur-md border-t border-white/50 z-50 md:flex md:justify-center animate-fade-in-up">
               <div className="max-w-md w-full mx-auto md:mx-0 flex items-center gap-3 p-2">
-                <div className="hidden md:block text-sm font-bold text-gray-700 ml-4 mr-2 drop-shadow-sm">次世代アイドル<br/>エントリー受付中！</div>
-                
-                {/* --- LINEボタン画像切り替え部分（白い枠を削除） --- */}
+                <div className="hidden md:block text-sm font-bold text-gray-700 ml-4 mr-2">次世代アイドル<br/>エントリー受付中！</div>
                 <div className="flex-1 animate-float">
                   <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-20 object-contain cursor-pointer transition-transform transform hover:scale-110 drop-shadow-xl mx-auto" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-                  <button style={{display: 'none'}} className="w-full bg-[#06C755] hover:bg-[#05b34c] text-white py-3 px-6 rounded-full font-bold text-base shadow-md transition-transform transform hover:scale-105 items-center justify-center gap-2 relative overflow-hidden group">
-                    <span className="absolute inset-0 w-full h-full bg-white/20 group-hover:scale-x-100 origin-left scale-x-0 transition-transform duration-300 ease-out"></span>
-                    <i className="fa-brands fa-line text-xl"></i> LINEで無料エントリー！
-                  </button>
+                  <button style={{display: 'none'}} className="w-full bg-[#06C755] text-white py-3 px-6 rounded-full font-bold">LINEで無料エントリー！</button>
                 </div>
-                
               </div>
             </div>
           )}
@@ -1143,7 +698,6 @@
       );
     }
 
-    // --- Reactのマウント ---
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
