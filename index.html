@@ -50,10 +50,16 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-8px); }
     }
+    @keyframes fever-glow {
+      0% { text-shadow: 0 0 5px #ff00de, 0 0 10px #ff00de; }
+      50% { text-shadow: 0 0 20px #ff00de, 0 0 30px #ff00de; }
+      100% { text-shadow: 0 0 5px #ff00de, 0 0 10px #ff00de; }
+    }
     
     .animate-fade-in { animation: fade-in 0.5s ease-out; }
     .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
     .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-fever { animation: fever-glow 1.5s infinite; }
     
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -62,9 +68,7 @@
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
     }
-    .animate-slow-zoom {
-      animation: slow-zoom 8s ease-in-out infinite;
-    }
+    .animate-slow-zoom { animation: slow-zoom 8s ease-in-out infinite; }
 
     @keyframes sparkle-anim {
       0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
@@ -383,27 +387,21 @@
             ) : (
               <div className="animate-fade-in">
                 
-                {/* HERO SECTION (top.png復活 & 中央寄せ) */}
+                {/* HERO SECTION */}
                 <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center">
                     <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
-                    
-                    {/* メインロゴ・タイトル画像 */}
                     <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md mb-10" onError={(e) => e.target.style.display='none'} />
-                    
-                    {/* バナーギャラリー (修正版: 画像の下にテキスト) */}
                     <div className="w-full max-w-6xl overflow-hidden relative group">
                        <div className="flex gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 pb-10">
                          {BANNERS.map(banner => (
                            <div key={banner.id} className="flex-shrink-0 w-[85%] md:w-[45%] snap-center">
-                             {/* バナー画像 */}
                              <div className="relative aspect-[16/9] w-full rounded-[2rem] overflow-hidden shadow-lg border-4 border-white mb-4 transition-transform hover:scale-[1.02]">
                                <img src={banner.image} className="w-full h-full object-cover" onError={(e) => { e.target.src = 'https://via.placeholder.com/800x450/fdf2f8/db2777?text=Banner+Image'; }} />
                                <div className="absolute top-4 left-4">
                                  <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{banner.label}</span>
                                </div>
                              </div>
-                             {/* バナー情報テキスト (画像の下) */}
                              <div className="text-left px-4">
                                <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight mb-1">{banner.title}</h3>
                                <p className="text-xs md:text-sm text-gray-500 font-medium mb-3">{banner.subtitle}</p>
@@ -412,13 +410,6 @@
                                </button>
                              </div>
                            </div>
-                         ))}
-                       </div>
-                       
-                       {/* ガイドアイコン (ドット) */}
-                       <div className="flex justify-center gap-2 -mt-4">
-                         {BANNERS.map((_, i) => (
-                           <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === 0 ? 'bg-pink-500' : 'bg-pink-200'}`}></div>
                          ))}
                        </div>
                     </div>
@@ -446,9 +437,6 @@
                             ) : (
                               <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                             )}
-                            {idol.videoUrl && (
-                                <div className="absolute bottom-2 right-2 text-white/50 text-xs"><i className="fa-solid fa-play"></i></div>
-                            )}
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
                             <h3 className="font-bold text-base mb-1">{idol.name}</h3>
@@ -463,7 +451,7 @@
                   </div>
                 </section>
 
-                {/* TOPICS SECTION */}
+                {/* TOPICS SECTION (復元) */}
                 <section id="topics" className="py-12 max-w-6xl mx-auto px-4">
                   <div className="text-center mb-10"><h2 className="text-4xl font-serif text-gray-800 uppercase tracking-widest drop-shadow-sm">Topics</h2></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -482,13 +470,19 @@
                 {/* EVENT DASHBOARD */}
                 <section id="ranking" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="EVENT DASHBOARD" subtitle="最新の戦況とイベント詳細を確認" iconClass="fa-solid fa-trophy" />
+                  
                   <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-1 mb-10 shadow-sm border border-white max-w-lg mx-auto">
-                    {[{id:'ranking',label:'ランキング',icon:'fa-list-ol'},{id:'about',label:'概要',icon:'fa-circle-info'},{id:'benefits',label:'特典',icon:'fa-gift'}].map(t=>(
-                      <button key={t.id} onClick={()=>setEventTab(t.id)} className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${eventTab===t.id?'bg-pink-500 text-white shadow-md':'text-gray-500 hover:text-pink-500'}`}>
+                    {[
+                      {id: 'ranking', label: 'ランキング', icon: 'fa-list-ol'},
+                      {id: 'about', label: '概要', icon: 'fa-circle-info'},
+                      {id: 'benefits', label: '特典', icon: 'fa-gift'}
+                    ].map(t => (
+                      <button key={t.id} onClick={() => setEventTab(t.id)} className={`flex-1 py-3 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${eventTab === t.id ? 'bg-pink-500 text-white shadow-md' : 'text-gray-500 hover:text-pink-500'}`}>
                         <i className={`fa-solid ${t.icon}`}></i> {t.label}
                       </button>
                     ))}
                   </div>
+
                   <div className="animate-fade-in min-h-[400px]">
                     {eventTab === 'ranking' && (
                       <div className="space-y-8 animate-fade-in-up">
@@ -504,7 +498,7 @@
                               <div key={index} onClick={() => {const idol=IDOLS.find(i=>i.id===item.idolId); if(idol) openIdolDetail(idol)}} className={`relative cursor-pointer group transition-transform hover:-translate-y-2 flex flex-col items-center ${index === 0 ? 'md:-translate-y-4' : ''}`}>
                                 <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-md z-30 ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-gray-300' : 'bg-orange-300'}`}>{item.rank}</div>
                                 <div className="relative w-4/5 md:w-full aspect-[3/4] rounded-lg overflow-hidden shadow-lg bg-white/30 backdrop-blur-sm p-1">
-                                  <img src="./rank_frame.png" className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" onError={(e) => { e.target.src = './rank_frame.jpg'; }} />
+                                  <img src="./rank_frame.png" className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'; }} />
                                   <div className="absolute inset-[13.5%] overflow-hidden z-10 flex items-center justify-center bg-pink-50/50">
                                       <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover animate-slow-zoom" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=PHOTO'} />
                                   </div>
@@ -515,32 +509,167 @@
                         </div>
                       </div>
                     )}
+
+                    {eventTab === 'about' && (
+                      <div className="max-w-4xl mx-auto space-y-10 animate-fade-in-up">
+                        <div className="bg-white/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-sm">
+                          <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                            <span className="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                            ランキングの概要
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-pink-50/50 p-6 rounded-3xl border border-pink-100">
+                              <div className="flex items-center gap-3 mb-3 text-pink-600">
+                                <i className="fa-solid fa-bolt-lightning text-xl"></i>
+                                <h4 className="font-bold">リアルタイム変動</h4>
+                              </div>
+                              <p className="text-sm text-gray-600 leading-relaxed">応援ポイントによって順位はリアルタイムで変動。最後の1秒まで目が離せません！</p>
+                            </div>
+                            <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
+                              <div className="flex items-center gap-3 mb-3 text-blue-600">
+                                <i className="fa-solid fa-users text-xl"></i>
+                                <h4 className="font-bold">プロデューサー数（支持層）</h4>
+                              </div>
+                              <p className="text-sm text-gray-600 leading-relaxed">ポイントだけでなく、「何人のファンに愛されているか」も重要な評価指標。支持層の厚さでトップを目指しましょう。</p>
+                            </div>
+                          </div>
+                          <div className="mt-8">
+                            <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><i className="fa-solid fa-star text-amber-400"></i> 多彩なカテゴリー</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {['総合', '都道府県別', '系統別(王道/K-POP等)', '新人', 'アパレルモデル枠', '表紙争奪戦'].map(cat => (
+                                <span key={cat} className="bg-white px-4 py-2 rounded-full text-xs font-bold text-gray-600 border border-gray-100 shadow-sm">{cat}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-indigo-900 to-purple-900 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
+                          <div className="absolute top-0 right-0 p-8 opacity-10"><i className="fa-solid fa-fire-flame-curved text-9xl"></i></div>
+                          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                            <span className="bg-white text-indigo-900 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                            自力で大逆転！システム
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div className="space-y-6">
+                              <div>
+                                <div className="flex justify-between items-end mb-2">
+                                  <h4 className="font-bold flex items-center gap-2"><i className="fa-solid fa-seedling text-green-400"></i> 努力ゲージ</h4>
+                                  <span className="text-xs font-bold text-green-400">MAXでフィーバー！</span>
+                                </div>
+                                <div className="h-4 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/20">
+                                  <div className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full w-[85%] shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+                                </div>
+                              </div>
+                              <ul className="text-sm space-y-3 opacity-90">
+                                <li className="flex gap-3"><i className="fa-solid fa-camera mt-1"></i> <span><strong>自撮り投稿：</strong> 日々の活動報告でゲージUP</span></li>
+                                <li className="flex gap-3"><i className="fa-solid fa-comment-heart mt-1"></i> <span><strong>ファンへの神対応：</strong> 交流を深めてゲージ加速</span></li>
+                              </ul>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 text-center animate-fever shadow-2xl">
+                              <h4 className="text-3xl font-black italic tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-amber-500">FEVER TIME!!</h4>
+                              <p className="text-xs font-bold leading-relaxed">努力ゲージがMAXになると発動！<br/>獲得応援ポイントが最大<strong>2倍</strong>に爆増。<br/>あなたの頑張りでピンチをひっくり返せ！</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {eventTab === 'benefits' && (
+                      <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                          <div className="lg:col-span-12 bg-gradient-to-br from-amber-50 via-yellow-100 to-amber-200 p-8 rounded-[3rem] border-2 border-amber-300 shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                            <div className="absolute -right-4 -top-4 text-amber-500/10 text-[10rem] rotate-12 group-hover:rotate-0 transition-transform"><i className="fa-solid fa-crown"></i></div>
+                            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                              <div className="text-center md:text-left">
+                                <span className="bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-md mb-4 inline-block">GRAND PRIX</span>
+                                <h3 className="text-4xl font-black text-amber-900 font-serif mb-2">SSランク</h3>
+                                <p className="text-amber-700 font-bold mb-4">総合1〜3位：雑誌表紙 & 4P巻頭特集</p>
+                              </div>
+                              <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {[
+                                  { icon: 'fa-book-open', text: '表紙&巻頭特集' },
+                                  { icon: 'fa-camera-retro', text: 'プロ撮り下ろし' },
+                                  { icon: 'fa-star', text: 'レギュラー就任' },
+                                  { icon: 'fa-shirt', text: 'アパレル公式モデル' },
+                                  { icon: 'fa-tv', text: '大型ビジョン広告' }
+                                ].map((item, i) => (
+                                  <div key={i} className="bg-white/60 backdrop-blur-sm p-3 rounded-2xl flex flex-col items-center text-center">
+                                    <i className={`fa-solid ${item.icon} text-amber-600 mb-1`}></i>
+                                    <span className="text-[10px] font-bold text-amber-900 leading-tight">{item.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="lg:col-span-7 bg-white/90 p-8 rounded-[2.5rem] border border-pink-200 shadow-sm relative group overflow-hidden">
+                             <div className="absolute top-0 left-0 w-2 h-full bg-pink-500"></div>
+                             <h3 className="text-2xl font-bold text-pink-600 mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Sランク</h3>
+                             <p className="text-sm font-bold text-gray-500 mb-6">上位層 / TOP10：1ページフル特集</p>
+                             <ul className="space-y-4">
+                               <li className="flex items-start gap-3 bg-pink-50/50 p-3 rounded-2xl">
+                                 <i className="fa-solid fa-magic text-pink-500 mt-1"></i>
+                                 <p className="text-xs font-bold text-gray-700"><strong>完全プロデュース撮影会：</strong> プロのヘアメイク・スタイリストがあなたを別人に！</p>
+                               </li>
+                               <li className="flex items-start gap-3 bg-indigo-50/50 p-3 rounded-2xl">
+                                 <i className="fa-solid fa-mobile-screen text-indigo-500 mt-1"></i>
+                                 <p className="text-xs font-bold text-gray-700"><strong>誌面AR動画：</strong> スマホをかざすと写真が動き出す魔法の仕掛けを搭載！</p>
+                               </li>
+                             </ul>
+                          </div>
+
+                          <div className="lg:col-span-5 space-y-6">
+                            <div className="bg-white/90 p-6 rounded-[2.5rem] border border-blue-200 shadow-sm relative overflow-hidden">
+                              <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                              <h3 className="text-xl font-bold text-blue-600 mb-1">Aランク</h3>
+                              <div className="flex items-center gap-3 bg-blue-50/50 p-3 rounded-2xl">
+                                <i className="fa-solid fa-hospital text-blue-500"></i>
+                                <p className="text-[10px] font-bold text-gray-700">美容クリニック・ホワイトニング無料券を贈呈！</p>
+                              </div>
+                            </div>
+                            <div className="bg-white/90 p-6 rounded-[2.5rem] border border-gray-200 shadow-sm relative overflow-hidden">
+                              <div className="absolute top-0 left-0 w-2 h-full bg-gray-400"></div>
+                              <h3 className="text-xl font-bold text-gray-500 mb-1">Bランク</h3>
+                              <div className="flex items-center gap-3 bg-gray-50/50 p-3 rounded-2xl">
+                                <i className="fa-solid fa-qrcode text-gray-500"></i>
+                                <p className="text-[10px] font-bold text-gray-700">SNSへ誘導する「下克上QR」を必ず掲載！</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </section>
 
-                {/* IDOL LIST */}
+                {/* IDOL LIST (フィルター復元) */}
                 <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
                   <SectionTitle title="IDOL LIST" subtitle="あなただけの原石（推し）を見つけよう！" iconClass="fa-solid fa-users" />
                   <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
-                    <div className="relative mb-4">
+                    <div className="relative mb-6">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i className="fa-solid fa-magnifying-glass text-gray-400"></i></div>
                       <input type="text" placeholder="名前で検索..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full pl-11 py-3 bg-white/50 border border-gray-200 rounded-full focus:outline-none ring-pink-300 font-medium shadow-sm" />
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    {/* フィルターボタンエリア復元 */}
+                    <div className="flex flex-wrap gap-2 mb-4">
                        {['all', 'rookie', 'pref', 'style'].map(type => (
-                         <button key={type} onClick={() => setIdolFilterType(type)} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}>
+                         <button 
+                           key={type} 
+                           onClick={() => setIdolFilterType(type)} 
+                           className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors shadow-sm ${idolFilterType === type ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-pink-50'}`}
+                         >
                            {type === 'all' ? 'すべて' : type === 'rookie' ? '新人' : type === 'pref' ? '都道府県別' : '系統別'}
                          </button>
                        ))}
                     </div>
+                    {/* 詳細選択肢復元 */}
+                    {idolFilterType === 'pref' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniquePrefs.map(p => <button key={p} onClick={() => setIdolFilterPref(p)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterPref === p ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-500 border-gray-100 shadow-sm'}`}>{p}</button>)}</div>}
+                    {idolFilterType === 'style' && <div className="flex gap-2 overflow-x-auto pb-2 mt-3 hide-scrollbar">{uniqueStyles.map(s => <button key={s} onClick={() => setIdolFilterStyle(s)} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap border ${idolFilterStyle === s ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-white text-gray-500 border-gray-100 shadow-sm'}`}>{s}</button>)}</div>}
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                     {filteredIdols.map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="relative overflow-hidden rounded-3xl mb-3 shadow-md bg-white/90 p-1 border border-white">
-                          {idol.titleBadge && (
-                            <div className="absolute top-2 right-2 bg-gradient-to-br from-yellow-300 to-amber-500 text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-lg transform rotate-6 border border-white z-20"><i className="fa-solid fa-crown"></i></div>
-                          )}
                           <img src={`./idol${idol.id}.png`} className="w-full aspect-[4/5] object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/fdf2f8/db2777?text=IDOL'} />
                         </div>
                         <div className="px-2">
@@ -588,17 +717,54 @@
             )}
           </main>
 
-          <footer className="bg-gray-900/90 backdrop-blur-md text-white pt-16 pb-32 md:pb-16 mt-20 rounded-t-[3rem] border-t border-white/20 shadow-2xl relative z-10 text-center md:text-left">
-            <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div>
-                <img src="./logo.png" className="h-16 md:h-20 object-contain mb-4 mx-auto md:mx-0" onError={(e)=>e.target.style.display='none'} />
-                <p className="text-gray-300 text-sm font-medium">もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。</p>
+          {/* フッターセクションのアップデート (スマホ1枚) */}
+          <footer className="mt-40 relative bg-white border-t border-pink-100 overflow-visible">
+            <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center md:items-start justify-between relative">
+              
+              <div className="md:w-1/2 text-center md:text-left z-10 space-y-6">
+                <div className="flex flex-col items-center md:items-start gap-3">
+                  <img src="./logo.png" className="h-16 md:h-20 object-contain" alt="もしアイ ロゴ" onError={(e)=>e.target.style.display='none'} />
+                  <h3 className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-500 font-serif">
+                    あなたのスマホから始まる、新しい物語。
+                  </h3>
+                  <p className="text-gray-500 text-sm font-medium">お気に入りの原石とコミュニケーションを楽しもう♪</p>
+                </div>
+                
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
+                  <a href="#" className="w-40 transition-transform hover:scale-105 active:scale-95">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" className="w-full h-12" />
+                  </a>
+                  <a href="#" className="w-44 transition-transform hover:scale-105 active:scale-95">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="w-full h-12" />
+                  </a>
+                </div>
+              </div>
+
+              <div className="md:w-1/2 mt-16 md:mt-0 relative flex justify-center md:justify-end gap-2 overflow-visible h-40">
+                
+                {/* はみ出しバッジ */}
+                <div className="absolute -top-32 right-1/2 md:right-1/4 translate-x-1/2 bg-rose-500 text-white w-24 h-24 rounded-full flex flex-col items-center justify-center shadow-xl border-4 border-white z-30 animate-float text-center p-2 leading-tight">
+                  <span className="text-[14px] font-black">1,800万</span>
+                  <span className="text-[10px] font-bold">ユーザー突破!</span>
+                </div>
+
+                {/* スマホ1枚 (調整) */}
+                <div className="w-44 md:w-64 transform -translate-y-24 md:-translate-y-48 hover:-translate-y-52 transition-transform duration-500 z-20">
+                  <img src="./footer_phone1.png" className="w-full h-auto drop-shadow-2xl" onError={(e)=>e.target.src='https://via.placeholder.com/300x600/fdf2f8/db2777?text=PORTAL+APP'} />
+                </div>
+              </div>
+
+            </div>
+
+            <div className="bg-gray-900 text-white py-6">
+              <div className="max-w-6xl mx-auto px-6 text-center text-xs opacity-60">
+                &copy; 2026 もしも私が、アイドルになったら。 Project All Rights Reserved.
               </div>
             </div>
           </footer>
 
           {(activeTab === 'home' || activeTab === 'idolDetail') && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-transparent z-50 md:flex md:justify-center animate-fade-in-up">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-transparent z-[100] md:flex md:justify-center animate-fade-in-up">
               <div className="max-w-md w-full mx-auto md:mx-0 flex items-center gap-3 p-2">
                 <div className="hidden md:block text-sm font-bold text-gray-700 ml-4 mr-2 drop-shadow-sm">次世代アイドル<br/>エントリー受付中！</div>
                 <div className="flex-1 animate-float">
