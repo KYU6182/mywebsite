@@ -466,9 +466,9 @@
               </div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-pink-100 flex flex-col items-center justify-center">
-               <i className="fa-solid fa-columns text-4xl text-purple-500 mb-4"></i>
-               <h3 className="font-bold text-gray-800 mb-2">掲載シミュレーター</h3>
-               <p className="text-sm text-gray-600">あなたは現在 <span className="font-bold text-pink-500">1/4ページ枠</span> です！</p>
+                <i className="fa-solid fa-columns text-4xl text-purple-500 mb-4"></i>
+                <h3 className="font-bold text-gray-800 mb-2">掲載シミュレーター</h3>
+                <p className="text-sm text-gray-600">あなたは現在 <span className="font-bold text-pink-500">1/4ページ枠</span> です！</p>
             </div>
           </div>
         </div>
@@ -540,7 +540,8 @@
           <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-2' : 'bg-transparent py-4'}`}>
             <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
-                <img src="./logo.png" alt="もしアイ" className="h-8 md:h-10 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                {/* ロゴサイズを 200% (h-16 md:h-20) に拡大 */}
+                <img src="./logo.png" alt="もしアイ" className="h-16 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
                 <span style={{display: 'none'}} className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif drop-shadow-sm">もしアイ</span>
               </div>
               <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
@@ -750,7 +751,8 @@
             <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
               <div>
                 <div className="flex items-center justify-center md:justify-start mb-4">
-                  <img src="./logo.png" alt="もしアイ" className="h-14 md:h-20 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                  {/* ロゴサイズを 200% (h-28 md:h-40) に拡大 */}
+                  <img src="./logo.png" alt="もしアイ" className="h-28 md:h-40 object-contain" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
                   <span style={{display: 'none'}} className="text-2xl font-bold font-serif">もしアイ</span>
                 </div>
                 <p className="text-gray-300 text-sm font-medium">もしも私が、アイドルになったら。<br />あなたのスマホから始まる、新しい物語。</p>
