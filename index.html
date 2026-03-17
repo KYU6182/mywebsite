@@ -192,14 +192,9 @@
     ];
 
     // --- 共通UIコンポーネント ---
-    const SectionTitle = ({ title, subtitle, iconClass }) => (
+    const SectionTitle = ({ title, subtitle }) => (
       <div className="text-center mb-10">
-        <div className="flex justify-center items-center gap-2 mb-2 text-pink-500 drop-shadow-sm">
-          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
-          {iconClass && <i className={`${iconClass} text-2xl`}></i>}
-          <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
-        </div>
-        <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500 font-serif tracking-wide drop-shadow-sm">
+        <h2 className="text-4xl font-serif text-gray-800 uppercase tracking-widest drop-shadow-sm">
           {title}
         </h2>
         {subtitle && <p className="text-gray-700 mt-2 text-sm md:text-base font-medium drop-shadow-md">{subtitle}</p>}
@@ -223,7 +218,7 @@
           <button onClick={onBack} className="mb-8 text-pink-500 font-bold flex items-center gap-2 hover:bg-pink-50 px-4 py-2 rounded-full transition-colors bg-white/80 shadow-sm border border-pink-100">
             <i className="fa-solid fa-arrow-left"></i> トップに戻る
           </button>
-          <SectionTitle title="ALL IDOLS" subtitle="あいうえお順で見つける、あなたの推し" iconClass="fa-solid fa-address-book" />
+          <SectionTitle title="ALL IDOLS" subtitle="あいうえお順で見つける、あなたの推し" />
 
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-4 md:p-6 shadow-sm border border-white mb-8 max-w-4xl mx-auto">
             <div className="relative mb-6">
@@ -808,24 +803,24 @@
             />
           )}
 
-          <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-sm py-2">
-            <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
-                <img src="./logo.png" alt="もしアイ" className="h-[140px] md:h-[200px] object-contain transition-all" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+          <header className="absolute top-0 w-full z-50 py-4 pointer-events-none">
+            <div className="max-w-6xl mx-auto px-4 flex justify-between items-start">
+              <div className="flex items-center gap-2 cursor-pointer pointer-events-auto w-[45%] md:w-auto max-w-[300px]" onClick={() => {setActiveTab('home'); window.scrollTo(0,0);}}>
+                <img src="./logo.png" alt="もしアイ" className="w-full h-auto object-contain transition-all drop-shadow-md" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
                 <span style={{display: 'none'}} className="text-xl font-bold text-pink-500 font-serif">もしアイ</span>
               </div>
-              <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
+              <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-gray-700 pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full shadow-sm mt-2">
                 {['HOME', 'EVENT', 'IDOLS', 'MAGAZINE'].map((item) => (
                   <button key={item} onClick={() => {
                     const id = item === 'EVENT' ? 'ranking' : item === 'IDOLS' ? 'idol-list' : item.toLowerCase();
                     scrollToSection(id);
-                  }} className="hover:text-pink-500 transition-colors uppercase font-bold tracking-wider">{item}</button>
+                  }} className="hover:text-pink-500 transition-colors uppercase tracking-wider">{item}</button>
                 ))}
               </nav>
             </div>
           </header>
 
-          <main className="pt-24">
+          <main className="pt-32">
             {activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView 
                 idol={selectedIdol} 
@@ -852,8 +847,6 @@
                 {/* HERO SECTION */}
                 <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center relative">
-                    <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
-                    
                     <div className="relative w-full max-w-3xl flex flex-col items-center mb-10">
                       {/* メイントップ画像 */}
                       <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md relative z-10" onError={(e) => e.target.style.display='none'} />
@@ -937,7 +930,7 @@
                 {/* EVENT DASHBOARD - SHOWROOM風ブラッシュアップ版 */}
                 <section id="ranking" className="py-16 bg-white/30 backdrop-blur-sm border-y border-white/50 mb-10">
                   <div className="max-w-6xl mx-auto px-4">
-                    <SectionTitle title="EVENT DASHBOARD" subtitle="開催中のイベントと現在の順位" iconClass="fa-solid fa-trophy" />
+                    <SectionTitle title="EVENT DASHBOARD" subtitle="開催中のイベントと現在の順位" />
                     
                     {/* イベント切り替えボタン */}
                     <div className="flex flex-col md:flex-row gap-4 justify-center mb-10">
@@ -1175,7 +1168,7 @@
 
                 {/* IDOL LIST */}
                 <section id="idol-list" className="py-16 max-w-6xl mx-auto px-4">
-                  <SectionTitle title="IDOLS" subtitle="あなただけの原石を見つけよう" iconClass="fa-solid fa-users" />
+                  <SectionTitle title="IDOLS" subtitle="あなただけの原石を見つけよう" />
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                     {filteredIdols.slice(0, 8).map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer bg-white/90 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-white">
@@ -1197,7 +1190,7 @@
 
                 {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-16 max-w-6xl mx-auto px-4">
-                  <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" iconClass="fa-solid fa-user-tie" />
+                  <SectionTitle title="PRODUCER RANKING" subtitle="トッププロデューサーたち！" />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {PRODUCERS.map((producer, index) => (
                       <div key={index} onClick={() => openProducerDetail(producer)} className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-md border-2 border-white cursor-pointer group transition-transform hover:-translate-y-2 text-center">
@@ -1212,7 +1205,7 @@
 
                 {/* MAGAZINE ARCHIVE */}
                 <section id="magazine" className="py-16 bg-white/40 backdrop-blur-md rounded-[3rem] p-4 md:p-10 border border-white shadow-xl my-10 relative overflow-hidden max-w-6xl mx-auto">
-                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。過去の表紙をチェック" iconClass="fa-solid fa-book-open" />
+                  <SectionTitle title="MAGAZINE ARCHIVE" subtitle="あなたが主役の誌面体験。過去の表紙をチェック" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 relative z-10">
                     {MAGAZINES.map((mag) => (
                       <div key={mag.id} className="flex flex-col items-center group">
