@@ -820,7 +820,7 @@
             </div>
           </header>
 
-          <main className="pt-32">
+          <main className="pt-20 md:pt-24">
             {activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView 
                 idol={selectedIdol} 
@@ -845,7 +845,7 @@
               <div className="animate-fade-in">
                 
                 {/* HERO SECTION */}
-                <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
+                <section id="home" className="pb-8 pt-2 md:pb-12 md:pt-4 max-w-6xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center relative">
                     <div className="relative w-full max-w-3xl flex flex-col items-center mb-10">
                       {/* メイントップ画像 */}
@@ -1230,10 +1230,10 @@
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-200/20 blur-[100px] pointer-events-none rounded-full"></div>
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 blur-[100px] pointer-events-none rounded-full"></div>
             <div className="max-w-4xl mx-auto px-6 flex flex-col items-center text-center space-y-12 relative z-10">
-              <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20 w-full animate-fade-in">
-                <img src="./logo.png" className="h-28 md:h-44 object-contain drop-shadow-sm transition-transform hover:scale-105" alt="もしアイ ロゴ" onError={(e)=>e.target.style.display='none'} />
-                <div className="h-16 w-px bg-pink-200 hidden md:block opacity-50"></div>
-                <img src="./off_melty_logo.png" className="h-16 md:h-28 object-contain opacity-80 hover:opacity-100 transition-opacity" alt="Off-Melty ロゴ" onError={(e)=>e.target.src='https://via.placeholder.com/200x80/fdf2f8/db2777?text=Off-Melty'} />
+              <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 w-full animate-fade-in">
+                <img src="./logo.png" className="h-20 md:h-28 object-contain drop-shadow-sm transition-transform hover:scale-105" alt="もしアイ ロゴ" onError={(e)=>e.target.style.display='none'} />
+                <div className="h-12 w-px bg-pink-200 hidden md:block opacity-50"></div>
+                <img src="./off_melty_logo.png" className="h-12 md:h-16 object-contain opacity-80 hover:opacity-100 transition-opacity" alt="Off-Melty ロゴ" onError={(e)=>e.target.src='https://via.placeholder.com/200x80/fdf2f8/db2777?text=Off-Melty'} />
               </div>
               <div className="space-y-6">
                 <div className="relative inline-block">
