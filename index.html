@@ -851,10 +851,20 @@
                 
                 {/* HERO SECTION */}
                 <section id="home" className="py-8 md:py-12 max-w-6xl mx-auto px-4 text-center">
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center relative">
                     <img src="./catchphrase.png" className="h-10 md:h-14 object-contain mb-4 drop-shadow-sm" onError={(e) => e.target.style.display='none'} />
-                    <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md mb-10" onError={(e) => e.target.style.display='none'} />
-                    <div className="w-full max-w-6xl overflow-hidden relative group">
+                    
+                    <div className="relative w-full max-w-3xl flex flex-col items-center mb-10">
+                      {/* メイントップ画像 */}
+                      <img src="./top.png" className="w-full max-w-2xl object-contain drop-shadow-md relative z-10" onError={(e) => e.target.style.display='none'} />
+                      
+                      {/* LINEエントリーバナー（ネガティブマージンで上に重ねる） */}
+                      <a href="https://line.me" target="_blank" rel="noreferrer" className="w-[90%] sm:w-[80%] max-w-xl -mt-8 sm:-mt-12 md:-mt-16 relative z-20 hover:scale-105 transition-transform duration-300 drop-shadow-xl animate-float">
+                        <img src="./line_entry_banner.png" alt="LINEで簡単！無料エントリー" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
+                      </a>
+                    </div>
+
+                    <div className="w-full max-w-6xl overflow-hidden relative group mt-4">
                        <div className="flex gap-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 pb-10">
                          {BANNERS.map(banner => (
                            <div key={banner.id} className="flex-shrink-0 w-[85%] md:w-[45%] snap-center cursor-pointer hover:opacity-90 transition-opacity">
