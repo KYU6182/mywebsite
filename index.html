@@ -136,30 +136,33 @@
       e.currentTarget.src = FALLBACK_IMAGE;
     };
 
-    // メディア（画像/動画）の自動判定表示コンポーネント
+    // メディア（画像/動画）の自動判定・自動フォールバック表示コンポーネント
     const MediaDisplay = ({ src, fallbackSrc, className }) => {
+      const [mediaError, setMediaError] = useState(false);
       const isVideo = src && src.match(/\.(mp4|webm|ogg)$/i);
-      if (isVideo) {
-        return <video src={src} autoPlay loop muted playsInline className={className} />;
+      
+      // 動画ファイルが存在しなかった場合、自動的に画像（fallbackSrc）に切り替える
+      if (isVideo && !mediaError) {
+        return <video src={src} autoPlay loop muted playsInline className={className} onError={() => setMediaError(true)} />;
       }
-      return <img src={src || fallbackSrc} className={className} onError={handleImgError} />;
+      return <img src={mediaError ? fallbackSrc : (src || fallbackSrc)} className={className} onError={handleImgError} />;
     };
 
-    // 初期データ (loginEmail を追加して判定に使用します)
+    // 初期データ (デフォルトのprofileImageを動画(mp4)に設定しています。動画がなければ自動でpngになります)
     const INITIAL_IDOLS = [
       { 
-        id: 1, loginEmail: "kirara@example.com", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}],
+        id: 1, loginEmail: "kirara@example.com", profileImage: "./idol1.mp4", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}],
         isStreaming: true,
         timeline: [
           { id: 101, date: "2時間前", text: "現在2位…悔しい！絶対1位になって表紙を飾りたいです😭✨\nみんなの力を貸してね！", img: "./timeline_kirara1.png", likes: 245 },
           { id: 102, date: "昨日", text: "今日は朝からダンスレッスンでした！\n新しい振り付け、早くみんなに見せたいな🎶", img: null, likes: 189 }
         ]
       },
-      { id: 5, loginEmail: "kurumi@example.com", name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", titleBadge: "注目ルーキー", producerCount: "1,540", videoUrl: "", birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語", topProducers: [{name: "くるみん隊長", pt: "95,400 票"}, {name: "DJ_T", pt: "88,100 票"}, {name: "あやか", pt: "74,800 票"}], isStreaming: false, timeline: [] },
-      { id: 6, loginEmail: "ria@example.com", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [] },
-      { id: 2, loginEmail: "yui@example.com", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [] },
-      { id: 3, loginEmail: "hina@example.com", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [] },
-      { id: 4, loginEmail: "ai@example.com", name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", titleBadge: "第3号 特集確定", producerCount: "720", videoUrl: "", birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話", topProducers: [{name: "Aqua", pt: "49,500 票"}, {name: "博多っ子", pt: "35,200 票"}, {name: "Nemo", pt: "22,100 票"}], isStreaming: false, timeline: [] },
+      { id: 5, loginEmail: "kurumi@example.com", profileImage: "./idol5.mp4", name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", titleBadge: "注目ルーキー", producerCount: "1,540", videoUrl: "", birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語", topProducers: [{name: "くるみん隊長", pt: "95,400 票"}, {name: "DJ_T", pt: "88,100 票"}, {name: "あやか", pt: "74,800 票"}], isStreaming: false, timeline: [] },
+      { id: 6, loginEmail: "ria@example.com", profileImage: "./idol6.mp4", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [] },
+      { id: 2, loginEmail: "yui@example.com", profileImage: "./idol2.mp4", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [] },
+      { id: 3, loginEmail: "hina@example.com", profileImage: "./idol3.mp4", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [] },
+      { id: 4, loginEmail: "ai@example.com", profileImage: "./idol4.mp4", name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", titleBadge: "第3号 特集確定", producerCount: "720", videoUrl: "", birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話", topProducers: [{name: "Aqua", pt: "49,500 票"}, {name: "博多っ子", pt: "35,200 票"}, {name: "Nemo", pt: "22,100 票"}], isStreaming: false, timeline: [] },
     ];
 
     const OFF_MELTY_CATALOG = [
