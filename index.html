@@ -139,7 +139,13 @@
     // メディア（画像/動画）の自動判定・自動フォールバック表示コンポーネント
     const MediaDisplay = ({ src, fallbackSrc, className }) => {
       const [mediaError, setMediaError] = useState(false);
-      const isVideo = src && src.match(/\.(mp4|webm|ogg)$/i);
+      
+      // 対象のソース(src)が変わるたびにエラー状態をリセットする
+      useEffect(() => {
+        setMediaError(false);
+      }, [src]);
+
+      const isVideo = src && typeof src === 'string' && src.match(/\.(mp4|webm|ogg|mov)$/i);
       
       // 動画ファイルが存在しなかった場合、自動的に画像（fallbackSrc）に切り替える
       if (isVideo && !mediaError) {
@@ -151,18 +157,18 @@
     // 初期データ (デフォルトのprofileImageを動画(mp4)に設定しています。動画がなければ自動でpngになります)
     const INITIAL_IDOLS = [
       { 
-        id: 1, loginEmail: "kirara@example.com", profileImage: "./idol1.mp4", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}],
+        id: 1, loginEmail: "kirara@example.com", profileImage: "./idol1.mp4", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}], totalVotes: 15200,
         isStreaming: true,
         timeline: [
           { id: 101, date: "2時間前", text: "現在2位…悔しい！絶対1位になって表紙を飾りたいです😭✨\nみんなの力を貸してね！", img: "./timeline_kirara1.png", likes: 245 },
           { id: 102, date: "昨日", text: "今日は朝からダンスレッスンでした！\n新しい振り付け、早くみんなに見せたいな🎶", img: null, likes: 189 }
         ]
       },
-      { id: 5, loginEmail: "kurumi@example.com", profileImage: "./idol5.mp4", name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", titleBadge: "注目ルーキー", producerCount: "1,540", videoUrl: "", birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語", topProducers: [{name: "くるみん隊長", pt: "95,400 票"}, {name: "DJ_T", pt: "88,100 票"}, {name: "あやか", pt: "74,800 票"}], isStreaming: false, timeline: [] },
-      { id: 6, loginEmail: "ria@example.com", profileImage: "./idol6.mp4", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [] },
-      { id: 2, loginEmail: "yui@example.com", profileImage: "./idol2.mp4", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [] },
-      { id: 3, loginEmail: "hina@example.com", profileImage: "./idol3.mp4", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [] },
-      { id: 4, loginEmail: "ai@example.com", profileImage: "./idol4.mp4", name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", titleBadge: "第3号 特集確定", producerCount: "720", videoUrl: "", birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話", topProducers: [{name: "Aqua", pt: "49,500 票"}, {name: "博多っ子", pt: "35,200 票"}, {name: "Nemo", pt: "22,100 票"}], isStreaming: false, timeline: [] },
+      { id: 5, loginEmail: "kurumi@example.com", profileImage: "./idol5.mp4", name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", titleBadge: "注目ルーキー", producerCount: "1,540", videoUrl: "", birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語", topProducers: [{name: "くるみん隊長", pt: "95,400 票"}, {name: "DJ_T", pt: "88,100 票"}, {name: "あやか", pt: "74,800 票"}], isStreaming: false, timeline: [], totalVotes: 12450 },
+      { id: 6, loginEmail: "ria@example.com", profileImage: "./idol6.mp4", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [], totalVotes: 13800 },
+      { id: 2, loginEmail: "yui@example.com", profileImage: "./idol2.mp4", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [], totalVotes: 8200 },
+      { id: 3, loginEmail: "hina@example.com", profileImage: "./idol3.mp4", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [], totalVotes: 9500 },
+      { id: 4, loginEmail: "ai@example.com", profileImage: "./idol4.mp4", name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", titleBadge: "第3号 特集確定", producerCount: "720", videoUrl: "", birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話", topProducers: [{name: "Aqua", pt: "49,500 票"}, {name: "博多っ子", pt: "35,200 票"}, {name: "Nemo", pt: "22,100 票"}], isStreaming: false, timeline: [], totalVotes: 10800 },
     ];
 
     const OFF_MELTY_CATALOG = [
@@ -1032,6 +1038,10 @@
 
     const IdolDetailView = ({ idol, onBack, onVoteClick, onOutfitClick, onGiftClick, idolsData, onIdolSelect, onNavigate }) => {
       
+      const sortedIdols = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0));
+      const currentRank = sortedIdols.findIndex(i => i.id === idol.id) + 1;
+      const currentVotes = (idol.totalVotes || 0).toLocaleString();
+
       return (
         <div className="animate-fade-in-up pb-0">
           <div className="max-w-4xl mx-auto px-4 py-10 pb-20">
@@ -1056,8 +1066,8 @@
                   <p className="text-slate-500 font-light text-sm md:text-base leading-relaxed italic border-l border-slate-300 pl-4">"{idol.catchphrase}"</p>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-10 border-y border-slate-200 py-8">
-                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Rank</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">12<span className="text-sm">th</span></p></div>
-                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Votes</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">12,450</p></div>
+                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Rank</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentRank}<span className="text-sm">th</span></p></div>
+                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Votes</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentVotes}</p></div>
                   <div className="text-center"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Producers</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{idol.producerCount}</p></div>
                 </div>
                 <div className="space-y-4">
@@ -1194,6 +1204,7 @@
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
       const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); 
+      const idolsDataRef = useRef(idolsData);
       const [selectedProducer, setSelectedProducer] = useState(null);
       
       const [eventTabs, setEventTabs] = useState({ main: 'ranking', off_melty: 'ranking' }); 
@@ -1218,6 +1229,10 @@
       const dbRef = useRef(null);
 
       const showToast = (msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
+
+      useEffect(() => {
+        idolsDataRef.current = idolsData;
+      }, [idolsData]);
 
       // 1. Firebaseの読み込みと初期化
       useEffect(() => {
@@ -1304,12 +1319,47 @@
           if (!snapshot.empty) {
             const firestoreIdols = [];
             snapshot.forEach(doc => {
-              firestoreIdols.push({ ...doc.data(), id: Number(doc.id) });
+              // IDが文字列の場合（手動追加等）も考慮
+              firestoreIdols.push({ ...doc.data(), id: isNaN(Number(doc.id)) ? doc.id : Number(doc.id) });
             });
-            // INITIAL_IDOLS とマージして最新情報を全体に反映する
-            const mergedIdols = INITIAL_IDOLS.map(initialIdol => {
-              const firestoreIdol = firestoreIdols.find(f => f.id === initialIdol.id);
-              return firestoreIdol ? { ...initialIdol, ...firestoreIdol } : initialIdol;
+            // INITIAL_IDOLS をベースにしつつ、Firestoreにしかない新規アイドルも追加する
+            let mergedIdols = [...INITIAL_IDOLS];
+            firestoreIdols.forEach(fsIdol => {
+              const existingIndex = mergedIdols.findIndex(i => String(i.id) === String(fsIdol.id));
+              if (existingIndex >= 0) {
+                // 既存のアイドルの情報を上書き
+                mergedIdols[existingIndex] = { ...mergedIdols[existingIndex], ...fsIdol };
+              } else {
+                // Firebaseから追加された新規アイドルをリストに追加（画面崩れを防ぐための初期値セット）
+                mergedIdols.push({
+                  id: fsIdol.id,
+                  name: fsIdol.name || "新規アイドル",
+                  type: fsIdol.type || "ニューフェイス",
+                  issue: fsIdol.issue || "未掲載",
+                  isOffMelty: fsIdol.isOffMelty || false,
+                  catchphrase: fsIdol.catchphrase || "よろしくお願いします！",
+                  color: fsIdol.color || "from-slate-300 to-slate-400",
+                  pref: fsIdol.pref || "不明",
+                  style: fsIdol.style || "未設定",
+                  isRookie: fsIdol.isRookie !== undefined ? fsIdol.isRookie : true,
+                  age: fsIdol.age || "?歳",
+                  height: fsIdol.height || "?cm",
+                  hobby: fsIdol.hobby || "秘密",
+                  story: fsIdol.story || "新しい物語がここから始まります。",
+                  titleBadge: fsIdol.titleBadge || "注目",
+                  producerCount: fsIdol.producerCount || "0",
+                  birthday: fsIdol.birthday || "未設定",
+                  hometown: fsIdol.hometown || "未設定",
+                  specialSkill: fsIdol.specialSkill || "未設定",
+                  topProducers: fsIdol.topProducers || [],
+                  isStreaming: fsIdol.isStreaming || false,
+                  timeline: fsIdol.timeline || [],
+                  totalVotes: fsIdol.totalVotes || 0,
+                  profileImage: fsIdol.profileImage || "",
+                  loginEmail: fsIdol.loginEmail || "",
+                  ...fsIdol
+                });
+              }
             });
             setIdolsData(mergedIdols);
           }
@@ -1334,7 +1384,7 @@
                const today = new Date().toISOString().split('T')[0];
 
                // ログインしたメールアドレスがアイドルのものか判定
-               const matchedIdol = INITIAL_IDOLS.find(idol => idol.loginEmail === user.email);
+               const matchedIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === user.email);
                const defaultRole = matchedIdol ? 'idol' : 'producer';
                const targetIdolId = matchedIdol ? matchedIdol.id : null;
 
@@ -1387,9 +1437,9 @@
             } catch(e) { 
                console.error("Firestore Error:", e); 
                // Firestoreルールエラーでもフォールバックしてマイページを見れるようにする
-               const fallbackRole = INITIAL_IDOLS.some(i => i.loginEmail === user.email) ? 'idol' : 'producer';
-               setUserRole(fallbackRole);
-               setUserData({ freeTickets: 3, paidTickets: 0, totalPts: 0, idolId: INITIAL_IDOLS.find(i => i.loginEmail === user.email)?.id });
+               const fallbackIdol = idolsDataRef.current.find(i => i.loginEmail && i.loginEmail === user.email);
+               setUserRole(fallbackIdol ? 'idol' : 'producer');
+               setUserData({ freeTickets: 3, paidTickets: 0, totalPts: 0, idolId: fallbackIdol?.id });
             }
         };
         
@@ -1448,7 +1498,7 @@
             const today = new Date().toISOString().split('T')[0];
             
             // アイドルかどうかを判定
-            const matchedIdol = INITIAL_IDOLS.find(idol => idol.loginEmail === email);
+            const matchedIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === email);
             const defaultRole = matchedIdol ? 'idol' : 'producer';
             const targetIdolId = matchedIdol ? matchedIdol.id : null;
 
@@ -1545,6 +1595,32 @@
         }
       };
 
+      // アイドルへの投票を全ユーザーに共有（Firestoreパブリックデータへ保存）
+      const handleVoteForIdol = async (idolId, amount) => {
+        const currentIdol = idolsData.find(i => i.id === idolId);
+        if (!currentIdol) return;
+        
+        const newTotalVotes = (currentIdol.totalVotes || 0) + amount;
+
+        // メモリの更新（即時反映）
+        const updatedIdols = idolsData.map(idol => 
+          idol.id === idolId ? { ...idol, totalVotes: newTotalVotes } : idol
+        );
+        setIdolsData(updatedIdols);
+
+        // Firestoreへの保存
+        if (firebaseLoaded && dbRef.current) {
+          const { doc, setDoc } = window.FirebaseHelper;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const idolRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'idols', String(idolId));
+          try {
+            await setDoc(idolRef, { totalVotes: newTotalVotes }, { merge: true });
+          } catch (e) {
+            console.error("Vote error:", e);
+          }
+        }
+      };
+
       const filteredIdols = useMemo(() => {
         return idolsData.filter(idol => {
           if (idolSearchText && !idol.name.includes(idolSearchText)) return false;
@@ -1562,9 +1638,9 @@
           <Toast message={toastMessage} />
           
           {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} />}
-          {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
-          {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
-          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
+          {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(data) => { handleVoteForIdol(selectedIdol.id, data.amount); setSuccessModalData(data); }} />}
+          {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(data) => { handleVoteForIdol(selectedIdol.id, data.amount); setSuccessModalData(data); }} />}
+          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(data) => { handleVoteForIdol(selectedIdol.id, data.amount); setSuccessModalData(data); }} />}
           {successModalData && <SuccessModal data={successModalData} onClose={() => setSuccessModalData(null)} idol={idolsData.find(i => i.name === successModalData.idolName)} />}
 
           <header className="absolute top-0 w-full z-50 py-8 pointer-events-none">
@@ -1721,7 +1797,22 @@
                                 </div>
 
                                 {(() => {
-                                  const currentRankingData = ev.rankingData[currentRankingTab] || [];
+                                  let currentRankingData = ev.rankingData[currentRankingTab] || [];
+                                  
+                                  // 総合ランキングの場合は、動的にidolsDataから計算する
+                                  if (currentRankingTab === 'overall') {
+                                    currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
+                                      const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+                                      return {
+                                        rank: index + 1,
+                                        idolId: idol.id,
+                                        name: idol.name,
+                                        value: `${(idol.totalVotes || 0).toLocaleString()} 票`,
+                                        diff: diff
+                                      };
+                                    });
+                                  }
+
                                   const topThree = currentRankingData.slice(0, 3);
                                   const others = currentRankingData.slice(3);
                                   const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
