@@ -688,8 +688,30 @@
           if (window.FirebaseHelper) {
             try {
               const { initializeApp, getAuth, getFirestore } = window.FirebaseHelper;
-              const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-              if (Object.keys(firebaseConfig).length === 0) { return; }
+              
+              // =====================================================================
+              // ★ご自身のFirebaseプロジェクトの設定情報（Config）をここに貼り付けてください
+              // =====================================================================
+              const customFirebaseConfig = {
+                apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
+                authDomain: "moshiai-5735b.firebaseapp.com",
+                projectId: "moshiai-5735b",
+                storageBucket: "moshiai-5735b.firebasestorage.app",
+                messagingSenderId: "347806317602",
+                appId: "1:347806317602:web:d25481c7dd1376aa20de7b"
+              };
+
+              let firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : {};
+              
+              if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
+                firebaseConfig = customFirebaseConfig;
+              }
+
+              if (firebaseConfig.apiKey === "YOUR_API_KEY" || !firebaseConfig.apiKey) {
+                console.warn("Firebase config is missing or invalid.");
+                return;
+              }
+
               const app = initializeApp(firebaseConfig);
               authRef.current = getAuth(app);
               dbRef.current = getFirestore(app);
@@ -752,7 +774,10 @@
       }, [firebaseLoaded]);
 
       const handleAuthSubmit = async (email, password, isLogin) => {
-        if (!firebaseLoaded || !authRef.current) return;
+        if (!firebaseLoaded || !authRef.current) {
+          showToast("【エラー】Firebaseの設定が行われていません。コード内の customFirebaseConfig をご自身のものに書き換えてください。");
+          return;
+        }
         const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc } = window.FirebaseHelper;
         const auth = authRef.current;
         const db = dbRef.current;
