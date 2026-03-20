@@ -108,7 +108,7 @@
 
   <div id="root"></div>
 
-  <!-- Firebaseモジュールのネイティブ読み込み (Auth機能追加・sendEmailVerificationを追加) -->
+  <!-- Firebaseモジュールのネイティブ読み込み -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -129,7 +129,7 @@
       return parseInt(numStr, 10) || 0;
     };
 
-    // 初期データ (今回はStateで管理してマイページから更新できるようにする)
+    // 初期データ
     const INITIAL_IDOLS = [
       { 
         id: 1, name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 pt"}, {name: "ゆうき@きらら推し", pt: "72,100 pt"}, {name: "Kazu", pt: "54,800 pt"}],
@@ -279,8 +279,6 @@
       );
     };
 
-    // --- 認証・マイページ 関連コンポーネント ---
-    
     // ログイン / 新規登録 モーダル
     const AuthModal = ({ onClose, onAuthSubmit }) => {
       const [isLogin, setIsLogin] = useState(true);
@@ -328,51 +326,117 @@
     };
 
     // プロデューサー用 マイページ
-    const ProducerMyPage = ({ user, userData, onLogout }) => {
+    const ProducerMyPage = ({ user, userData, idolsData, onLogout, onUpdateProfile, showToast }) => {
+      const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
+      const [profileImage, setProfileImage] = useState(userData.profileImage || "");
+      const [message, setMessage] = useState(userData.message || "");
+      const [oshiId, setOshiId] = useState(userData.oshiId || "");
+
+      const handleSave = (e) => {
+        e.preventDefault();
+        onUpdateProfile({ name, profileImage, message, oshiId });
+        showToast("プロフィールを更新しました。");
+      };
+
+      const oshiIdol = idolsData.find(i => i.id === Number(oshiId));
+
       return (
-        <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
+        <div className="max-w-5xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
           <SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" />
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* 左側：プロフィール */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {/* 左側：プロフィール表示 */}
             <div className="md:col-span-1 space-y-6">
-              <div className="bg-white p-8 border border-slate-100 shadow-sm text-center relative">
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
-                <div className="w-24 h-24 rounded-full mx-auto bg-slate-100 flex items-center justify-center mb-4"><i className="fa-solid fa-user-tie text-3xl text-slate-400"></i></div>
-                <h3 className="font-serif text-xl font-light text-slate-800 mb-1">ゲスト プロデューサー</h3>
-                <p className="text-[10px] text-slate-400 tracking-widest mb-6">{user?.email || 'demo@example.com'}</p>
-                <div className="border-t border-slate-100 pt-4">
-                  <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-1 uppercase">My Oshi</p>
-                  <p className="font-light text-slate-800">星野 きらら</p>
+                <div className="w-24 h-24 rounded-full mx-auto bg-slate-50 flex items-center justify-center mb-6 overflow-hidden border border-slate-200">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <i className="fa-solid fa-user-tie text-3xl text-slate-300"></i>
+                  )}
+                </div>
+                <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name}</h3>
+                <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{user?.email || 'demo@example.com'}</p>
+                {message && (
+                  <p className="text-xs text-slate-500 font-light italic mb-6 leading-relaxed">"{message}"</p>
+                )}
+                
+                <div className="border-t border-slate-100 pt-6">
+                  <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
+                  {oshiIdol ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <img src={`./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200" onError={(e)=>e.target.src='https://via.placeholder.com/50'} />
+                      <span className="font-light text-slate-800 text-sm">{oshiIdol.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-slate-400 font-light">未設定</span>
+                  )}
                 </div>
               </div>
-              <button onClick={onLogout} className="w-full py-4 bg-transparent border border-slate-300 text-slate-500 text-xs tracking-widest font-medium hover:bg-slate-50 transition-colors">
-                LOGOUT
+              <button onClick={onLogout} className="w-full py-4 bg-transparent border border-slate-300 text-slate-500 text-[10px] tracking-widest font-medium hover:bg-slate-50 transition-colors uppercase">
+                Logout
               </button>
             </div>
 
-            {/* 右側：ダッシュボード */}
-            <div className="md:col-span-2 space-y-6">
-              <div className="bg-white p-8 border border-slate-100 shadow-sm">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-6 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Your Assets</h4>
-                <div className="grid grid-cols-2 gap-6">
+            {/* 右側：ダッシュボード＆編集 */}
+            <div className="md:col-span-2 space-y-10">
+              {/* アセット＆ポイント */}
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Dashboard</h4>
+                
+                <div className="grid grid-cols-2 gap-6 mb-8">
                   <div className="bg-slate-50 p-6 text-center border border-slate-100">
-                    <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Free Tickets</p>
+                    <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-3">Free Tickets</p>
                     <p className="text-4xl font-timer font-light text-slate-800">{userData.freeTickets}</p>
                   </div>
-                  <div className="bg-pink-50 p-6 text-center border border-pink-100">
-                    <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-2">Premium Tickets</p>
+                  <div className="bg-pink-50/50 p-6 text-center border border-pink-100">
+                    <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-3">Premium Tickets</p>
                     <p className="text-4xl font-timer font-light text-pink-600">{userData.paidTickets}</p>
                   </div>
                 </div>
+
+                <div className="text-center py-6 bg-slate-900 text-white rounded-none">
+                  <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Total Produce Points</p>
+                  <p className="text-4xl md:text-5xl font-timer font-light tracking-wide">{userData.totalPts?.toLocaleString() || 0} <span className="text-sm font-sans font-light text-slate-400">pt</span></p>
+                </div>
               </div>
 
-              <div className="bg-white p-8 border border-slate-100 shadow-sm">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-6 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Total Contribution</h4>
-                <div className="text-center py-6">
-                  <p className="text-[10px] font-medium tracking-widest text-slate-400 uppercase mb-2">累計プロデュースポイント</p>
-                  <p className="text-5xl font-timer font-light text-slate-800 tracking-wide">{userData.totalPts.toLocaleString()} <span className="text-lg font-sans text-slate-400">pt</span></p>
-                </div>
+              {/* プロフィール編集フォーム */}
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Edit Profile</h4>
+                
+                <form onSubmit={handleSave} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Nickname (プロデューサー名)</label>
+                      <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800 text-sm" placeholder="名無しプロデューサー" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Image URL (写真)</label>
+                      <input type="text" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800 text-sm" placeholder="https://..." />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">My Oshi (推しメン設定)</label>
+                    <select value={oshiId} onChange={(e) => setOshiId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 py-3 px-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-slate-800 text-sm appearance-none">
+                      <option value="">-- 選択してください --</option>
+                      {idolsData.map(idol => (
+                        <option key={idol.id} value={idol.id}>{idol.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Short Message (一言メッセージ)</label>
+                    <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="3" className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-sm resize-none" placeholder="推しへの想いや意気込みを..."></textarea>
+                  </div>
+
+                  <div className="pt-4 text-right">
+                    <button type="submit" className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-10 py-4 hover:bg-slate-800 transition-colors uppercase">Save Changes</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -382,87 +446,169 @@
 
     // アイドル用 マイページ
     const IdolMyPage = ({ idolData, onLogout, onUpdateProfile, showToast }) => {
+      const [profileImage, setProfileImage] = useState(""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
+      const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
+      const [wishlist, setWishlist] = useState([]);
+      
       const [timelineText, setTimelineText] = useState("");
+      const [timelineImg, setTimelineImg] = useState("");
 
       if (!idolData) return <div className="text-center py-20">Loading...</div>;
 
       const handleSaveProfile = (e) => {
         e.preventDefault();
-        onUpdateProfile({ catchphrase, story });
-        showToast("プロフィールを更新しました。");
+        onUpdateProfile({ 
+          catchphrase, 
+          story, 
+          isStreaming,
+        });
+        showToast("プロフィール設定を更新しました。");
       };
 
       const handlePostTimeline = (e) => {
         e.preventDefault();
         if(!timelineText) return;
-        // 本来はFirestoreに保存する
-        showToast("活動報告をタイムラインに投稿しました。");
+        showToast("活動報告をタイムラインに投稿しました！");
         setTimelineText("");
+        setTimelineImg("");
       };
 
+      const toggleWishlist = (itemId) => {
+        setWishlist(prev => 
+          prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
+        );
+      };
+
+      const currentImgSrc = profileImage || `./idol${idolData.id}.png`;
+
       return (
-        <div className="max-w-5xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
-          <SectionTitle title="STUDIO" subtitle="アイドル管理用ダッシュボード" />
+        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
+          <SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* 左側メニュー */}
-            <div className="md:col-span-1 space-y-4">
-              <div className="bg-pink-50 p-6 border border-pink-100 shadow-sm text-center">
-                <div className="w-20 h-20 rounded-full mx-auto overflow-hidden mb-3 border-2 border-white shadow-sm">
-                  <img src={`./idol${idolData.id}.png`} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/100'} />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* 左側メニュー＆プレビュー */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-pink-400"></div>
+                
+                <div className="w-32 h-32 rounded-full mx-auto overflow-hidden mb-6 border border-slate-100 shadow-inner relative group">
+                  <img src={currentImgSrc} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/150'} />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i className="fa-solid fa-camera text-white"></i>
+                  </div>
                 </div>
-                <h3 className="font-serif text-lg font-light text-slate-800">{idolData.name}</h3>
-                <p className="text-[9px] text-pink-400 tracking-widest uppercase mt-1">IDOL ACCOUNT</p>
+                
+                {isStreaming && (
+                  <div className="inline-flex items-center gap-1.5 bg-red-50 text-red-500 border border-red-100 text-[9px] font-bold px-3 py-1 tracking-widest uppercase mb-4 shadow-sm">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span> ON AIR
+                  </div>
+                )}
+
+                <h3 className="font-serif text-xl font-light text-slate-800 mb-2">{idolData.name}</h3>
+                <p className="text-xs text-pink-500 font-light italic mb-2 px-2 leading-tight">"{catchphrase}"</p>
+                <p className="text-[9px] text-slate-400 tracking-widest uppercase mt-4 border-t border-slate-100 pt-4">Moshi-Ai IDOL ACCOUNT</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <button className="py-3 text-xs tracking-widest font-medium bg-slate-900 text-white transition-colors">PROFILE EDIT</button>
-                <button onClick={onLogout} className="py-3 text-xs tracking-widest font-medium bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 transition-colors">LOGOUT</button>
-              </div>
+
+              <button onClick={onLogout} className="w-full py-4 bg-transparent border border-slate-300 text-slate-500 text-[10px] tracking-widest font-medium hover:bg-slate-50 transition-colors uppercase">
+                Logout
+              </button>
             </div>
 
-            {/* 右側エディタ */}
-            <div className="md:col-span-3 space-y-8">
+            {/* 右側エディタ群 */}
+            <div className="lg:col-span-3 space-y-10">
+              
               {/* プロフィール編集 */}
-              <div className="bg-white p-8 border border-slate-100 shadow-sm">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 border-b border-slate-100 pb-4">Edit Profile</h4>
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
                 <form onSubmit={handleSaveProfile} className="space-y-6">
-                  <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">キャッチフレーズ</label>
-                    <input type="text" value={catchphrase} onChange={(e) => setCatchphrase(e.target.value)} className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm" />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Image URL (写真変更)</label>
+                      <input type="text" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="https://..." />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Live Status (配信中ステータス)</label>
+                      <button type="button" onClick={() => setIsStreaming(!isStreaming)} className={`w-full py-2.5 text-xs tracking-widest font-light transition-all border ${isStreaming ? 'bg-red-50 text-red-600 border-red-200 shadow-inner' : 'bg-transparent text-slate-500 border-slate-300 hover:border-slate-400'}`}>
+                        {isStreaming ? '🔴 配信中 (ON AIR)' : '⚪️ オフライン (OFF)'}
+                      </button>
+                    </div>
                   </div>
+
                   <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">私の物語 (ストーリー)</label>
-                    <textarea value={story} onChange={(e) => setStory(e.target.value)} rows="5" className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
+                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Catchphrase (キャッチフレーズ)</label>
+                    <input type="text" value={catchphrase} onChange={(e) => setCatchphrase(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" />
                   </div>
-                  <div className="text-right">
-                    <button type="submit" className="bg-pink-500 text-white text-xs tracking-widest font-light px-8 py-3 hover:bg-pink-600 transition-colors">UPDATE</button>
+                  
+                  <div>
+                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Her Story (私の物語 / 自己紹介)</label>
+                    <textarea value={story} onChange={(e) => setStory(e.target.value)} rows="5" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none leading-loose"></textarea>
+                  </div>
+                  
+                  <div className="text-right pt-4">
+                    <button type="submit" className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-10 py-4 hover:bg-pink-600 transition-colors uppercase">Update Profile</button>
                   </div>
                 </form>
+              </div>
+
+              {/* 欲しい衣装の選択 */}
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <div className="mb-8">
+                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Outfit Wishlist</h4>
+                  <p className="text-[10px] text-slate-400 font-light">カタログから「欲しい衣装」を選んでアピールしましょう。ファンがプレゼントしやすくなります。</p>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {OFF_MELTY_CATALOG.map(item => {
+                    const isSelected = wishlist.includes(item.id);
+                    return (
+                      <div key={item.id} onClick={() => toggleWishlist(item.id)} className={`relative cursor-pointer group border transition-all ${isSelected ? 'border-pink-400 shadow-md ring-1 ring-pink-100' : 'border-slate-100 hover:border-slate-300'}`}>
+                        <div className="aspect-[3/4] bg-slate-50 overflow-hidden relative">
+                          <img src={item.img} className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? '' : 'grayscale-[20%] group-hover:grayscale-0'} mix-blend-multiply`} onError={(e)=>e.target.src='https://via.placeholder.com/300x400/f1f5f9/94a3b8?text=OUTFIT'} />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md">
+                              <i className="fa-solid fa-check text-xs"></i>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-2 text-center bg-white">
+                          <h5 className="font-light text-[10px] text-slate-700 line-clamp-1">{item.name}</h5>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* タイムライン投稿 */}
-              <div className="bg-white p-8 border border-slate-100 shadow-sm">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 border-b border-slate-100 pb-4">Post Activity</h4>
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <div className="mb-8">
+                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> New Post</h4>
+                  <p className="text-[10px] text-slate-400 font-light">プロデューサーへ向けて、日々の活動や感謝を投稿しましょう。</p>
+                </div>
+
                 <form onSubmit={handlePostTimeline} className="space-y-6">
                   <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">活動報告テキスト</label>
-                    <textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="ファンへ向けて今日の活動を報告しましょう..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
+                    <textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="今日はどんな一日でしたか？..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <button type="button" className="text-xs text-slate-400 hover:text-pink-500 transition-colors flex items-center gap-2"><i className="fa-solid fa-camera"></i> 写真を追加</button>
-                    <button type="submit" className="bg-slate-900 text-white text-xs tracking-widest font-light px-8 py-3 hover:bg-slate-800 transition-colors">POST</button>
+                  <div>
+                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Image URL (写真添付)</label>
+                    <input type="text" value={timelineImg} onChange={(e) => setTimelineImg(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="https://..." />
+                  </div>
+                  <div className="text-right pt-2">
+                    <button type="submit" disabled={!timelineText} className="bg-pink-500 text-white text-[10px] tracking-widest font-light px-12 py-4 hover:bg-pink-600 transition-colors uppercase disabled:bg-slate-300">Post Now</button>
                   </div>
                 </form>
               </div>
+
             </div>
           </div>
         </div>
       );
     };
 
-    // 残りの共通コンポーネント (AllIdolsView, IdolDetailView などは既存のまま)
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
@@ -555,7 +701,7 @@
               </div>
             </div>
           </div>
-          {/* 下部プロフィール詳細は省略せず表示 */}
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
             <div className="lg:col-span-2 space-y-8">
               <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
@@ -571,13 +717,12 @@
                 <p className="text-slate-600 text-sm md:text-base leading-loose font-light whitespace-pre-wrap">{idol.story}</p>
               </div>
             </div>
-            {/* ... */}
+            
           </div>
         </div>
       );
     };
 
-    // 応援証明書(成功)モーダル
     const SuccessModal = ({ data, onClose, idol }) => {
       useEffect(() => {
         if (typeof confetti !== 'undefined') {
@@ -634,7 +779,6 @@
       );
     };
 
-    // プロデューサー詳細
     const ProducerDetailView = ({ producer, onBack }) => (
       <div className="max-w-2xl mx-auto px-4 py-16 animate-fade-in-up">
         <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none"><i className="fa-solid fa-arrow-left-long"></i> BACK</button>
@@ -657,7 +801,7 @@
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
-      const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); // Stateでアイドルデータを管理
+      const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); 
       const [selectedProducer, setSelectedProducer] = useState(null);
       
       const [eventTabs, setEventTabs] = useState({ main: 'ranking', off_melty: 'ranking' }); 
@@ -666,7 +810,7 @@
       const [idolSearchText, setIdolSearchText] = useState('');
       const [idolFilterType, setIdolFilterType] = useState('all'); 
       
-      const [showAuthModal, setShowAuthModal] = useState(false); // ログインモーダル
+      const [showAuthModal, setShowAuthModal] = useState(false); 
       const [showVoteModal, setShowVoteModal] = useState(false);
       const [showOutfitModal, setShowOutfitModal] = useState(false);
       const [showGiftModal, setShowGiftModal] = useState(false);
@@ -675,8 +819,8 @@
       
       // 認証関連
       const [firebaseLoaded, setFirebaseLoaded] = useState(false);
-      const [user, setUser] = useState(null); // Firebase user object
-      const [userRole, setUserRole] = useState('guest'); // 'guest', 'producer', 'idol'
+      const [user, setUser] = useState(null);
+      const [userRole, setUserRole] = useState('guest'); 
       const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
       const authRef = useRef(null);
       const dbRef = useRef(null);
@@ -689,9 +833,6 @@
             try {
               const { initializeApp, getAuth, getFirestore } = window.FirebaseHelper;
               
-              // =====================================================================
-              // ★ご自身のFirebaseプロジェクトの設定情報（Config）をここに貼り付けてください
-              // =====================================================================
               const customFirebaseConfig = {
                 apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
                 authDomain: "moshiai-5735b.firebaseapp.com",
@@ -754,11 +895,9 @@
                      setUserData({ ...data, ...updates });
                    } else { setUserData(data); }
                  } else {
-                   // アイドルの場合
                    setUserData(data);
                  }
                } else {
-                 // 基本は新規登録時に作られるが、もし無ければ作る
                  const initData = { role: 'producer', email: u.email, freeTickets: 3, paidTickets: 0, totalPts: 0, lastLoginDate: today, createdAt: new Date().toISOString() };
                  await setDoc(docRef, initData);
                  setUserRole('producer');
@@ -775,7 +914,7 @@
 
       const handleAuthSubmit = async (email, password, isLogin) => {
         if (!firebaseLoaded || !authRef.current) {
-          showToast("【エラー】Firebaseの設定が行われていません。コード内の customFirebaseConfig をご自身のものに書き換えてください。");
+          showToast("【エラー】Firebaseの設定が行われていません。");
           return;
         }
         const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc, sendEmailVerification } = window.FirebaseHelper;
@@ -792,7 +931,6 @@
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // 本人確認メールを送信
             await sendEmailVerification(user);
             
             const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
@@ -833,9 +971,7 @@
         showToast("ログアウトしました。");
       };
 
-      // アイドルプロフィールの更新 (MyPageからの変更を反映)
       const handleUpdateIdolProfile = (newProfile) => {
-        // 現在はID=1 (星野きらら) のデータを更新するデモ
         const updatedIdols = idolsData.map(idol => 
           idol.id === 1 ? { ...idol, ...newProfile } : idol
         );
@@ -908,7 +1044,7 @@
 
           <main className="pt-40">
             {activeTab === 'producerMyPage' && userRole === 'producer' ? (
-              <ProducerMyPage user={user} userData={userData} onLogout={handleLogout} />
+              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={(p) => { setUserData({...userData, ...p}); showToast("保存しました"); }} showToast={showToast} />
             ) : activeTab === 'idolMyPage' && userRole === 'idol' ? (
               <IdolMyPage idolData={idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
