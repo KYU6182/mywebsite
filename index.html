@@ -108,14 +108,14 @@
 
   <div id="root"></div>
 
-  <!-- Firebaseモジュールのネイティブ読み込み (Auth機能追加) -->
+  <!-- Firebaseモジュールのネイティブ読み込み (Auth機能追加・sendEmailVerificationを追加) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.FirebaseHelper = {
-      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification,
       getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc
     };
   </script>
@@ -778,7 +778,7 @@
           showToast("【エラー】Firebaseの設定が行われていません。コード内の customFirebaseConfig をご自身のものに書き換えてください。");
           return;
         }
-        const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc } = window.FirebaseHelper;
+        const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc, sendEmailVerification } = window.FirebaseHelper;
         const auth = authRef.current;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -791,6 +791,9 @@
           } else {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            
+            // 本人確認メールを送信
+            await sendEmailVerification(user);
             
             const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
             const today = new Date().toISOString().split('T')[0];
@@ -806,7 +809,7 @@
             await setDoc(docRef, initData);
             
             setShowAuthModal(false);
-            showToast("プロデューサー登録が完了しました！無料投票券(3枚)を進呈しました。");
+            showToast("プロデューサー登録が完了しました！登録メールアドレスに確認メールを送信しました。");
           }
         } catch (error) {
           console.error(error);
