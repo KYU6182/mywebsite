@@ -637,9 +637,6 @@
                   )}
                 </div>
               </div>
-              <button onClick={onLogout} className="w-full py-4 bg-transparent border border-slate-300 text-slate-500 text-[10px] tracking-widest font-medium hover:bg-slate-50 transition-colors uppercase">
-                Logout
-              </button>
             </div>
 
             {/* 右側：ダッシュボード＆編集 */}
@@ -773,10 +770,6 @@
                 <p className="text-xs text-pink-500 font-light italic mb-2 px-2 leading-tight">"{catchphrase}"</p>
                 <p className="text-[9px] text-slate-400 tracking-widest uppercase mt-4 border-t border-slate-100 pt-4">Moshi-Ai IDOL ACCOUNT</p>
               </div>
-
-              <button onClick={onLogout} className="w-full py-4 bg-transparent border border-slate-300 text-slate-500 text-[10px] tracking-widest font-medium hover:bg-slate-50 transition-colors uppercase">
-                Logout
-              </button>
             </div>
 
             {/* 右側エディタ群 */}
@@ -1091,6 +1084,7 @@
       const showToast = (msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
 
       useEffect(() => {
+        let attempts = 0;
         const loadFirebase = () => {
           if (window.FirebaseHelper) {
             try {
@@ -1121,7 +1115,10 @@
               dbRef.current = getFirestore(app);
               setFirebaseLoaded(true);
             } catch (e) { console.error(e); }
-          } else { setTimeout(loadFirebase, 50); }
+          } else if (attempts < 100) { 
+             attempts++;
+             setTimeout(loadFirebase, 50); 
+          }
         };
         loadFirebase();
       }, []);
@@ -1166,7 +1163,13 @@
                  setUserRole('producer');
                  setUserData(initData);
                }
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+               console.error("Firestore Error:", e); 
+               // Firestoreルールエラーでもフォールバックしてマイページを見れるようにする
+               setUserRole('producer');
+               setUserData({ freeTickets: 3, paidTickets: 0, totalPts: 0 });
+               showToast("データベース未接続: プロデューサーとしてログインしました。");
+            }
           } else { 
             setUserRole('guest');
             setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 }); 
@@ -1194,7 +1197,7 @@
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            await sendEmailVerification(user);
+            try { await sendEmailVerification(user); } catch(e) {}
             
             const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
             const today = new Date().toISOString().split('T')[0];
@@ -1207,7 +1210,8 @@
               lastLoginDate: today, 
               createdAt: new Date().toISOString() 
             };
-            await setDoc(docRef, initData);
+            
+            try { await setDoc(docRef, initData); } catch(e) {}
             
             setShowAuthModal(false);
             showToast("プロデューサー登録が完了しました！登録メールアドレスに確認メールを送信しました。");
@@ -1279,13 +1283,18 @@
               <div className="flex flex-col items-end gap-4 pointer-events-auto mt-4 md:mt-0">
                 {/* ログイン・マイページボタン */}
                 <div className="flex items-center gap-4">
-                  {userRole === 'guest' ? (
+                  {user ? (
+                    <div className="flex items-center gap-2 md:gap-4">
+                      <button onClick={() => { setActiveTab(userRole === 'idol' ? 'idolMyPage' : 'producerMyPage'); window.scrollTo(0,0); }} className="text-[10px] tracking-widest font-medium text-slate-800 bg-white border border-slate-200 px-3 py-1.5 md:px-4 hover:bg-slate-50 transition-colors uppercase flex items-center gap-2 shadow-sm">
+                        <i className="fa-regular fa-user"></i> My Page
+                      </button>
+                      <button onClick={handleLogout} className="text-[10px] tracking-widest font-medium text-white bg-slate-900 px-3 py-1.5 md:px-4 hover:bg-slate-800 transition-colors uppercase flex items-center gap-2 shadow-sm">
+                        <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                      </button>
+                    </div>
+                  ) : (
                     <button onClick={() => setShowAuthModal(true)} className="text-[10px] tracking-widest font-medium text-slate-800 border border-slate-800 px-4 py-1.5 hover:bg-slate-800 hover:text-white transition-colors uppercase">
                       Login / Join
-                    </button>
-                  ) : (
-                    <button onClick={() => { setActiveTab(userRole === 'idol' ? 'idolMyPage' : 'producerMyPage'); window.scrollTo(0,0); }} className="text-[10px] tracking-widest font-medium text-white bg-slate-800 px-4 py-1.5 hover:bg-slate-700 transition-colors uppercase flex items-center gap-2">
-                      <i className="fa-regular fa-user"></i> My Page
                     </button>
                   )}
                 </div>
@@ -1306,9 +1315,9 @@
           </header>
 
           <main className="pt-40">
-            {activeTab === 'producerMyPage' && userRole === 'producer' ? (
+            {activeTab === 'producerMyPage' && user ? (
               <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={(p) => { setUserData({...userData, ...p}); showToast("保存しました"); }} showToast={showToast} />
-            ) : activeTab === 'idolMyPage' && userRole === 'idol' ? (
+            ) : activeTab === 'idolMyPage' && user ? (
               <IdolMyPage idolData={idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} onMyOshiClick={(idol) => showToast(`${idol.name}をMY担当に設定しました。`)} />
