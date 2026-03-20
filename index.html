@@ -112,11 +112,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.FirebaseHelper = {
       initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification,
-      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc
+      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot
     };
   </script>
 
@@ -379,7 +379,7 @@
             
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
               <div className="flex items-center gap-5 mb-8 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
-                <img src={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={handleImgError} />
+                <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={handleImgError} />
                 <div>
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
                   <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
@@ -643,7 +643,7 @@
                   <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
                   {oshiIdol ? (
                     <div className="flex items-center justify-center gap-3">
-                      <img src={`./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200" onError={handleImgError} />
+                      <img src={oshiIdol.profileImage || `./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200" onError={handleImgError} />
                       <span className="font-light text-slate-800 text-sm">{oshiIdol.name}</span>
                     </div>
                   ) : (
@@ -720,7 +720,7 @@
 
     // アイドル用 マイページ
     const IdolMyPage = ({ idolData, onLogout, onUpdateProfile, showToast }) => {
-      const [profileImage, setProfileImage] = useState(""); 
+      const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
       const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
@@ -729,11 +729,19 @@
       const [timelineText, setTimelineText] = useState("");
       const [timelineImg, setTimelineImg] = useState("");
 
+      useEffect(() => {
+        setProfileImage(idolData?.profileImage || "");
+        setCatchphrase(idolData?.catchphrase || "");
+        setStory(idolData?.story || "");
+        setIsStreaming(idolData?.isStreaming || false);
+      }, [idolData]);
+
       if (!idolData) return <div className="text-center py-20">Loading...</div>;
 
       const handleSaveProfile = (e) => {
         e.preventDefault();
         onUpdateProfile({ 
+          profileImage,
           catchphrase, 
           story, 
           isStreaming,
@@ -909,7 +917,7 @@
             {idols.map((idol) => (
               <div key={idol.id} onClick={() => onIdolSelect(idol)} className="bg-white/80 backdrop-blur-md p-5 rounded-none border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex items-center gap-5 cursor-pointer hover:shadow-[0_10px_30px_-10px_rgba(244,114,182,0.15)] hover:border-pink-100 transition-all duration-300 group">
                 <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-50 flex-shrink-0 shadow-inner">
-                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" onError={handleImgError} />
+                  <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" onError={handleImgError} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -946,7 +954,7 @@
                 {idol.titleBadge && !idol.isStreaming && (<div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-medium tracking-widest px-4 py-2 rounded-none shadow-sm z-10 border border-slate-100">{idol.titleBadge}</div>)}
                 <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-light tracking-[0.2em] px-3 py-1.5 rounded-none z-10 uppercase">{idol.type}</div>
                 <div className="w-full h-full relative overflow-hidden">
-                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
+                  <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
                 </div>
               </div>
             </div>
@@ -1019,7 +1027,7 @@
               <p className="text-[10px] font-medium text-slate-400 tracking-[0.3em] mb-8 border-b border-slate-200 pb-3 inline-block">応援証明書</p>
               
               <div className="flex items-center justify-center gap-5 mb-8">
-                <img src={`./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" onError={handleImgError} />
+                <img src={idol?.profileImage || `./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" onError={handleImgError} />
                 <div className="text-left">
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Idol Produced</p>
                   <p className="text-xl font-light text-slate-800 font-serif">{data.idolName}</p>
@@ -1168,7 +1176,34 @@
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
-      // 3. ユーザーデータの取得と作成 (認証完了後に実行)
+      // 3. 全体共有用パブリックデータ（全アイドル）の取得とリアルタイム同期
+      useEffect(() => {
+        if (!user || !firebaseLoaded || !dbRef.current) return; // ← 認証完了（user存在）を待つように修正
+        const { collection, onSnapshot } = window.FirebaseHelper;
+        const db = dbRef.current;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        const idolsRef = collection(db, 'artifacts', appId, 'public', 'data', 'idols');
+        const unsubscribe = onSnapshot(idolsRef, (snapshot) => {
+          if (!snapshot.empty) {
+            const firestoreIdols = [];
+            snapshot.forEach(doc => {
+              firestoreIdols.push({ ...doc.data(), id: Number(doc.id) });
+            });
+            // INITIAL_IDOLS とマージして最新情報を全体に反映する
+            const mergedIdols = INITIAL_IDOLS.map(initialIdol => {
+              const firestoreIdol = firestoreIdols.find(f => f.id === initialIdol.id);
+              return firestoreIdol ? { ...initialIdol, ...firestoreIdol } : initialIdol;
+            });
+            setIdolsData(mergedIdols);
+          }
+        }, (error) => {
+          console.error("Idols fetch error:", error);
+        });
+        return () => unsubscribe();
+      }, [user, firebaseLoaded]); // ← 依存配列にuserを追加
+
+      // 4. ユーザーデータの取得と作成 (認証完了後に実行)
       useEffect(() => {
         if (!user || !firebaseLoaded || !dbRef.current) return;
         
@@ -1340,13 +1375,28 @@
         showToast("ログアウトしました。");
       };
 
-      const handleUpdateIdolProfile = (newProfile) => {
+      // アイドルが自分のプロフィールを更新する処理 (パブリックデータへ保存)
+      const handleUpdateIdolProfile = async (newProfile) => {
         if (!userData.idolId) return;
+        
+        // メモリの更新（即時反映）
         const updatedIdols = idolsData.map(idol => 
           idol.id === userData.idolId ? { ...idol, ...newProfile } : idol
         );
         setIdolsData(updatedIdols);
-        // 今回のモックアプリでは、アイドル側プロフィールはメモリ上でのみ更新します。
+
+        // Firestoreへの保存（全プロデューサーへ同期するため）
+        if (user && firebaseLoaded && dbRef.current) { // ← userの存在確認を追加
+          const { doc, setDoc } = window.FirebaseHelper;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const idolRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'idols', String(userData.idolId));
+          try {
+            await setDoc(idolRef, newProfile, { merge: true });
+          } catch (e) {
+            console.error("Idol profile update error:", e);
+            showToast("プロフィールのクラウド保存に失敗しました");
+          }
+        }
       };
 
       // チケット・ポイントの消費・獲得（Firestoreへ永続化）
@@ -1473,7 +1523,7 @@
                       {idolsData.map((idol, i) => (
                         <div key={idol.id} className="w-56 shrink-0 relative rounded-none overflow-hidden group bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
                           <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
-                            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
+                            <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-6 text-white flex flex-col justify-end h-full pointer-events-none">
@@ -1571,7 +1621,7 @@
                                                 <div className={`font-serif text-3xl md:text-4xl font-light mb-4 ${badgeColors} tracking-wider`}>{rankNum}</div>
                                                 <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2`}>
                                                   <div className="w-full h-full relative overflow-hidden bg-slate-50">
-                                                    {idolData && <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" onError={handleImgError} />}
+                                                    {idolData && <img src={idolData.profileImage || `./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" onError={handleImgError} />}
                                                   </div>
                                                 </div>
                                                 <div className="text-center mt-6 w-full">
@@ -1596,7 +1646,7 @@
                                               <div key={item.rank} onClick={() => { if(idolData) openIdolDetail(idolData) }} className="flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-white/50 transition-colors px-4">
                                                 <div className="w-12 font-serif text-xl font-light text-slate-400 group-hover:text-slate-800 transition-colors">0{item.rank}</div>
                                                 <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0">
-                                                   <img src={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" onError={handleImgError} />
+                                                   <img src={idolData?.profileImage || `./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" onError={handleImgError} />
                                                 </div>
                                                 <div className="flex-1">
                                                   <div className="flex justify-between items-baseline mb-1">
@@ -1683,7 +1733,7 @@
                     {filteredIdols.slice(0, 8).map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50">
-                          <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
+                          <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
                           {idol.isStreaming && (
                             <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
                               On Air
