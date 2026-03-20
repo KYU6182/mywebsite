@@ -136,6 +136,15 @@
       e.currentTarget.src = FALLBACK_IMAGE;
     };
 
+    // メディア（画像/動画）の自動判定表示コンポーネント
+    const MediaDisplay = ({ src, fallbackSrc, className }) => {
+      const isVideo = src && src.match(/\.(mp4|webm|ogg)$/i);
+      if (isVideo) {
+        return <video src={src} autoPlay loop muted playsInline className={className} />;
+      }
+      return <img src={src || fallbackSrc} className={className} onError={handleImgError} />;
+    };
+
     // 初期データ (loginEmail を追加して判定に使用します)
     const INITIAL_IDOLS = [
       { 
@@ -312,7 +321,7 @@
                   {recommendIdols.map((idol) => (
                     <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
                       <div className="aspect-[3/4] relative overflow-hidden bg-white mb-4 border border-slate-200/50 shadow-sm group-hover:shadow-md transition-all">
-                        <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
+                        <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
                         {idol.isStreaming && (
                           <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
                             On Air
@@ -449,7 +458,7 @@
             
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
               <div className="flex items-center gap-5 mb-10 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
-                <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={handleImgError} />
+                <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" />
                 <div>
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
                   <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
@@ -723,7 +732,7 @@
                     <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
                     {oshiIdol ? (
                       <div className="flex items-center justify-center gap-3 cursor-pointer group" onClick={() => onIdolSelect(oshiIdol)}>
-                        <img src={oshiIdol.profileImage || `./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200 group-hover:border-pink-300 transition-colors" onError={handleImgError} />
+                        <MediaDisplay src={oshiIdol.profileImage} fallbackSrc={`./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200 group-hover:border-pink-300 transition-colors" />
                         <span className="font-light text-slate-800 text-sm group-hover:text-pink-600 transition-colors">{oshiIdol.name}</span>
                       </div>
                     ) : (
@@ -845,8 +854,6 @@
         );
       };
 
-      const currentImgSrc = profileImage || `./idol${idolData.id}.png`;
-
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
           <SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
@@ -857,8 +864,8 @@
               <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-pink-400"></div>
                 
-                <div className="w-32 h-32 rounded-full mx-auto overflow-hidden mb-6 border border-slate-100 shadow-inner relative group">
-                  <img src={currentImgSrc} className="w-full h-full object-cover" onError={handleImgError} />
+                <div className="w-32 h-32 rounded-full mx-auto overflow-hidden mb-6 border border-slate-100 shadow-inner relative group bg-slate-50">
+                  <MediaDisplay src={profileImage} fallbackSrc={`./idol${idolData.id}.png`} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <i className="fa-solid fa-camera text-white"></i>
                   </div>
@@ -886,8 +893,8 @@
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Image URL (写真変更)</label>
-                      <input type="text" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="https://..." />
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Media URL (写真/動画の変更)</label>
+                      <input type="text" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="https://... (mp4も可)" />
                     </div>
                     <div>
                       <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Live Status (配信中ステータス)</label>
@@ -998,8 +1005,8 @@
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {idols.map((idol) => (
               <div key={idol.id} onClick={() => onIdolSelect(idol)} className="bg-white/80 backdrop-blur-md p-5 rounded-none border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex items-center gap-5 cursor-pointer hover:shadow-[0_10px_30px_-10px_rgba(244,114,182,0.15)] hover:border-pink-100 transition-all duration-300 group">
-                <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-50 flex-shrink-0 shadow-inner">
-                  <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" onError={handleImgError} />
+                <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-50 flex-shrink-0 shadow-inner bg-slate-50">
+                  <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -1033,8 +1040,8 @@
                   {idol.isStreaming && (<a href="#" className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-md text-red-500 text-[10px] font-bold tracking-widest px-4 py-2 rounded-none shadow-lg flex items-center gap-2 animate-live border border-red-100 cursor-pointer hover:bg-red-50 transition-colors"><div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> ON AIR</a>)}
                   {idol.titleBadge && !idol.isStreaming && (<div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-medium tracking-widest px-4 py-2 rounded-none shadow-sm z-10 border border-slate-100">{idol.titleBadge}</div>)}
                   <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-light tracking-[0.2em] px-3 py-1.5 rounded-none z-10 uppercase">{idol.type}</div>
-                  <div className="w-full h-full relative overflow-hidden">
-                    <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
+                  <div className="w-full h-full relative overflow-hidden bg-slate-50">
+                    <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                   </div>
                 </div>
               </div>
@@ -1131,7 +1138,7 @@
               <p className="text-[10px] font-medium text-slate-400 tracking-[0.3em] mb-8 border-b border-slate-200 pb-3 inline-block">応援証明書</p>
               
               <div className="flex items-center justify-center gap-5 mb-8">
-                <img src={idol?.profileImage || `./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" onError={handleImgError} />
+                <MediaDisplay src={idol?.profileImage} fallbackSrc={`./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" />
                 <div className="text-left">
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Idol Produced</p>
                   <p className="text-xl font-light text-slate-800 font-serif">{data.idolName}</p>
@@ -1603,7 +1610,7 @@
             ) : activeTab === 'idolMyPage' && user && !user.isAnonymous ? (
               <IdolMyPage idolData={idolsData.find(i => i.id === userData.idolId) || idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
-              <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} onMyOshiClick={(idol) => showToast(`${idol.name}をMY担当に設定しました。`)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
+              <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
             ) : activeTab === 'producerDetail' && selectedProducer ? (
               <ProducerDetailView producer={selectedProducer} onBack={() => setActiveTab('home')} />
             ) : activeTab === 'allIdolsList' ? (
@@ -1634,7 +1641,7 @@
                       {idolsData.map((idol, i) => (
                         <div key={idol.id} className="w-56 shrink-0 relative rounded-none overflow-hidden group bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
                           <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
-                            <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
+                            <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-6 text-white flex flex-col justify-end h-full pointer-events-none">
@@ -1732,7 +1739,7 @@
                                                 <div className={`font-serif text-3xl md:text-4xl font-light mb-4 ${badgeColors} tracking-wider`}>{rankNum}</div>
                                                 <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2`}>
                                                   <div className="w-full h-full relative overflow-hidden bg-slate-50">
-                                                    {idolData && <img src={idolData.profileImage || `./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" onError={handleImgError} />}
+                                                    {idolData && <MediaDisplay src={idolData.profileImage} fallbackSrc={`./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" />}
                                                   </div>
                                                 </div>
                                                 <div className="text-center mt-6 w-full">
@@ -1756,8 +1763,8 @@
                                             return (
                                               <div key={item.rank} onClick={() => { if(idolData) openIdolDetail(idolData) }} className="flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-white/50 transition-colors px-4">
                                                 <div className="w-12 font-serif text-xl font-light text-slate-400 group-hover:text-slate-800 transition-colors">0{item.rank}</div>
-                                                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0">
-                                                   <img src={idolData?.profileImage || `./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" onError={handleImgError} />
+                                                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
+                                                   <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" />
                                                 </div>
                                                 <div className="flex-1">
                                                   <div className="flex justify-between items-baseline mb-1">
@@ -1844,7 +1851,7 @@
                     {filteredIdols.slice(0, 8).map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50">
-                          <img src={idol.profileImage || `./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
+                          <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
                           {idol.isStreaming && (
                             <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
                               On Air
