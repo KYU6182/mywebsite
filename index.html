@@ -108,15 +108,15 @@
 
   <div id="root"></div>
 
-  <!-- Firebaseモジュールのネイティブ読み込み -->
+  <!-- Firebaseモジュールのネイティブ読み込み (onSnapshot を追加) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.FirebaseHelper = {
-      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification,
-      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc
+      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut,
+      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot
     };
   </script>
 
@@ -129,10 +129,10 @@
       return parseInt(numStr, 10) || 0;
     };
 
-    // --- エラー用フォールバック画像（通信が発生しないData URI） ---
+    // --- エラー用フォールバック画像 ---
     const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E";
     const handleImgError = (e) => {
-      e.currentTarget.onerror = null; // 無限ループ防止
+      e.currentTarget.onerror = null; 
       e.currentTarget.src = FALLBACK_IMAGE;
     };
 
@@ -333,8 +333,8 @@
     };
 
     // 投票モーダル
-    const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+    const VoteModal = ({ onClose, idol, isMember, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!isMember) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -352,12 +352,12 @@
 
       const handleVote = (type, amount) => {
         if (type === 'free' && userData.freeTickets >= amount) {
-          updateTickets(-amount, 0);
-          onSuccess({ idolName: idol.name, amount: amount, actionType: '投票' });
+          updateTickets(-amount, 0, 10); // 1チケット 10pt換算と仮定
+          onSuccess({ idolName: idol.name, amount: 10, actionType: '投票(無料)' });
           onClose();
         } else if (type === 'paid' && userData.paidTickets >= amount) {
-          updateTickets(0, -amount);
-          onSuccess({ idolName: idol.name, amount: amount, actionType: '投票(有料枠)' });
+          updateTickets(0, -amount, 50); // プレミアムは 50pt
+          onSuccess({ idolName: idol.name, amount: 50, actionType: '投票(有料枠)' });
           onClose();
         } else {
           showToast("投票券が不足しています。");
@@ -365,8 +365,8 @@
       };
 
       const handleBuyMagazine = (qty, price, tickets) => {
-        updateTickets(0, tickets);
-        showToast(`「第3号 ${qty}冊」を購入しました。有料枠 ${tickets} 枚を獲得。`);
+        updateTickets(0, tickets, 0);
+        showToast(`「第3号 ${qty}冊」を購入しました。プレミアム投票券 ${tickets} 枚を獲得。`);
       };
 
       return (
@@ -391,13 +391,13 @@
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white border border-slate-200 p-5 rounded-none text-center shadow-sm relative">
                     <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Free <span className="text-pink-400 lowercase text-[8px] tracking-normal">(3/day)</span></p>
-                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.freeTickets}</div>
-                    <button onClick={() => handleVote('free', 1)} disabled={userData.freeTickets < 1} className="w-full py-3 bg-slate-800 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
+                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.freeTickets || 0}</div>
+                    <button onClick={() => handleVote('free', 1)} disabled={!userData.freeTickets || userData.freeTickets < 1} className="w-full py-3 bg-slate-800 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
                   </div>
                   <div className="bg-white border border-slate-200 p-5 rounded-none text-center shadow-sm relative">
                     <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Premium</p>
-                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.paidTickets}</div>
-                    <button onClick={() => handleVote('paid', 1)} disabled={userData.paidTickets < 1} className="w-full py-3 bg-pink-500 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
+                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.paidTickets || 0}</div>
+                    <button onClick={() => handleVote('paid', 1)} disabled={!userData.paidTickets || userData.paidTickets < 1} className="w-full py-3 bg-pink-500 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
                   </div>
                 </div>
               </div>
@@ -441,8 +441,8 @@
     };
 
     // ギフトモーダル
-    const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+    const GiftModal = ({ onClose, idol, isMember, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!isMember) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -516,8 +516,8 @@
     };
 
     // 衣装提供モーダル
-    const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+    const OutfitModal = ({ onClose, idol, isMember, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!isMember) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -596,15 +596,14 @@
     };
 
     // プロデューサー用 マイページ
-    const ProducerMyPage = ({ user, userData, idolsData, onLogout, onUpdateProfile, showToast }) => {
-      // 親コンポーネント(App)のuserDataが変わった時に内部ステートも更新する
-      const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
+    const ProducerMyPage = ({ userData, idolsData, onLogout, onUpdateProfile, showToast }) => {
+      const [name, setName] = useState(userData.name || "");
       const [profileImage, setProfileImage] = useState(userData.profileImage || "");
       const [message, setMessage] = useState(userData.message || "");
       const [oshiId, setOshiId] = useState(userData.oshiId || "");
 
       useEffect(() => {
-        setName(userData.name || "ゲスト プロデューサー");
+        setName(userData.name || "");
         setProfileImage(userData.profileImage || "");
         setMessage(userData.message || "");
         setOshiId(userData.oshiId || "");
@@ -633,8 +632,8 @@
                     <i className="fa-solid fa-user-tie text-3xl text-slate-300"></i>
                   )}
                 </div>
-                <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name}</h3>
-                <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{user?.email || 'demo@example.com'}</p>
+                <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name || "名無しプロデューサー"}</h3>
+                <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{userData.email || 'demo@example.com'}</p>
                 {message && (
                   <p className="text-xs text-slate-500 font-light italic mb-6 leading-relaxed">"{message}"</p>
                 )}
@@ -662,17 +661,17 @@
                 <div className="grid grid-cols-2 gap-6 mb-8">
                   <div className="bg-slate-50 p-6 text-center border border-slate-100">
                     <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-3">Free Tickets</p>
-                    <p className="text-4xl font-timer font-light text-slate-800">{userData.freeTickets}</p>
+                    <p className="text-4xl font-timer font-light text-slate-800">{userData.freeTickets || 0}</p>
                   </div>
                   <div className="bg-pink-50/50 p-6 text-center border border-pink-100">
                     <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-3">Premium Tickets</p>
-                    <p className="text-4xl font-timer font-light text-pink-600">{userData.paidTickets}</p>
+                    <p className="text-4xl font-timer font-light text-pink-600">{userData.paidTickets || 0}</p>
                   </div>
                 </div>
 
                 <div className="text-center py-6 bg-slate-900 text-white rounded-none">
                   <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Total Produce Points</p>
-                  <p className="text-4xl md:text-5xl font-timer font-light tracking-wide">{userData.totalPts?.toLocaleString() || 0} <span className="text-sm font-sans font-light text-slate-400">pt</span></p>
+                  <p className="text-4xl md:text-5xl font-timer font-light tracking-wide">{(userData.totalPts || 0).toLocaleString()} <span className="text-sm font-sans font-light text-slate-400">pt</span></p>
                 </div>
               </div>
 
@@ -931,9 +930,7 @@
     };
 
     const IdolDetailView = ({ idol, onBack, onVoteClick, onOutfitClick, onGiftClick, onMyOshiClick }) => {
-      const [copySuccess, setCopySuccess] = useState(false);
       const relatedArticles = useMemo(() => TOPICS_DATA.filter(topic => topic.title.includes(idol.name)), [idol.name]);
-      const handleCopyTemplate = () => { /* ... (省略: 既存コード同様) ... */ };
 
       return (
         <div className="max-w-4xl mx-auto px-4 py-10 animate-fade-in-up pb-32">
@@ -987,7 +984,6 @@
                 <p className="text-slate-600 text-sm md:text-base leading-loose font-light whitespace-pre-wrap">{idol.story}</p>
               </div>
             </div>
-            
           </div>
         </div>
       );
@@ -1087,22 +1083,22 @@
       const [successModalData, setSuccessModalData] = useState(null); 
       const [toastMessage, setToastMessage] = useState("");
       
-      // 認証関連
+      // --- 認証・Firestore連携関連 (修正済み) ---
       const [firebaseLoaded, setFirebaseLoaded] = useState(false);
       const [user, setUser] = useState(null);
-      const [userRole, setUserRole] = useState('guest'); 
-      const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
+      const [userData, setUserData] = useState({ role: 'guest', isRegistered: false, freeTickets: 0, paidTickets: 0, totalPts: 0 });
       const authRef = useRef(null);
       const dbRef = useRef(null);
 
       const showToast = (msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
 
+      // 1. Firebase初期化 & 確実な認証の確立
       useEffect(() => {
         let attempts = 0;
-        const loadFirebase = () => {
+        const loadFirebase = async () => {
           if (window.FirebaseHelper) {
             try {
-              const { initializeApp, getAuth, getFirestore } = window.FirebaseHelper;
+              const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseHelper;
               
               const customFirebaseConfig = {
                 apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
@@ -1114,21 +1110,33 @@
               };
 
               let firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : {};
-              
               if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
                 firebaseConfig = customFirebaseConfig;
               }
 
-              if (firebaseConfig.apiKey === "YOUR_API_KEY" || !firebaseConfig.apiKey) {
-                console.warn("Firebase config is missing or invalid.");
-                return;
-              }
-
               const app = initializeApp(firebaseConfig);
-              authRef.current = getAuth(app);
-              dbRef.current = getFirestore(app);
+              const auth = getAuth(app);
+              const db = getFirestore(app);
+              
+              authRef.current = auth;
+              dbRef.current = db;
+
+              // 【重要】Canvas環境における確実なセッションの確立
+              const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                  await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                  await signInAnonymously(auth);
+                }
+              };
+              await initAuth();
+
+              onAuthStateChanged(auth, (u) => {
+                setUser(u);
+              });
+              
               setFirebaseLoaded(true);
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Firebase init Error:", e); }
           } else if (attempts < 100) { 
              attempts++;
              setTimeout(loadFirebase, 50); 
@@ -1137,143 +1145,107 @@
         loadFirebase();
       }, []);
 
+      // 2. データのリアルタイム監視 (onSnapshot) と永続化
       useEffect(() => {
-        if (!firebaseLoaded || !authRef.current) return;
-        const { onAuthStateChanged, doc, getDoc, setDoc, updateDoc } = window.FirebaseHelper;
-        const auth = authRef.current;
+        if (!firebaseLoaded || !user || !dbRef.current) return;
+        
+        const { doc, setDoc, updateDoc, onSnapshot } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        const unsubscribe = onAuthStateChanged(auth, async (u) => {
-          setUser(u);
-          if (u) {
-            const docRef = doc(db, 'artifacts', appId, 'users', u.uid, 'profile', 'data');
-            try {
-               const docSnap = await getDoc(docRef);
-               const today = new Date().toISOString().split('T')[0];
-               if (docSnap.exists()) {
-                 const data = docSnap.data();
-                 setUserRole(data.role || 'producer');
-                 
-                 if (data.role !== 'idol') {
-                   let updates = {};
-                   let newFreeTickets = data.freeTickets || 0;
-                   if (data.lastLoginDate !== today) {
-                     newFreeTickets += 3;
-                     updates.lastLoginDate = today;
-                     updates.freeTickets = newFreeTickets;
-                     showToast("ログインボーナス。無料投票券(3枚)を追加しました。");
-                   }
-                   if (Object.keys(updates).length > 0) {
-                     await updateDoc(docRef, updates);
-                     setUserData({ ...data, ...updates });
-                   } else { setUserData(data); }
-                 } else {
-                   setUserData(data);
-                 }
-               } else {
-                 const initData = { role: 'producer', email: u.email, freeTickets: 3, paidTickets: 0, totalPts: 0, lastLoginDate: today, createdAt: new Date().toISOString() };
-                 await setDoc(docRef, initData);
-                 setUserRole('producer');
-                 setUserData(initData);
-               }
-            } catch(e) { 
-               console.error("Firestore Error:", e); 
-               // Firestoreルールエラーでもフォールバックしてマイページを見れるようにする
-               setUserRole('producer');
-               setUserData({ freeTickets: 3, paidTickets: 0, totalPts: 0 });
-               showToast("ログイン完了");
-            }
-          } else { 
-            setUserRole('guest');
-            setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 }); 
-          }
-        });
-        return () => unsubscribe();
-      }, [firebaseLoaded]);
-
-      // プロフィール情報の保存（Firestoreへ永続化）
-      const handleUpdateProfile = async (newProfile) => {
-        const updatedData = { ...userData, ...newProfile };
-        setUserData(updatedData);
-        showToast("プロフィールを保存しました。");
+        const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
         
-        if (user && firebaseLoaded && dbRef.current) {
-          const { doc, updateDoc, setDoc } = window.FirebaseHelper;
-          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-          const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+        const unsubscribe = onSnapshot(docRef, async (docSnap) => {
+          const today = new Date().toISOString().split('T')[0];
+          
+          if (docSnap.exists()) {
+             const data = docSnap.data();
+             
+             // ログインボーナスの付与ロジック
+             if (data.role !== 'idol' && data.lastLoginDate !== today) {
+                const newFreeTickets = (data.freeTickets || 0) + 3;
+                showToast("ログインボーナス！無料投票券(3枚)を追加しました。");
+                // データベースのみ更新（再レンダリングはonSnapshotが拾ってくれる）
+                await updateDoc(docRef, { lastLoginDate: today, freeTickets: newFreeTickets });
+             } else {
+                setUserData(data); // 画面上のステートとDBを同期
+             }
+          } else {
+             // 初回アクセス時のデータ作成
+             const initData = { 
+               role: 'producer', 
+               isRegistered: false,
+               freeTickets: 3, 
+               paidTickets: 0, 
+               totalPts: 0, 
+               lastLoginDate: today, 
+               createdAt: new Date().toISOString() 
+             };
+             await setDoc(docRef, initData);
+             setUserData(initData);
+          }
+        }, (error) => {
+          console.error("Firestore onSnapshot Error:", error);
+        });
+
+        return () => unsubscribe();
+      }, [firebaseLoaded, user]);
+
+      // プロフィール情報の保存
+      const handleUpdateProfile = async (newProfile) => {
+        if (!user || !firebaseLoaded || !dbRef.current) return;
+        
+        const { doc, updateDoc, setDoc } = window.FirebaseHelper;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+        
+        try {
+          await updateDoc(docRef, newProfile);
+          showToast("プロフィールを保存しました。");
+        } catch (e) {
+          console.error("Profile update error:", e);
           try {
-            await updateDoc(docRef, newProfile);
-          } catch (e) {
-            console.error("Profile update error:", e);
-            try {
-              // ドキュメントが存在しない場合は新規作成
-              await setDoc(docRef, updatedData);
-            } catch(e2) {
-              console.error("Profile set error:", e2);
-            }
+            await setDoc(docRef, { ...userData, ...newProfile });
+            showToast("プロフィールを保存しました。");
+          } catch(e2) {
+            console.error("Profile set error:", e2);
           }
         }
       };
 
+      // 「ログイン・登録」アクション（Firebase Authの切り替えではなく、データを「登録済み」にフラグ立てする）
       const handleAuthSubmit = async (email, password, isLogin) => {
-        if (!firebaseLoaded || !authRef.current) {
-          showToast("【エラー】Firebaseの設定が行われていません。");
+        if (!user || !firebaseLoaded || !dbRef.current) {
+          showToast("エラー: 通信環境を確認してください。");
           return;
         }
-        const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc, sendEmailVerification } = window.FirebaseHelper;
-        const auth = authRef.current;
+        
+        const { doc, updateDoc } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
+        const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+        
         try {
-          if (isLogin) {
-            await signInWithEmailAndPassword(auth, email, password);
-            setShowAuthModal(false);
-            showToast("ログインしました。");
-          } else {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            
-            try { await sendEmailVerification(user); } catch(e) {}
-            
-            const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-            const today = new Date().toISOString().split('T')[0];
-            const initData = { 
-              role: 'producer', 
-              email: email,
-              freeTickets: 3, 
-              paidTickets: 0, 
-              totalPts: 0, 
-              lastLoginDate: today, 
-              createdAt: new Date().toISOString() 
-            };
-            
-            try { await setDoc(docRef, initData); } catch(e) {}
-            
-            setShowAuthModal(false);
-            showToast("プロデューサー登録が完了しました！登録メールアドレスに確認メールを送信しました。");
-          }
+          // 本来はセキュリティのためサーバー側でハッシュ化等を行いますが、
+          // Canvas上では擬似的な「メンバー登録」として扱います
+          await updateDoc(docRef, { isRegistered: true, email: email });
+          setShowAuthModal(false);
+          showToast(isLogin ? "ログインしました。" : "プロデューサー登録が完了しました！");
         } catch (error) {
           console.error(error);
-          let msg = "エラーが発生しました。";
-          if (error.code === 'auth/email-already-in-use') msg = "このメールアドレスは既に登録されています。";
-          else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "メールアドレスまたはパスワードが間違っています。";
-          else if (error.code === 'auth/weak-password') msg = "パスワードは6文字以上で設定してください。";
-          showToast(msg);
+          showToast("エラーが発生しました。");
         }
       };
 
+      // ログアウト処理
       const handleLogout = async () => {
         if (firebaseLoaded && authRef.current) {
           const { signOut } = window.FirebaseHelper;
-          await signOut(authRef.current);
+          try {
+            await signOut(authRef.current);
+            window.location.reload(); // リロードして初期状態（匿名等）に戻す
+          } catch(e) { console.error(e); }
         }
-        setUser(null);
-        setUserRole('guest');
-        setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
-        setActiveTab('home');
-        showToast("ログアウトしました。");
       };
 
       const handleUpdateIdolProfile = (newProfile) => {
@@ -1281,32 +1253,24 @@
           idol.id === 1 ? { ...idol, ...newProfile } : idol
         );
         setIdolsData(updatedIdols);
-        // 今回のモックアプリでは、アイドル側プロフィールはメモリ上でのみ更新します。
       };
 
-      // チケット・ポイントの消費・獲得（Firestoreへ永続化）
+      // チケット・ポイントの消費・獲得
       const updateTickets = async (freeDelta, paidDelta, ptsDelta = 0) => {
-        const newFree = Math.max(0, userData.freeTickets + freeDelta);
-        const newPaid = Math.max(0, userData.paidTickets + paidDelta);
-        const newPts = (userData.totalPts || 0) + ptsDelta;
+        if (!user || !firebaseLoaded || !dbRef.current) return;
         
-        const updatedData = { ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts };
-        setUserData(updatedData);
+        const newFree = Math.max(0, (userData.freeTickets || 0) + freeDelta);
+        const newPaid = Math.max(0, (userData.paidTickets || 0) + paidDelta);
+        const newPts = (userData.totalPts || 0) + ptsDelta;
 
-        if (user && firebaseLoaded && dbRef.current) {
-          const { doc, updateDoc } = window.FirebaseHelper;
-          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-          const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-          try {
-            await updateDoc(docRef, {
-              freeTickets: newFree,
-              paidTickets: newPaid,
-              totalPts: newPts
-            });
-          } catch (e) {
-            console.error("Ticket update error:", e);
-          }
-        }
+        const { doc, updateDoc } = window.FirebaseHelper;
+        const db = dbRef.current;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+        
+        try {
+          await updateDoc(docRef, { freeTickets: newFree, paidTickets: newPaid, totalPts: newPts });
+        } catch(e) { console.error(e); }
       };
 
       const filteredIdols = useMemo(() => {
@@ -1326,9 +1290,13 @@
           <Toast message={toastMessage} />
           
           {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} />}
-          {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
-          {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
-          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
+          
+          {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} isMember={userData.isRegistered} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
+          
+          {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} isMember={userData.isRegistered} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
+          
+          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} isMember={userData.isRegistered} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(data) => setSuccessModalData(data)} />}
+          
           {successModalData && <SuccessModal data={successModalData} onClose={() => setSuccessModalData(null)} idol={idolsData.find(i => i.name === successModalData.idolName)} />}
 
           <header className="absolute top-0 w-full z-50 py-8 pointer-events-none">
@@ -1338,11 +1306,10 @@
                 <span style={{display: 'none'}} className="text-2xl font-light text-slate-800 font-serif tracking-widest">Moshi-Ai</span>
               </div>
               <div className="flex flex-col items-end gap-4 pointer-events-auto mt-4 md:mt-0">
-                {/* ログイン・マイページボタン */}
                 <div className="flex items-center gap-4">
-                  {user ? (
+                  {userData.isRegistered ? (
                     <div className="flex items-center gap-2 md:gap-4">
-                      <button onClick={() => { setActiveTab(userRole === 'idol' ? 'idolMyPage' : 'producerMyPage'); window.scrollTo(0,0); }} className="text-[10px] tracking-widest font-medium text-slate-800 bg-white border border-slate-200 px-3 py-1.5 md:px-4 hover:bg-slate-50 transition-colors uppercase flex items-center gap-2 shadow-sm">
+                      <button onClick={() => { setActiveTab(userData.role === 'idol' ? 'idolMyPage' : 'producerMyPage'); window.scrollTo(0,0); }} className="text-[10px] tracking-widest font-medium text-slate-800 bg-white border border-slate-200 px-3 py-1.5 md:px-4 hover:bg-slate-50 transition-colors uppercase flex items-center gap-2 shadow-sm">
                         <i className="fa-regular fa-user"></i> My Page
                       </button>
                       <button onClick={handleLogout} className="text-[10px] tracking-widest font-medium text-white bg-slate-900 px-3 py-1.5 md:px-4 hover:bg-slate-800 transition-colors uppercase flex items-center gap-2 shadow-sm">
@@ -1372,9 +1339,9 @@
           </header>
 
           <main className="pt-40">
-            {activeTab === 'producerMyPage' && user ? (
-              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={handleUpdateProfile} showToast={showToast} />
-            ) : activeTab === 'idolMyPage' && user ? (
+            {activeTab === 'producerMyPage' && userData.isRegistered ? (
+              <ProducerMyPage userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={handleUpdateProfile} showToast={showToast} />
+            ) : activeTab === 'idolMyPage' && userData.isRegistered ? (
               <IdolMyPage idolData={idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} onMyOshiClick={(idol) => showToast(`${idol.name}をMY担当に設定しました。`)} />
