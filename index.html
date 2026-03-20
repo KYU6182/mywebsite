@@ -334,7 +334,8 @@
 
     // 投票モーダル
     const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+      // 匿名ユーザー（未ログイン）の場合は登録を促す
+      if (!user || user.isAnonymous) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -442,7 +443,8 @@
 
     // ギフトモーダル
     const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+      // 匿名ユーザー（未ログイン）の場合は登録を促す
+      if (!user || user.isAnonymous) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -517,7 +519,8 @@
 
     // 衣装提供モーダル
     const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user) {
+      // 匿名ユーザー（未ログイン）の場合は登録を促す
+      if (!user || user.isAnonymous) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
@@ -610,9 +613,14 @@
         setOshiId(userData.oshiId || "");
       }, [userData]);
 
-      const handleSave = (e) => {
+      const handleSave = async (e) => {
         e.preventDefault();
-        onUpdateProfile({ name, profileImage, message, oshiId });
+        const result = await onUpdateProfile({ name, profileImage, message, oshiId });
+        if (result && !result.success) {
+           showToast(`保存エラー: 権限(ルール)の設定を確認してください。`);
+        } else {
+           showToast("プロフィールを保存しました。");
+        }
       };
 
       const oshiIdol = idolsData.find(i => i.id === Number(oshiId));
@@ -738,15 +746,20 @@
 
       if (!idolData) return <div className="text-center py-20">Loading...</div>;
 
-      const handleSaveProfile = (e) => {
+      const handleSaveProfile = async (e) => {
         e.preventDefault();
-        onUpdateProfile({ 
+        const result = await onUpdateProfile({ 
           profileImage,
           catchphrase, 
           story, 
           isStreaming,
         });
-        showToast("プロフィール設定を更新しました。");
+        
+        if (result && !result.success) {
+          showToast(`保存エラー: 権限(ルール)の設定を確認してください。`);
+        } else {
+          showToast("プロフィール設定を更新しました。");
+        }
       };
 
       const handlePostTimeline = (e) => {
@@ -1168,7 +1181,8 @@
 
         const unsubscribe = onAuthStateChanged(auth, (u) => {
            setUser(u);
-           if (!u) {
+           // 匿名ユーザー（isAnonymous=true）の場合は、UI上は「未ログイン」として扱う
+           if (!u || u.isAnonymous) {
               setUserRole('guest');
               setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
            }
@@ -1178,7 +1192,8 @@
 
       // 3. 全体共有用パブリックデータ（全アイドル）の取得とリアルタイム同期
       useEffect(() => {
-        if (!user || !firebaseLoaded || !dbRef.current) return; // ← 認証完了（user存在）を待つように修正
+        // userがnullでも、匿名でもFirestoreのデータ読み取りは行わせる（最新の情報を表示するため）
+        if (!user || !firebaseLoaded || !dbRef.current) return;
         const { collection, onSnapshot } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1201,11 +1216,11 @@
           console.error("Idols fetch error:", error);
         });
         return () => unsubscribe();
-      }, [user, firebaseLoaded]); // ← 依存配列にuserを追加
+      }, [user, firebaseLoaded]);
 
-      // 4. ユーザーデータの取得と作成 (認証完了後に実行)
+      // 4. ユーザーデータの取得と作成 (認証完了後、かつ匿名ユーザー「以外」の場合に実行)
       useEffect(() => {
-        if (!user || !firebaseLoaded || !dbRef.current) return;
+        if (!user || user.isAnonymous || !firebaseLoaded || !dbRef.current) return;
         
         const { doc, getDoc, setDoc, updateDoc } = window.FirebaseHelper;
         const db = dbRef.current;
@@ -1284,24 +1299,27 @@
       const handleUpdateProfile = async (newProfile) => {
         const updatedData = { ...userData, ...newProfile };
         setUserData(updatedData);
-        showToast("プロフィールを保存しました。");
         
-        if (user && firebaseLoaded && dbRef.current) {
+        if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, updateDoc, setDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
           try {
             await updateDoc(docRef, newProfile);
+            return { success: true };
           } catch (e) {
             console.error("Profile update error:", e);
             try {
               // ドキュメントが存在しない場合は新規作成
               await setDoc(docRef, updatedData);
+              return { success: true };
             } catch(e2) {
               console.error("Profile set error:", e2);
+              return { success: false, error: e2 };
             }
           }
         }
+        return { success: true };
       };
 
       const handleAuthSubmit = async (email, password, isLogin) => {
@@ -1386,17 +1404,19 @@
         setIdolsData(updatedIdols);
 
         // Firestoreへの保存（全プロデューサーへ同期するため）
-        if (user && firebaseLoaded && dbRef.current) { // ← userの存在確認を追加
+        if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, setDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           const idolRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'idols', String(userData.idolId));
           try {
             await setDoc(idolRef, newProfile, { merge: true });
+            return { success: true };
           } catch (e) {
             console.error("Idol profile update error:", e);
-            showToast("プロフィールのクラウド保存に失敗しました");
+            return { success: false, error: e };
           }
         }
+        return { success: true };
       };
 
       // チケット・ポイントの消費・獲得（Firestoreへ永続化）
@@ -1408,7 +1428,7 @@
         const updatedData = { ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts };
         setUserData(updatedData);
 
-        if (user && firebaseLoaded && dbRef.current) {
+        if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, updateDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
@@ -1455,7 +1475,7 @@
               <div className="flex flex-col items-end gap-4 pointer-events-auto mt-4 md:mt-0">
                 {/* ログイン・マイページボタン */}
                 <div className="flex items-center gap-4">
-                  {user ? (
+                  {user && !user.isAnonymous ? (
                     <div className="flex items-center gap-2 md:gap-4">
                       <button onClick={() => { setActiveTab(userRole === 'idol' ? 'idolMyPage' : 'producerMyPage'); window.scrollTo(0,0); }} className="text-[10px] tracking-widest font-medium text-slate-800 bg-white border border-slate-200 px-3 py-1.5 md:px-4 hover:bg-slate-50 transition-colors uppercase flex items-center gap-2 shadow-sm">
                         <i className="fa-regular fa-user"></i> My Page
@@ -1487,9 +1507,9 @@
           </header>
 
           <main className="pt-40">
-            {activeTab === 'producerMyPage' && user ? (
+            {activeTab === 'producerMyPage' && user && !user.isAnonymous ? (
               <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={handleUpdateProfile} showToast={showToast} />
-            ) : activeTab === 'idolMyPage' && user ? (
+            ) : activeTab === 'idolMyPage' && user && !user.isAnonymous ? (
               <IdolMyPage idolData={idolsData.find(i => i.id === userData.idolId) || idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} onMyOshiClick={(idol) => showToast(`${idol.name}をMY担当に設定しました。`)} />
