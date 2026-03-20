@@ -129,6 +129,13 @@
       return parseInt(numStr, 10) || 0;
     };
 
+    // --- エラー用フォールバック画像（通信が発生しないData URI） ---
+    const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E";
+    const handleImgError = (e) => {
+      e.currentTarget.onerror = null; // 無限ループ防止
+      e.currentTarget.src = FALLBACK_IMAGE;
+    };
+
     // 初期データ
     const INITIAL_IDOLS = [
       { 
@@ -372,7 +379,7 @@
             
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
               <div className="flex items-center gap-5 mb-8 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
-                <img src={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/100/fdf2f8/db2777'}} />
+                <img src={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={handleImgError} />
                 <div>
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
                   <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
@@ -402,7 +409,7 @@
                 <div className="space-y-4">
                   <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyMagazine(1, 980, 10)}>
                     <div className="flex gap-4 items-center">
-                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/60x80/f8fafc/94a3b8'}}/></div>
+                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
                       <div>
                         <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
                         <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +10 TICKETS</p>
@@ -416,7 +423,7 @@
                       <div className="relative w-12 h-14">
                         <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
                         <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
-                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/60x80/f8fafc/94a3b8'}}/></div>
+                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
                       </div>
                       <div>
                         <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
@@ -554,7 +561,7 @@
                 {OFF_MELTY_CATALOG.map(item => (
                   <div key={item.id} className="bg-transparent flex flex-col group relative">
                     <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative mb-4 border border-slate-200">
-                      <img src={item.img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 mix-blend-multiply" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/300x400/f1f5f9/94a3b8?text=OUTFIT'}} />
+                      <img src={item.img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
                       
                       <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <button onClick={() => handleProvideOutfit(item)} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-6 py-3 hover:bg-pink-600 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300">
@@ -590,15 +597,22 @@
 
     // プロデューサー用 マイページ
     const ProducerMyPage = ({ user, userData, idolsData, onLogout, onUpdateProfile, showToast }) => {
+      // 親コンポーネント(App)のuserDataが変わった時に内部ステートも更新する
       const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
       const [profileImage, setProfileImage] = useState(userData.profileImage || "");
       const [message, setMessage] = useState(userData.message || "");
       const [oshiId, setOshiId] = useState(userData.oshiId || "");
 
+      useEffect(() => {
+        setName(userData.name || "ゲスト プロデューサー");
+        setProfileImage(userData.profileImage || "");
+        setMessage(userData.message || "");
+        setOshiId(userData.oshiId || "");
+      }, [userData]);
+
       const handleSave = (e) => {
         e.preventDefault();
         onUpdateProfile({ name, profileImage, message, oshiId });
-        showToast("プロフィールを更新しました。");
       };
 
       const oshiIdol = idolsData.find(i => i.id === Number(oshiId));
@@ -614,7 +628,7 @@
                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
                 <div className="w-24 h-24 rounded-full mx-auto bg-slate-50 flex items-center justify-center mb-6 overflow-hidden border border-slate-200">
                   {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={handleImgError} />
                   ) : (
                     <i className="fa-solid fa-user-tie text-3xl text-slate-300"></i>
                   )}
@@ -629,7 +643,7 @@
                   <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
                   {oshiIdol ? (
                     <div className="flex items-center justify-center gap-3">
-                      <img src={`./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/50'}} />
+                      <img src={`./idol${oshiIdol.id}.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200" onError={handleImgError} />
                       <span className="font-light text-slate-800 text-sm">{oshiIdol.name}</span>
                     </div>
                   ) : (
@@ -754,7 +768,7 @@
                 <div className="absolute top-0 left-0 w-full h-1 bg-pink-400"></div>
                 
                 <div className="w-32 h-32 rounded-full mx-auto overflow-hidden mb-6 border border-slate-100 shadow-inner relative group">
-                  <img src={currentImgSrc} className="w-full h-full object-cover" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/150'}} />
+                  <img src={currentImgSrc} className="w-full h-full object-cover" onError={handleImgError} />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <i className="fa-solid fa-camera text-white"></i>
                   </div>
@@ -822,7 +836,7 @@
                     return (
                       <div key={item.id} onClick={() => toggleWishlist(item.id)} className={`relative cursor-pointer group border transition-all ${isSelected ? 'border-pink-400 shadow-md ring-1 ring-pink-100' : 'border-slate-100 hover:border-slate-300'}`}>
                         <div className="aspect-[3/4] bg-slate-50 overflow-hidden relative">
-                          <img src={item.img} className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? '' : 'grayscale-[20%] group-hover:grayscale-0'} mix-blend-multiply`} onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/300x400/f1f5f9/94a3b8?text=OUTFIT'}} />
+                          <img src={item.img} className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? '' : 'grayscale-[20%] group-hover:grayscale-0'} mix-blend-multiply`} onError={handleImgError} />
                           {isSelected && (
                             <div className="absolute top-2 right-2 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md">
                               <i className="fa-solid fa-check text-xs"></i>
@@ -895,7 +909,7 @@
             {idols.map((idol) => (
               <div key={idol.id} onClick={() => onIdolSelect(idol)} className="bg-white/80 backdrop-blur-md p-5 rounded-none border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex items-center gap-5 cursor-pointer hover:shadow-[0_10px_30px_-10px_rgba(244,114,182,0.15)] hover:border-pink-100 transition-all duration-300 group">
                 <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-50 flex-shrink-0 shadow-inner">
-                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/200/fdf2f8/db2777?text=IDOL'}} />
+                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" onError={handleImgError} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -932,7 +946,7 @@
                 {idol.titleBadge && !idol.isStreaming && (<div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-medium tracking-widest px-4 py-2 rounded-none shadow-sm z-10 border border-slate-100">{idol.titleBadge}</div>)}
                 <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-light tracking-[0.2em] px-3 py-1.5 rounded-none z-10 uppercase">{idol.type}</div>
                 <div className="w-full h-full relative overflow-hidden">
-                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.target.onerror = null; e.target.src='https://via.placeholder.com/400x500/fdf2f8/db2777?text=IDOL'; }} />
+                  <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
                 </div>
               </div>
             </div>
@@ -1005,7 +1019,7 @@
               <p className="text-[10px] font-medium text-slate-400 tracking-[0.3em] mb-8 border-b border-slate-200 pb-3 inline-block">応援証明書</p>
               
               <div className="flex items-center justify-center gap-5 mb-8">
-                <img src={`./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/100/fdf2f8/db2777'}} />
+                <img src={`./idol${idol?.id}.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" onError={handleImgError} />
                 <div className="text-left">
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Idol Produced</p>
                   <p className="text-xl font-light text-slate-800 font-serif">{data.idolName}</p>
@@ -1178,6 +1192,30 @@
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
+      // プロフィール情報の保存（Firestoreへ永続化）
+      const handleUpdateProfile = async (newProfile) => {
+        const updatedData = { ...userData, ...newProfile };
+        setUserData(updatedData);
+        showToast("プロフィールを保存しました。");
+        
+        if (user && firebaseLoaded && dbRef.current) {
+          const { doc, updateDoc, setDoc } = window.FirebaseHelper;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+          try {
+            await updateDoc(docRef, newProfile);
+          } catch (e) {
+            console.error("Profile update error:", e);
+            try {
+              // ドキュメントが存在しない場合は新規作成
+              await setDoc(docRef, updatedData);
+            } catch(e2) {
+              console.error("Profile set error:", e2);
+            }
+          }
+        }
+      };
+
       const handleAuthSubmit = async (email, password, isLogin) => {
         if (!firebaseLoaded || !authRef.current) {
           showToast("【エラー】Firebaseの設定が行われていません。");
@@ -1243,13 +1281,32 @@
           idol.id === 1 ? { ...idol, ...newProfile } : idol
         );
         setIdolsData(updatedIdols);
+        // 今回のモックアプリでは、アイドル側プロフィールはメモリ上でのみ更新します。
       };
 
-      const updateTickets = (freeDelta, paidDelta, ptsDelta = 0) => {
+      // チケット・ポイントの消費・獲得（Firestoreへ永続化）
+      const updateTickets = async (freeDelta, paidDelta, ptsDelta = 0) => {
         const newFree = Math.max(0, userData.freeTickets + freeDelta);
         const newPaid = Math.max(0, userData.paidTickets + paidDelta);
         const newPts = (userData.totalPts || 0) + ptsDelta;
-        setUserData({ ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts });
+        
+        const updatedData = { ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts };
+        setUserData(updatedData);
+
+        if (user && firebaseLoaded && dbRef.current) {
+          const { doc, updateDoc } = window.FirebaseHelper;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+          try {
+            await updateDoc(docRef, {
+              freeTickets: newFree,
+              paidTickets: newPaid,
+              totalPts: newPts
+            });
+          } catch (e) {
+            console.error("Ticket update error:", e);
+          }
+        }
       };
 
       const filteredIdols = useMemo(() => {
@@ -1316,7 +1373,7 @@
 
           <main className="pt-40">
             {activeTab === 'producerMyPage' && user ? (
-              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={(p) => { setUserData({...userData, ...p}); showToast("保存しました"); }} showToast={showToast} />
+              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onLogout={handleLogout} onUpdateProfile={handleUpdateProfile} showToast={showToast} />
             ) : activeTab === 'idolMyPage' && user ? (
               <IdolMyPage idolData={idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
@@ -1351,7 +1408,7 @@
                       {idolsData.map((idol, i) => (
                         <div key={idol.id} className="w-56 shrink-0 relative rounded-none overflow-hidden group bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
                           <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
-                            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/300x400/f8fafc/94a3b8?text=PORTRAIT'}} />
+                            <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                           </div>
                           <div className="absolute inset-x-0 bottom-0 p-6 text-white flex flex-col justify-end h-full pointer-events-none">
@@ -1374,7 +1431,7 @@
                     {TOPICS_DATA.map((topic, index) => (
                       <div key={topic.id} className={`group cursor-pointer flex flex-col ${index % 2 !== 0 ? 'md:mt-16' : ''}`}>
                         <div className="relative overflow-hidden rounded-none mb-6 shadow-sm bg-slate-50 aspect-[4/3] border border-slate-100">
-                          <img src={`./topic${topic.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/600x450/f8fafc/94a3b8?text=EDITORIAL'}} />
+                          <img src={`./topic${topic.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
                         </div>
                         <div className="flex items-center gap-3 mb-3">
                           <span className="text-[10px] tracking-widest text-slate-400">{topic.date}</span>
@@ -1403,7 +1460,7 @@
                         <div key={ev.id} className="mb-24 last:mb-0 bg-transparent">
                           <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16 group">
                             <div className="aspect-[21/9] overflow-hidden relative bg-slate-50">
-                              <img src={ev.bannerImg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 mix-blend-multiply" onError={(e) => { e.target.onerror = null; e.target.src = isMain ? 'https://via.placeholder.com/1200x500/f8fafc/94a3b8?text=MAIN+CAMPAIGN' : 'https://via.placeholder.com/1200x500/f8fafc/94a3b8?text=COLLABORATION'; }} />
+                              <img src={ev.bannerImg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 mix-blend-multiply" onError={handleImgError} />
                             </div>
                           </div>
 
@@ -1449,7 +1506,7 @@
                                                 <div className={`font-serif text-3xl md:text-4xl font-light mb-4 ${badgeColors} tracking-wider`}>{rankNum}</div>
                                                 <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2`}>
                                                   <div className="w-full h-full relative overflow-hidden bg-slate-50">
-                                                    {idolData && <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" onError={(e)=>{ e.target.onerror = null; e.target.src = `https://via.placeholder.com/300x400/f8fafc/94a3b8?text=Rank+${item.rank}`; }} />}
+                                                    {idolData && <img src={`./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" onError={handleImgError} />}
                                                   </div>
                                                 </div>
                                                 <div className="text-center mt-6 w-full">
@@ -1474,7 +1531,7 @@
                                               <div key={item.rank} onClick={() => { if(idolData) openIdolDetail(idolData) }} className="flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-white/50 transition-colors px-4">
                                                 <div className="w-12 font-serif text-xl font-light text-slate-400 group-hover:text-slate-800 transition-colors">0{item.rank}</div>
                                                 <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0">
-                                                   <img src={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" onError={(e) => { e.target.onerror = null; e.target.src='https://via.placeholder.com/100/f8fafc/94a3b8?text='+item.rank; }} />
+                                                   <img src={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" onError={handleImgError} />
                                                 </div>
                                                 <div className="flex-1">
                                                   <div className="flex justify-between items-baseline mb-1">
@@ -1507,7 +1564,7 @@
                                   <div className="space-y-8">
                                     {ev.aboutImages.map((imgSrc, idx) => (
                                       <div key={idx} className="bg-white p-2 border border-slate-100 shadow-sm">
-                                        <img src={imgSrc} alt={`イベント詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={(e) => { e.target.onerror = null; e.target.src = `https://via.placeholder.com/800x1000/f8fafc/94a3b8?text=ABOUT+IMAGE+${idx + 1}`; }} />
+                                        <img src={imgSrc} alt={`イベント詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
                                       </div>
                                     ))}
                                   </div>
@@ -1523,7 +1580,7 @@
                                 <div className="space-y-8">
                                   {ev.benefitImages.map((imgSrc, idx) => (
                                     <div key={idx} className="bg-white p-2 border border-slate-100 shadow-sm">
-                                      <img src={imgSrc} alt={`特典詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={(e) => { e.target.onerror = null; e.target.src = `https://via.placeholder.com/800x600/f8fafc/94a3b8?text=BENEFITS+IMAGE+${idx + 1}`; }} />
+                                      <img src={imgSrc} alt={`特典詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
                                     </div>
                                   ))}
                                 </div>
@@ -1561,7 +1618,7 @@
                     {filteredIdols.slice(0, 8).map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                         <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50">
-                          <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/300x400/f8fafc/94a3b8?text=PORTRAIT'}} />
+                          <img src={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
                           {idol.isStreaming && (
                             <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
                               On Air
@@ -1608,7 +1665,7 @@
                     {MAGAZINES.map((mag) => (
                       <div key={mag.id} className="flex flex-col items-center group cursor-pointer">
                         <div className="relative w-full aspect-[3/4] bg-white border border-slate-100 p-3 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_30px_50px_-15px_rgba(0,0,0,0.15)]">
-                          <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover mix-blend-multiply" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+                          <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover mix-blend-multiply" onError={handleImgError} />
                           <div className="absolute -left-3 top-6 bg-slate-900 text-white text-[9px] font-medium tracking-widest py-1.5 px-4 shadow-md uppercase writing-vertical-lr transform rotate-180" style={{ writingMode: 'vertical-lr' }}>Vol. {mag.id}</div>
                         </div>
                         <div className="text-center mt-8">
@@ -1630,7 +1687,7 @@
               <div className="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-20 w-full animate-fade-in">
                 <img src="./logo.png" className="h-16 md:h-20 object-contain opacity-80 transition-opacity hover:opacity-100" alt="もしアイ ロゴ" onError={(e)=>e.target.style.display='none'} />
                 <div className="h-px w-20 md:w-px md:h-16 bg-slate-200"></div>
-                <img src="./off_melty_logo.png" className="h-8 md:h-10 object-contain opacity-60 hover:opacity-100 transition-opacity" alt="Off-Melty ロゴ" onError={(e)=>{e.target.onerror = null; e.target.src='https://via.placeholder.com/200x80/f8fafc/94a3b8?text=Off-Melty'}} />
+                <img src="./off_melty_logo.png" className="h-8 md:h-10 object-contain opacity-60 hover:opacity-100 transition-opacity" alt="Off-Melty ロゴ" onError={handleImgError} />
               </div>
               
               <div className="space-y-10 w-full max-w-md mx-auto">
