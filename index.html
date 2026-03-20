@@ -325,6 +325,269 @@
       );
     };
 
+    // 投票モーダル
+    const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">プロデューサー登録（無料）で、<br/>毎日<span className="text-pink-500 font-medium">「3票の無料投票券」</span>を進呈いたします。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER & VOTE
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleVote = (type, amount) => {
+        if (type === 'free' && userData.freeTickets >= amount) {
+          updateTickets(-amount, 0);
+          onSuccess({ idolName: idol.name, amount: amount, actionType: '投票' });
+          onClose();
+        } else if (type === 'paid' && userData.paidTickets >= amount) {
+          updateTickets(0, -amount);
+          onSuccess({ idolName: idol.name, amount: amount, actionType: '投票(有料枠)' });
+          onClose();
+        } else {
+          showToast("投票券が不足しています。");
+        }
+      };
+
+      const handleBuyMagazine = (qty, price, tickets) => {
+        updateTickets(0, tickets);
+        showToast(`「第3号 ${qty}冊」を購入しました。有料枠 ${tickets} 枚を獲得。`);
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative">
+              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Voting Room</h3>
+              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
+              <div className="flex items-center gap-5 mb-8 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
+                <img src={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" onError={(e)=>e.target.src='https://via.placeholder.com/100/fdf2f8/db2777'} />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
+                  <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
+                </div>
+              </div>
+
+              <div className="mb-10">
+                <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-4 uppercase">Your Tickets</h5>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white border border-slate-200 p-5 rounded-none text-center shadow-sm relative">
+                    <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Free <span className="text-pink-400 lowercase text-[8px] tracking-normal">(3/day)</span></p>
+                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.freeTickets}</div>
+                    <button onClick={() => handleVote('free', 1)} disabled={userData.freeTickets < 1} className="w-full py-3 bg-slate-800 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
+                  </div>
+                  <div className="bg-white border border-slate-200 p-5 rounded-none text-center shadow-sm relative">
+                    <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Premium</p>
+                    <div className="text-3xl font-light font-timer text-slate-800 mb-4">{userData.paidTickets}</div>
+                    <button onClick={() => handleVote('paid', 1)} disabled={userData.paidTickets < 1} className="w-full py-3 bg-pink-500 text-white text-[10px] tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors">VOTE</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-8">
+                <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Magazine Pre-order</h5>
+                <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を事前予約することで、プレミアム投票券を獲得できます。</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyMagazine(1, 980, 10)}>
+                    <div className="flex gap-4 items-center">
+                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/60x80/f8fafc/94a3b8'}/></div>
+                      <div>
+                        <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
+                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +10 TICKETS</p>
+                      </div>
+                    </div>
+                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors">¥980</button>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors relative cursor-pointer group" onClick={() => handleBuyMagazine(5, 2490, 60)}>
+                    <div className="flex gap-4 items-center pl-1">
+                      <div className="relative w-12 h-14">
+                        <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
+                        <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
+                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/60x80/f8fafc/94a3b8'}/></div>
+                      </div>
+                      <div>
+                        <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
+                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +60 TICKETS</p>
+                      </div>
+                    </div>
+                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors">¥2,490</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ギフトモーダル
+    const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">ギフトを贈るには、<br/>プロデューサー登録（無料）が必要です。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleBuyGift = (name, price, pt) => {
+        updateTickets(0, 0, pt);
+        onSuccess({ idolName: idol.name, amount: pt, actionType: `ギフト(${name})` });
+        onClose();
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative">
+              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Gift Boutique</h3>
+              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
+              <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">ささやかなギフトから、特別な日の贈り物まで。<br/>あなたの想いをポイントに変えて届けます。</p>
+              
+              <div className="space-y-4">
+                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+                  <div className="flex items-center gap-5">
+                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4>
+                      <p className="text-[10px] text-slate-400 font-medium tracking-wider">+150 pt</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('応援メガホン', 100, 150)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+                  <div className="flex items-center gap-5">
+                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">フラワースタンド</h4>
+                      <p className="text-[10px] text-pink-400 font-medium tracking-wider">+500 pt</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
+                </div>
+
+                <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
+                  <div className="flex items-center gap-5 pl-3">
+                    <div className="text-2xl opacity-90 grayscale group-hover:grayscale-0 transition-all">🎂</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">特大バースデーケーキ</h4>
+                      <p className="text-[10px] text-slate-500 font-medium tracking-wider">+2,000 pt</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('特大バースデーケーキ', 1000, 2000)} className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-slate-700 transition-colors">¥1,000</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 衣装提供モーダル
+    const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-solid fa-shirt text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">衣装を提供して推しを支援するには、<br/>プロデューサー登録（無料）が必要です。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleProvideOutfit = (item) => {
+        updateTickets(0, 0, item.pt);
+        onSuccess({ idolName: idol.name, amount: item.pt, actionType: '衣装提供' });
+        onClose();
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#fafafa] rounded-none overflow-hidden max-w-4xl w-full shadow-2xl relative border border-slate-200">
+            <div className="bg-white p-6 md:p-8 text-center relative border-b border-slate-100 z-10 flex flex-col items-center justify-center">
+              <img src="./off_melty_logo.png" className="h-6 mx-auto mb-3 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+              <h3 style={{display: 'none'}} className="font-serif font-light text-slate-800 text-xl mb-2 tracking-wide">Off-Melty</h3>
+              <p className="text-slate-400 text-[9px] font-medium tracking-[0.3em] uppercase">Lookbook / Outfit Provision</p>
+              <button onClick={onClose} className="absolute right-6 top-8 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div className="p-6 md:p-10 max-h-[75vh] overflow-y-auto hide-scrollbar relative">
+              <div className="text-center mb-10">
+                 <p className="text-xs text-slate-500 leading-loose font-light max-w-xl mx-auto">
+                   最新のコレクションから、彼女にふさわしい一着をセレクト。<br/>
+                   提供された衣装は高いプロデュースポイントに換算され、ランキングを強力に後押しします。
+                 </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                {OFF_MELTY_CATALOG.map(item => (
+                  <div key={item.id} className="bg-transparent flex flex-col group relative">
+                    <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative mb-4 border border-slate-200">
+                      <img src={item.img} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 mix-blend-multiply" onError={(e)=>e.target.src='https://via.placeholder.com/300x400/f1f5f9/94a3b8?text=OUTFIT'} />
+                      
+                      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <button onClick={() => handleProvideOutfit(item)} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-6 py-3 hover:bg-pink-600 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300">
+                          SELECT
+                        </button>
+                      </div>
+
+                      {item.stock !== null && (
+                        <div className="absolute top-3 left-3 bg-white text-slate-800 border border-slate-200 text-[8px] font-medium px-2 py-1 tracking-widest shadow-sm">
+                          ONLY {item.stock} LEFT
+                        </div>
+                      )}
+                      {item.deadline && (
+                        <div className="absolute top-3 right-3 bg-slate-900 text-white text-[8px] font-medium px-2 py-1 tracking-widest shadow-sm">
+                          LIMITED TIME
+                        </div>
+                      )}
+                    </div>
+                    
+                    <h4 className="font-serif font-light text-sm text-slate-800 line-clamp-2 mb-2 leading-relaxed">{item.name}</h4>
+                    <div className="flex justify-between items-baseline mt-auto">
+                      <p className="text-xs text-slate-500 font-light tracking-wide">¥{item.price}</p>
+                      <p className="text-[9px] font-medium tracking-widest text-pink-400">+{item.pt.toLocaleString()} PT</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     // プロデューサー用 マイページ
     const ProducerMyPage = ({ user, userData, idolsData, onLogout, onUpdateProfile, showToast }) => {
       const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
