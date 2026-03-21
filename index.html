@@ -129,46 +129,42 @@
       return parseInt(numStr, 10) || 0;
     };
 
-    // --- エラー用フォールバック画像（通信が発生しないData URI） ---
+    // --- エラー用フォールバック画像 ---
     const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E";
     const handleImgError = (e) => {
-      e.currentTarget.onerror = null; // 無限ループ防止
+      e.currentTarget.onerror = null; 
       e.currentTarget.src = FALLBACK_IMAGE;
     };
 
-    // メディア（画像/動画）の自動判定・自動フォールバック表示コンポーネント
     const MediaDisplay = ({ src, fallbackSrc, className }) => {
       const [mediaError, setMediaError] = useState(false);
       
-      // 対象のソース(src)が変わるたびにエラー状態をリセットする
       useEffect(() => {
         setMediaError(false);
       }, [src]);
 
       const isVideo = src && typeof src === 'string' && src.match(/\.(mp4|webm|ogg|mov)$/i);
       
-      // 動画ファイルが存在しなかった場合、自動的に画像（fallbackSrc）に切り替える
       if (isVideo && !mediaError) {
         return <video src={src} autoPlay loop muted playsInline className={className} onError={() => setMediaError(true)} />;
       }
       return <img src={mediaError ? fallbackSrc : (src || fallbackSrc)} className={className} onError={handleImgError} />;
     };
 
-    // 初期データ (デフォルトのprofileImageを動画(mp4)に設定しています。動画がなければ自動でpngになります)
     const INITIAL_IDOLS = [
       { 
-        id: 1, loginEmail: "kirara@example.com", profileImage: "./idol1.mp4", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}], totalVotes: 15200,
+        id: 1, loginEmail: "kirara@example.com", profileImage: "./idol1.mp4", name: "星野 きらら", type: "初代グランプリ", issue: "第1号掲載", isOffMelty: true, catchphrase: "笑顔でみんなを照らしたい！", color: "from-pink-300 to-rose-300", pref: "東京", style: "王道キュート", isRookie: false, age: "18歳", height: "158cm", hobby: "カフェ巡り", story: "小さい頃からキラキラしたステージに立つのが夢でした。応援してくれるプロデューサーさんたちと一緒に夢を叶えたいです！", titleBadge: "第1号 表紙抜擢", producerCount: "986", videoUrl: "", birthday: "2008年4月12日", hometown: "東京都", specialSkill: "ピアノ、書道", topProducers: [{name: "たかひろ", pt: "85,400 票"}, {name: "ゆうき@きらら推し", pt: "72,100 票"}, {name: "Kazu", pt: "54,800 票"}], totalVotes: 27200,
         isStreaming: true,
         timeline: [
           { id: 101, date: "2時間前", text: "現在2位…悔しい！絶対1位になって表紙を飾りたいです😭✨\nみんなの力を貸してね！", img: "./timeline_kirara1.png", likes: 245 },
           { id: 102, date: "昨日", text: "今日は朝からダンスレッスンでした！\n新しい振り付け、早くみんなに見せたいな🎶", img: null, likes: 189 }
         ]
       },
+      { id: 6, loginEmail: "ria@example.com", profileImage: "./idol6.mp4", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [], totalVotes: 25800 },
       { id: 5, loginEmail: "kurumi@example.com", profileImage: "./idol5.mp4", name: "天音 くるみ", type: "期待の新人", issue: "第3号掲載予定", isOffMelty: false, catchphrase: "音楽の魔法でみんなをハッピーに♪", color: "from-emerald-300 to-teal-300", pref: "愛知", style: "K-POP系", isRookie: true, age: "17歳", height: "155cm", hobby: "ギター", story: "K-POPアイドルのようなかっこよくて可愛いパフォーマンスができるように毎日特訓中です！", titleBadge: "注目ルーキー", producerCount: "1,540", videoUrl: "", birthday: "2009年9月25日", hometown: "愛知県", specialSkill: "ダンス、韓国語", topProducers: [{name: "くるみん隊長", pt: "95,400 票"}, {name: "DJ_T", pt: "88,100 票"}, {name: "あやか", pt: "74,800 票"}], isStreaming: false, timeline: [], totalVotes: 12450 },
-      { id: 6, loginEmail: "ria@example.com", profileImage: "./idol6.mp4", name: "姫宮 りあ", type: "注目株", issue: "第3号掲載予定", isOffMelty: true, catchphrase: "お姫様になりたいな👑", color: "from-fuchsia-300 to-pink-300", pref: "東京", style: "王道キュート", isRookie: true, age: "16歳", height: "152cm", hobby: "コスメ集め", story: "可愛いお洋服とキラキラした世界が大好き！りあのこと、一番のお姫様にしてね👑", titleBadge: "SNSバズり中", producerCount: "2,100", videoUrl: "", birthday: "2010年1月15日", hometown: "東京都", specialSkill: "メイク、自撮り", topProducers: [{name: "ナイト騎士", pt: "112,000 票"}, {name: "りあ信者", pt: "98,500 票"}, {name: "Pinky", pt: "86,200 票"}], isStreaming: false, timeline: [], totalVotes: 13800 },
-      { id: 2, loginEmail: "yui@example.com", profileImage: "./idol2.mp4", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [], totalVotes: 8200 },
-      { id: 3, loginEmail: "hina@example.com", profileImage: "./idol3.mp4", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [], totalVotes: 9500 },
       { id: 4, loginEmail: "ai@example.com", profileImage: "./idol4.mp4", name: "水瀬 あい", type: "読者特別賞", issue: "第1号掲載", isOffMelty: false, catchphrase: "水のように透明な心を大切に。", color: "from-cyan-300 to-blue-300", pref: "福岡", style: "クール・ビューティー", isRookie: false, age: "21歳", height: "165cm", hobby: "ヨガ", story: "表現することの楽しさを知りました。もっと色々な表情を見せていけるように頑張ります。", titleBadge: "第3号 特集確定", producerCount: "720", videoUrl: "", birthday: "2005年7月8日", hometown: "福岡県", specialSkill: "水泳、英会話", topProducers: [{name: "Aqua", pt: "49,500 票"}, {name: "博多っ子", pt: "35,200 票"}, {name: "Nemo", pt: "22,100 票"}], isStreaming: false, timeline: [], totalVotes: 10800 },
+      { id: 3, loginEmail: "hina@example.com", profileImage: "./idol3.mp4", name: "桜井 ひな", type: "第2号グランプリ", issue: "第2号掲載", isOffMelty: true, catchphrase: "満開の笑顔をお届けします🌸", color: "from-rose-300 to-orange-300", pref: "北海道", style: "清楚・お姉さん", isRookie: false, age: "19歳", height: "160cm", hobby: "お菓子作り", story: "北海道の自然の中で育ちました！オーディションに参加してから世界が変わりました。満開の笑顔を咲かせ続けます🌸", titleBadge: "第2号 表紙抜擢", producerCount: "850", videoUrl: "", birthday: "2007年3月20日", hometown: "北海道", specialSkill: "料理、スキー", topProducers: [{name: "道民の星", pt: "55,000 票"}, {name: "ひなまる", pt: "42,300 票"}, {name: "Yoshi", pt: "29,800 票"}], isStreaming: false, timeline: [], totalVotes: 9500 },
+      { id: 2, loginEmail: "yui@example.com", profileImage: "./idol2.mp4", name: "月見 結衣", type: "レギュラーモデル", issue: "第1号・第2号", isOffMelty: false, catchphrase: "月明かりのような癒やしを。", color: "from-purple-300 to-indigo-300", pref: "大阪", style: "清楚・お姉さん", isRookie: false, age: "20歳", height: "162cm", hobby: "読書", story: "引っ込み思案な性格を変えたくてエントリーしました。私なりのペースで癒やしを届けられる存在になりたいです。", titleBadge: "第2号 掲載確定", producerCount: "1,204", videoUrl: "", birthday: "2006年11月3日", hometown: "大阪府", specialSkill: "茶道、早寝早起き", topProducers: [{name: "結衣推し1号", pt: "62,200 票"}, {name: "うさぎ", pt: "48,100 票"}, {name: "Sato", pt: "31,000 票"}], isStreaming: false, timeline: [], totalVotes: 8200 },
     ];
 
     const OFF_MELTY_CATALOG = [
@@ -199,6 +195,13 @@
       { id: 'rookie', label: '新人', icon: 'fa-seedling' },
     ];
 
+    const HOW_TO_JOIN_STEPS = [
+      { step: 'STEP 01', icon: 'fa-mobile-screen', title: 'LINE公式を友だち追加', desc: 'まずは公式LINEを登録。オーディションの最新情報やエントリーフォームをお届けします。' },
+      { step: 'STEP 02', icon: 'fa-pen-to-square', title: 'エントリーフォーム入力', desc: '必要事項とあなたの魅力が伝わる写真・動画をアップロードして送信！' },
+      { step: 'STEP 03', icon: 'fa-comments', title: '書類・オンライン面接審査', desc: '通過者には個別にメッセージでご連絡します。リラックスしてあなたの夢を語ってください。' },
+      { step: 'STEP 04', icon: 'fa-microphone-lines', title: '配信＆ファン獲得スタート！', desc: '「もしアイ」ポータルにプロフィールが公開。ファンと一緒に目標を目指しましょう！' }
+    ];
+
     const EVENTS_DATA = [
       {
         id: 'main',
@@ -216,8 +219,9 @@
           { type: 'top', title: '✨ 上位入賞特典（ランキング上位 / 10人）', items: ['雑誌「1ページ」フル特集へのグレードアップ！'] },
           { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['推しを上位に導いた「筆頭プロデューサー（TO）」の皆様は、実際の雑誌の掲載ページに**『Supported by [あなたのお名前]』**として大きくクレジット掲載されます！'] }
         ],
+        howToJoin: HOW_TO_JOIN_STEPS,
         rankingData: {
-          overall: [{ rank: 1, idolId: 5, name: "天音 くるみ", value: "12,450 票", diff: "-" }, { rank: 2, idolId: 6, name: "姫宮 りあ", value: "11,200 票", diff: "1位まで 1,250票" }, { rank: 3, idolId: 4, name: "水瀬 あい", value: "10,800 票", diff: "2位まで 400票" }, { rank: 4, idolId: 1, name: "星野 きらら", value: "9,500 票", diff: "3位まで 1,300票" }, { rank: 5, idolId: 2, name: "月見 結衣", value: "8,200 票", diff: "4位まで 1,300票" }, { rank: 6, idolId: 3, name: "桜井 ひな", value: "7,100 票", diff: "5位まで 1,100票" }],
+          overall: [], // React内で動的に生成
           producers: [{ rank: 1, idolId: 6, name: "姫宮 りあ", value: "2,100 人" }, { rank: 2, idolId: 5, name: "天音 くるみ", value: "1,540 人" }, { rank: 3, idolId: 2, name: "月見 結衣", value: "1,204 人" }, { rank: 4, idolId: 1, name: "星野 きらら", value: "986 人" }, { rank: 5, idolId: 3, name: "桜井 ひな", value: "850 人" }, { rank: 6, idolId: 4, name: "水瀬 あい", value: "720 人" }],
           regional: [{ rank: 1, idolId: 4, name: "水瀬 あい", value: "九州 1位" }, { rank: 2, idolId: 1, name: "星野 きらら", value: "関東 1位" }, { rank: 3, idolId: 2, name: "月見 結衣", value: "関西 1位" }],
           style: [{ rank: 1, idolId: 6, name: "姫宮 りあ", value: "王道アイドル 1位" }, { rank: 2, idolId: 5, name: "天音 くるみ", value: "K-POP系 1位" }, { rank: 3, idolId: 3, name: "桜井 ひな", value: "清楚系 1位" }],
@@ -239,8 +243,9 @@
           { type: 'grand', title: '👗 アンバサダー就任特典（上位入賞者）', items: ['『Off-Melty』2026年シーズンの公式アンバサダーに就任！', 'ブランドの公式ECサイトやSNSでのモデル起用！', '毎月新作アイテムの無償提供＆特別割引枠の付与！', '雑誌内の「Off-Melty特別ルックブック・ページ」への大々的な掲載！'] },
           { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['この企画では、プロデューサー様がOff-Meltyのカタログから推しに「衣装をプレゼント」することで強烈に応援できます。', '衣装を提供してくださったエグゼクティブ・プロデューサー様には、雑誌掲載ページに**『Outfit Provided by [あなたのお名前]』**とスポンサー名の独占クレジットが掲載されるほか、推しの限定着用自撮り動画をお届けします！'] }
         ],
+        howToJoin: HOW_TO_JOIN_STEPS,
         rankingData: {
-          overall: [{ rank: 1, idolId: 1, name: "星野 きらら", value: "15,200 票", diff: "-" }, { rank: 2, idolId: 6, name: "姫宮 りあ", value: "13,800 票", diff: "1位まで 1,400票" }, { rank: 3, idolId: 3, name: "桜井 ひな", value: "9,500 票", diff: "2位まで 4,300票" }, { rank: 4, idolId: 4, name: "水瀬 あい", value: "8,800 票", diff: "3位まで 700票" }, { rank: 5, idolId: 2, name: "月見 結衣", value: "7,500 票", diff: "4位まで 1,300票" }, { rank: 6, idolId: 5, name: "天音 くるみ", value: "6,200 票", diff: "5位まで 1,300票" }],
+          overall: [], // React内で動的に生成
           producers: [{ rank: 1, idolId: 1, name: "星野 きらら", value: "1,850 人" }, { rank: 2, idolId: 6, name: "姫宮 りあ", value: "1,620 人" }, { rank: 3, idolId: 3, name: "桜井 ひな", value: "850 人" }],
           regional: [{ rank: 1, idolId: 1, name: "星野 きらら", value: "関東 1位" }, { rank: 2, idolId: 3, name: "桜井 ひな", value: "北海道 1位" }, { rank: 3, idolId: 6, name: "姫宮 りあ", value: "関東 2位" }],
           style: [{ rank: 1, idolId: 6, name: "姫宮 りあ", value: "王道アイドル 1位" }, { rank: 2, idolId: 1, name: "星野 きらら", value: "王道アイドル 2位" }, { rank: 3, idolId: 3, name: "桜井 ひな", value: "清楚系 1位" }],
@@ -304,14 +309,13 @@
       );
     };
 
-    // 共通の回遊用コンポーネント (おすすめアイドルと開催中イベント)
     const CrossNavSection = ({ idolsData, currentIdolId, onIdolSelect, onNavigate }) => {
       const recommendIdols = useMemo(() => {
         let list = idolsData;
         if (currentIdolId) {
           list = list.filter(i => i.id !== currentIdolId);
         }
-        return list.slice(0, 4); // 最大4人表示
+        return list.slice(0, 4); 
       }, [idolsData, currentIdolId]);
 
       return (
@@ -320,7 +324,6 @@
             <SectionTitle title="Discover More" subtitle="さらに広がる「もしアイ」の世界" />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              {/* Recommend Idols */}
               <div>
                 <div className="flex items-center gap-3 mb-8">
                   <span className="w-8 h-px bg-pink-300"></span>
@@ -346,7 +349,6 @@
                 </div>
               </div>
 
-              {/* Hot Events */}
               <div>
                 <div className="flex items-center gap-3 mb-8">
                   <span className="w-8 h-px bg-pink-300"></span>
@@ -373,7 +375,7 @@
                 </div>
                 <div className="mt-8 text-center sm:text-left pl-0 sm:pl-2">
                    <button onClick={() => onNavigate('ranking')} className="text-xs text-slate-500 hover:text-slate-900 tracking-widest font-light transition-colors border-b border-slate-300 hover:border-slate-900 pb-1">
-                     VIEW ALL RANKINGS <i className="fa-solid fa-arrow-right-long ml-2"></i>
+                      VIEW ALL CAMPAIGNS <i className="fa-solid fa-arrow-right-long ml-2"></i>
                    </button>
                 </div>
               </div>
@@ -383,7 +385,6 @@
       );
     };
 
-    // ログイン / 新規登録 モーダル
     const AuthModal = ({ onClose, onAuthSubmit }) => {
       const [isLogin, setIsLogin] = useState(true);
       const [email, setEmail] = useState('');
@@ -429,7 +430,6 @@
       );
     };
 
-    // 投票（無料票専用）モーダル
     const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
         return (
@@ -449,7 +449,7 @@
 
       const handleVote = (amount) => {
         if (userData.freeTickets >= amount) {
-          updateTickets(-amount, 0, amount); // freeを減らし、totalVotes(pts)を増やす
+          updateTickets(-amount, 0, amount);
           onSuccess({ idolName: idol.name, amount: amount, actionType: '無料投票' });
           onClose();
         } else {
@@ -467,7 +467,7 @@
             
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
               <div className="flex items-center gap-5 mb-10 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
-                <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-16 h-16 rounded-full object-cover border border-slate-100" />
+                <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover border border-slate-100" />
                 <div>
                   <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
                   <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
@@ -490,7 +490,6 @@
       );
     };
 
-    // ギフト＆雑誌購入モーダル (統合版)
     const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
         return (
@@ -528,7 +527,6 @@
               </p>
               
               <div className="space-y-4">
-                {/* 応援メガホン */}
                 <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
                   <div className="flex items-center gap-5">
                     <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
@@ -540,7 +538,6 @@
                   <button onClick={() => handleBuyGift('応援メガホン', 100, 120)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
                 </div>
 
-                {/* フラワースタンド */}
                 <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
                   <div className="flex items-center gap-5">
                     <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
@@ -552,7 +549,6 @@
                   <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
                 </div>
 
-                {/* 特大バースデーケーキ */}
                 <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
                   <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
                   <div className="flex items-center gap-5 pl-3">
@@ -566,7 +562,6 @@
                 </div>
               </div>
 
-              {/* 雑誌購入セクション */}
               <div className="border-t border-slate-200 pt-8 mt-8">
                 <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Official Magazine</h5>
                 <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を購入して大量の票と公式プロデューサーの称号を獲得しましょう。</p>
@@ -608,7 +603,6 @@
       );
     };
 
-    // 衣装提供モーダル
     const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
         return (
@@ -688,7 +682,208 @@
       );
     };
 
-    // プロデューサー用 マイページ
+    // --- 新規追加: イベント詳細全体ビュー ---
+    const EventDetailView = ({ event, onBack, idolsData, onIdolSelect, onQuickVote }) => {
+      const sortedIdols = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).slice(0, 20); // Top 20まで取得
+      const topThree = sortedIdols.slice(0, 3);
+      const others = sortedIdols.slice(3, 20);
+      const maxPt = sortedIdols.length > 0 ? sortedIdols[0].totalVotes : 1;
+
+      return (
+        <div className="max-w-5xl mx-auto px-4 py-12 animate-fade-in pb-32">
+          <button onClick={onBack} className="mb-8 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO CAMPAIGNS
+          </button>
+
+          {/* Banner */}
+          <div className="w-full aspect-[21/9] md:aspect-[3/1] bg-slate-100 overflow-hidden relative mb-20 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] group">
+            <img src={event.bannerImg} className="w-full h-full object-cover opacity-90 mix-blend-multiply transition-transform duration-1000 group-hover:scale-105" onError={handleImgError} />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent flex flex-col justify-end p-6 md:p-12">
+               <span className="text-[10px] text-pink-300 tracking-[0.3em] font-medium mb-3 uppercase drop-shadow-md">Official Campaign</span>
+               <h1 className="text-2xl md:text-4xl font-serif text-white mb-3 tracking-wide drop-shadow-lg">{event.title}</h1>
+               <p className="text-white/90 text-xs md:text-sm font-light drop-shadow-md max-w-2xl">{event.subtitle}</p>
+            </div>
+          </div>
+
+          {/* TOP 20 RANKING */}
+          <div className="mb-24">
+            <SectionTitle title="TOP 20 RANKING" subtitle="現在のランキング状況 (総合)" />
+            
+            <div className="bg-white/60 backdrop-blur-xl border border-slate-200 p-6 md:p-10 shadow-sm">
+              {/* Top 3 */}
+              <div className="flex justify-center items-end gap-4 md:gap-10 mb-16 mt-6">
+                {topThree.map((idol, index) => {
+                  let orderClass = index === 0 ? "order-2" : index === 1 ? "order-1" : "order-3";
+                  let sizeClass = index === 0 ? "w-32 md:w-48" : "w-24 md:w-36 mb-0 md:mb-6";
+                  let badgeColors = index === 0 ? "text-amber-500" : index === 1 ? "text-slate-400" : "text-orange-400";
+                  let rankNum = index === 0 ? "01" : index === 1 ? "02" : "03";
+                  const diff = index === 0 ? "-" : `1ランク上まで ${((topThree[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+
+                  return (
+                    <div key={idol.id} onClick={() => onIdolSelect(idol)} className={`flex flex-col items-center cursor-pointer group animate-podium ${orderClass} ${sizeClass}`} style={{animationDelay: `${index * 0.15}s`}}>
+                      <div className={`font-serif text-2xl md:text-3xl font-light mb-3 ${badgeColors} tracking-wider`}>{rankNum}</div>
+                      <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2 relative overflow-hidden`}>
+                        <div className="w-full h-full relative overflow-hidden bg-slate-50">
+                          <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" />
+                        </div>
+                      </div>
+                      <div className="text-center mt-4 w-full relative">
+                        <h4 className="font-light tracking-wide text-slate-800 text-xs md:text-sm truncate px-1">{idol.name}</h4>
+                        <div className="flex items-center justify-center mt-1">
+                          <p className={`text-[10px] md:text-xs font-timer font-light ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{(idol.totalVotes || 0).toLocaleString()} 票</p>
+                        </div>
+                        {diff !== "-" && <p className="text-[8px] text-pink-400 font-medium tracking-widest mt-1 uppercase">{diff}</p>}
+                        
+                        <div className="mt-2 flex justify-center h-8">
+                          <button 
+                            onClick={(e) => onQuickVote(e, idol)}
+                            className="bg-pink-50 border border-pink-100 text-pink-500 hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white hover:border-transparent px-3 py-1 rounded-full text-[8px] tracking-widest font-medium transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.3)] hover:scale-105 active:scale-95 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+                          >
+                            <i className="fa-solid fa-heart"></i> VOTE
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 4~20 */}
+              <div className="max-w-2xl mx-auto border-t border-slate-100 pt-8">
+                {others.map((idol, i) => {
+                  const rank = i + 4;
+                  const percentage = Math.min(100, Math.max(0, ((idol.totalVotes || 0) / maxPt) * 100));
+                  const diff = `1ランク上まで ${((sortedIdols[rank-2].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+
+                  return (
+                    <div key={idol.id} onClick={() => onIdolSelect(idol)} className="flex items-center py-4 border-b border-slate-100 group cursor-pointer hover:bg-slate-50 transition-colors px-2 md:px-4">
+                      <div className="w-8 md:w-10 font-serif text-lg font-light text-slate-400 group-hover:text-slate-800 transition-colors">
+                        {rank.toString().padStart(2, '0')}
+                      </div>
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-slate-200 mr-4 shrink-0 bg-slate-50">
+                         <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-1">
+                          <h4 className="font-light text-slate-800 text-xs md:text-sm tracking-wide truncate pr-2">{idol.name}</h4>
+                          <p className="font-timer font-light text-xs md:text-sm text-slate-900 shrink-0">{(idol.totalVotes || 0).toLocaleString()} 票</p>
+                        </div>
+                        <div className="w-full bg-slate-200 h-px relative">
+                          <div className="absolute top-0 left-0 h-full transition-all duration-1000 bg-pink-300" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                      
+                      <div className="ml-4 flex items-center gap-3 justify-end shrink-0">
+                        <span className="hidden sm:inline-block text-[8px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right">{diff}</span>
+                        <button 
+                          onClick={(e) => onQuickVote(e, idol)}
+                          className="w-8 h-8 md:w-9 md:h-9 shrink-0 rounded-full bg-white border border-pink-100 text-pink-400 flex items-center justify-center hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.4)] hover:scale-110 active:scale-95 group/vote relative overflow-hidden"
+                          title="1票投票する"
+                        >
+                          <span className="absolute inset-0 bg-white/30 rounded-full scale-0 group-hover/vote:scale-150 transition-transform duration-500 ease-out opacity-0 group-hover/vote:opacity-100"></span>
+                          <i className="fa-solid fa-heart text-[10px] md:text-xs relative z-10 group-hover/vote:scale-110 transition-transform"></i>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* ABOUT */}
+          <div className="mb-24 text-center">
+            <SectionTitle title="ABOUT" subtitle="イベント概要" />
+            <h3 className="text-xl md:text-2xl font-light text-slate-800 font-serif mb-10 tracking-wide">{event.aboutTitle}</h3>
+            <div className="space-y-6 max-w-2xl mx-auto mb-8">
+              {event.aboutImages.map((imgSrc, idx) => (
+                <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
+                  <img src={imgSrc} alt={`イベント詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
+                </div>
+              ))}
+            </div>
+            <p className="text-slate-600 leading-loose font-light whitespace-pre-wrap max-w-2xl mx-auto text-sm md:text-base px-4">{event.aboutText}</p>
+          </div>
+
+          {/* BENEFITS */}
+          <div className="mb-24">
+            <SectionTitle title="BENEFITS" subtitle="豪華特典" />
+            <div className="space-y-6 max-w-2xl mx-auto mb-12">
+              {event.benefitImages.map((imgSrc, idx) => (
+                <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
+                  <img src={imgSrc} alt={`特典詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-8 max-w-3xl mx-auto">
+              {event.benefits.map((benefit, idx) => (
+                <div key={idx} className={`p-8 md:p-10 border shadow-sm ${benefit.type === 'producer' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200'}`}>
+                  <h3 className={`text-lg md:text-xl font-light font-serif mb-6 tracking-wide ${benefit.type === 'producer' ? 'text-white' : 'text-slate-800'}`}>{benefit.title}</h3>
+                  <ul className="space-y-4">
+                    {benefit.items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-4">
+                        <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${benefit.type === 'producer' ? 'bg-pink-400' : 'bg-slate-300'}`}></span>
+                        <p className={`text-sm md:text-base leading-loose font-light ${benefit.type === 'producer' ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {item.includes('Supported by') || item.includes('Outfit Provided by') ? (<span dangerouslySetInnerHTML={{__html: item.replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-white">$1</strong>')}} />) : item}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* HOW TO JOIN */}
+          <div className="mb-24">
+            <SectionTitle title="HOW TO JOIN" subtitle="参加方法" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {event.howToJoin?.map((step, idx) => (
+                <div key={idx} className="bg-white border border-slate-100 p-8 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[100px] -z-10 group-hover:bg-pink-50 transition-colors"></div>
+                  <div className="text-pink-400 text-3xl mb-6 opacity-80"><i className={`fa-solid ${step.icon}`}></i></div>
+                  <p className="text-[10px] text-slate-400 tracking-[0.2em] font-medium mb-2 uppercase">{step.step}</p>
+                  <h4 className="text-sm md:text-base font-serif text-slate-800 mb-4 leading-relaxed">{step.title}</h4>
+                  <p className="text-xs text-slate-500 font-light leading-loose">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-16">
+               <a href="https://line.me" target="_blank" rel="noreferrer" className="inline-block hover:-translate-y-1 transition-transform duration-300 shadow-md bg-white p-1 max-w-sm w-full mx-auto border border-green-500/20">
+                 <img src="./line_entry_banner.png" alt="LINEで簡単！無料エントリー" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
+                 <div className="bg-[#06C755] text-white text-xs py-3.5 tracking-widest flex items-center justify-center gap-2 font-medium">
+                   <i className="fa-brands fa-line text-lg"></i> LINEでエントリー
+                 </div>
+               </a>
+            </div>
+          </div>
+
+          {/* ENTRANTS */}
+          <div className="mb-16 border-t border-slate-200 pt-24">
+            <SectionTitle title="ENTRANTS" subtitle="エントリー中のアイドル" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-8 md:gap-y-10">
+              {idolsData.map((idol) => (
+                <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
+                  <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-3 md:mb-4 border border-slate-200/50 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)]">
+                    <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                    {idol.isStreaming && (
+                      <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
+                        On Air
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-center px-1">
+                    <h4 className="font-light text-slate-800 tracking-wide text-xs md:text-sm group-hover:text-pink-600 transition-colors truncate">{idol.name}</h4>
+                    <p className="text-[8px] md:text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     const ProducerMyPage = ({ user, userData, idolsData, onLogout, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
       const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
       const [profileImage, setProfileImage] = useState(userData.profileImage || "");
@@ -720,7 +915,6 @@
             <SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {/* 左側：プロフィール表示 */}
               <div className="md:col-span-1 space-y-6">
                 <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative">
                   <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
@@ -751,9 +945,7 @@
                 </div>
               </div>
 
-              {/* 右側：ダッシュボード＆編集 */}
               <div className="md:col-span-2 space-y-10">
-                {/* アセット＆ポイント */}
                 <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                   <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Dashboard</h4>
                   
@@ -769,7 +961,6 @@
                   </div>
                 </div>
 
-                {/* プロフィール編集フォーム */}
                 <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                   <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Edit Profile</h4>
                   
@@ -813,7 +1004,6 @@
       );
     };
 
-    // アイドル用 マイページ
     const IdolMyPage = ({ idolData, onLogout, onUpdateProfile, showToast }) => {
       const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
@@ -868,7 +1058,6 @@
           <SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* 左側メニュー＆プレビュー */}
             <div className="lg:col-span-1 space-y-6">
               <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-pink-400"></div>
@@ -892,10 +1081,8 @@
               </div>
             </div>
 
-            {/* 右側エディタ群 */}
             <div className="lg:col-span-3 space-y-10">
               
-              {/* プロフィール編集 */}
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
                 <form onSubmit={handleSaveProfile} className="space-y-6">
@@ -929,7 +1116,6 @@
                 </form>
               </div>
 
-              {/* 欲しい衣装の選択 */}
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <div className="mb-8">
                   <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Outfit Wishlist</h4>
@@ -958,7 +1144,6 @@
                 </div>
               </div>
 
-              {/* タイムライン投稿 */}
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <div className="mb-8">
                   <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> New Post</h4>
@@ -1096,7 +1281,6 @@
                 </div>
               </div>
 
-              {/* 公式プロデューサー一覧 */}
               <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100 lg:col-span-3 mt-4">
                 <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-8 uppercase flex items-center gap-3">
                   <span className="w-8 h-px bg-slate-300"></span> Official Producers
@@ -1203,6 +1387,7 @@
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
+      const [selectedEvent, setSelectedEvent] = useState(null); // イベント詳細用state
       const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); 
       const idolsDataRef = useRef(idolsData);
       const [selectedProducer, setSelectedProducer] = useState(null);
@@ -1220,7 +1405,6 @@
       const [successModalData, setSuccessModalData] = useState(null); 
       const [toastMessage, setToastMessage] = useState("");
       
-      // 認証関連
       const [firebaseLoaded, setFirebaseLoaded] = useState(false);
       const [user, setUser] = useState(null);
       const [userRole, setUserRole] = useState('guest'); 
@@ -1234,7 +1418,6 @@
         idolsDataRef.current = idolsData;
       }, [idolsData]);
 
-      // 1. Firebaseの読み込みと初期化
       useEffect(() => {
         let attempts = 0;
         const loadFirebase = () => {
@@ -1275,7 +1458,6 @@
         loadFirebase();
       }, []);
 
-      // 2. 認証の初期化 (カスタムトークンまたは匿名ログイン)
       useEffect(() => {
         if (!firebaseLoaded || !authRef.current) return;
         
@@ -1297,7 +1479,6 @@
 
         const unsubscribe = onAuthStateChanged(auth, (u) => {
            setUser(u);
-           // 匿名ユーザー（isAnonymous=true）の場合は、UI上は「未ログイン」として扱う
            if (!u || u.isAnonymous) {
               setUserRole('guest');
               setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
@@ -1306,9 +1487,7 @@
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
-      // 3. 全体共有用パブリックデータ（全アイドル）の取得とリアルタイム同期
       useEffect(() => {
-        // userがnullでも、匿名でもFirestoreのデータ読み取りは行わせる（最新の情報を表示するため）
         if (!user || !firebaseLoaded || !dbRef.current) return;
         const { collection, onSnapshot } = window.FirebaseHelper;
         const db = dbRef.current;
@@ -1319,45 +1498,23 @@
           if (!snapshot.empty) {
             const firestoreIdols = [];
             snapshot.forEach(doc => {
-              // IDが文字列の場合（手動追加等）も考慮
               firestoreIdols.push({ ...doc.data(), id: isNaN(Number(doc.id)) ? doc.id : Number(doc.id) });
             });
-            // INITIAL_IDOLS をベースにしつつ、Firestoreにしかない新規アイドルも追加する
             let mergedIdols = [...INITIAL_IDOLS];
             firestoreIdols.forEach(fsIdol => {
               const existingIndex = mergedIdols.findIndex(i => String(i.id) === String(fsIdol.id));
               if (existingIndex >= 0) {
-                // 既存のアイドルの情報を上書き
                 mergedIdols[existingIndex] = { ...mergedIdols[existingIndex], ...fsIdol };
               } else {
-                // Firebaseから追加された新規アイドルをリストに追加（画面崩れを防ぐための初期値セット）
                 mergedIdols.push({
-                  id: fsIdol.id,
-                  name: fsIdol.name || "新規アイドル",
-                  type: fsIdol.type || "ニューフェイス",
-                  issue: fsIdol.issue || "未掲載",
-                  isOffMelty: fsIdol.isOffMelty || false,
-                  catchphrase: fsIdol.catchphrase || "よろしくお願いします！",
-                  color: fsIdol.color || "from-slate-300 to-slate-400",
-                  pref: fsIdol.pref || "不明",
-                  style: fsIdol.style || "未設定",
-                  isRookie: fsIdol.isRookie !== undefined ? fsIdol.isRookie : true,
-                  age: fsIdol.age || "?歳",
-                  height: fsIdol.height || "?cm",
-                  hobby: fsIdol.hobby || "秘密",
-                  story: fsIdol.story || "新しい物語がここから始まります。",
-                  titleBadge: fsIdol.titleBadge || "注目",
-                  producerCount: fsIdol.producerCount || "0",
-                  birthday: fsIdol.birthday || "未設定",
-                  hometown: fsIdol.hometown || "未設定",
-                  specialSkill: fsIdol.specialSkill || "未設定",
-                  topProducers: fsIdol.topProducers || [],
-                  isStreaming: fsIdol.isStreaming || false,
-                  timeline: fsIdol.timeline || [],
-                  totalVotes: fsIdol.totalVotes || 0,
-                  profileImage: fsIdol.profileImage || "",
-                  loginEmail: fsIdol.loginEmail || "",
-                  ...fsIdol
+                  id: fsIdol.id, name: fsIdol.name || "新規アイドル", type: fsIdol.type || "ニューフェイス", issue: fsIdol.issue || "未掲載",
+                  isOffMelty: fsIdol.isOffMelty || false, catchphrase: fsIdol.catchphrase || "よろしくお願いします！", color: fsIdol.color || "from-slate-300 to-slate-400",
+                  pref: fsIdol.pref || "不明", style: fsIdol.style || "未設定", isRookie: fsIdol.isRookie !== undefined ? fsIdol.isRookie : true,
+                  age: fsIdol.age || "?歳", height: fsIdol.height || "?cm", hobby: fsIdol.hobby || "秘密", story: fsIdol.story || "新しい物語がここから始まります。",
+                  titleBadge: fsIdol.titleBadge || "注目", producerCount: fsIdol.producerCount || "0", birthday: fsIdol.birthday || "未設定",
+                  hometown: fsIdol.hometown || "未設定", specialSkill: fsIdol.specialSkill || "未設定", topProducers: fsIdol.topProducers || [],
+                  isStreaming: fsIdol.isStreaming || false, timeline: fsIdol.timeline || [], totalVotes: fsIdol.totalVotes || 0,
+                  profileImage: fsIdol.profileImage || "", loginEmail: fsIdol.loginEmail || "", ...fsIdol
                 });
               }
             });
@@ -1369,7 +1526,6 @@
         return () => unsubscribe();
       }, [user, firebaseLoaded]);
 
-      // 4. ユーザーデータの取得と作成 (認証完了後、かつ匿名ユーザー「以外」の場合に実行)
       useEffect(() => {
         if (!user || user.isAnonymous || !firebaseLoaded || !dbRef.current) return;
         
@@ -1383,7 +1539,6 @@
                const docSnap = await getDoc(docRef);
                const today = new Date().toISOString().split('T')[0];
 
-               // ログインしたメールアドレスがアイドルのものか判定
                const matchedIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === user.email);
                const defaultRole = matchedIdol ? 'idol' : 'producer';
                const targetIdolId = matchedIdol ? matchedIdol.id : null;
@@ -1393,7 +1548,6 @@
                  const currentRole = data.role || defaultRole;
                  setUserRole(currentRole);
                  
-                 // プロデューサーの場合
                  if (currentRole !== 'idol') {
                    let updates = {};
                    let newFreeTickets = data.freeTickets || 0;
@@ -1407,10 +1561,7 @@
                      await updateDoc(docRef, updates);
                      setUserData({ ...data, ...updates });
                    } else { setUserData(data); }
-                 } 
-                 // アイドルの場合
-                 else {
-                   // idolIdが保存されていなければ保存する
+                 } else {
                    if (!data.idolId && targetIdolId) {
                        await updateDoc(docRef, { idolId: targetIdolId });
                        data.idolId = targetIdolId;
@@ -1418,25 +1569,17 @@
                    setUserData(data);
                  }
                } else {
-                 // 初回データ作成
                  const initData = { 
-                   role: defaultRole, 
-                   email: user.email || 'anonymous', 
-                   freeTickets: 3, 
-                   paidTickets: 0, 
-                   totalPts: 0, 
-                   lastLoginDate: today, 
-                   createdAt: new Date().toISOString() 
+                   role: defaultRole, email: user.email || 'anonymous', freeTickets: 3, paidTickets: 0, totalPts: 0, 
+                   lastLoginDate: today, createdAt: new Date().toISOString() 
                  };
-                 if (targetIdolId) initData.idolId = targetIdolId; // アイドルIDを紐付け
-
+                 if (targetIdolId) initData.idolId = targetIdolId; 
                  await setDoc(docRef, initData);
                  setUserRole(defaultRole);
                  setUserData(initData);
                }
             } catch(e) { 
                console.error("Firestore Error:", e); 
-               // Firestoreルールエラーでもフォールバックしてマイページを見れるようにする
                const fallbackIdol = idolsDataRef.current.find(i => i.loginEmail && i.loginEmail === user.email);
                setUserRole(fallbackIdol ? 'idol' : 'producer');
                setUserData({ freeTickets: 3, paidTickets: 0, totalPts: 0, idolId: fallbackIdol?.id });
@@ -1446,7 +1589,6 @@
         fetchUserProfile();
       }, [user, firebaseLoaded]);
 
-      // プロフィール情報の保存（Firestoreへ永続化）
       const handleUpdateProfile = async (newProfile) => {
         const updatedData = { ...userData, ...newProfile };
         setUserData(updatedData);
@@ -1461,11 +1603,9 @@
           } catch (e) {
             console.error("Profile update error:", e);
             try {
-              // ドキュメントが存在しない場合は新規作成
               await setDoc(docRef, updatedData);
               return { success: true };
             } catch(e2) {
-              console.error("Profile set error:", e2);
               return { success: false, error: e2 };
             }
           }
@@ -1497,19 +1637,13 @@
             const docRef = doc(db, 'artifacts', appId, 'users', newUser.uid, 'profile', 'data');
             const today = new Date().toISOString().split('T')[0];
             
-            // アイドルかどうかを判定
             const matchedIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === email);
             const defaultRole = matchedIdol ? 'idol' : 'producer';
             const targetIdolId = matchedIdol ? matchedIdol.id : null;
 
             const initData = { 
-              role: defaultRole, 
-              email: email,
-              freeTickets: 3, 
-              paidTickets: 0, 
-              totalPts: 0, 
-              lastLoginDate: today, 
-              createdAt: new Date().toISOString() 
+              role: defaultRole, email: email, freeTickets: 3, paidTickets: 0, totalPts: 0, 
+              lastLoginDate: today, createdAt: new Date().toISOString() 
             };
             if (targetIdolId) initData.idolId = targetIdolId;
 
@@ -1544,17 +1678,13 @@
         showToast("ログアウトしました。");
       };
 
-      // アイドルが自分のプロフィールを更新する処理 (パブリックデータへ保存)
       const handleUpdateIdolProfile = async (newProfile) => {
         if (!userData.idolId) return;
-        
-        // メモリの更新（即時反映）
         const updatedIdols = idolsData.map(idol => 
           idol.id === userData.idolId ? { ...idol, ...newProfile } : idol
         );
         setIdolsData(updatedIdols);
 
-        // Firestoreへの保存（全プロデューサーへ同期するため）
         if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, setDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1570,11 +1700,10 @@
         return { success: true };
       };
 
-      // 票の消費・獲得（Firestoreへ永続化）
       const updateTickets = async (freeDelta, paidDelta, ptsDelta = 0) => {
         const newFree = Math.max(0, userData.freeTickets + freeDelta);
         const newPaid = Math.max(0, userData.paidTickets + paidDelta);
-        const newPts = (userData.totalPts || 0) + ptsDelta; // totalPtsというフィールド名だが意味は「累計投票数」
+        const newPts = (userData.totalPts || 0) + ptsDelta; 
         
         const updatedData = { ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts };
         setUserData(updatedData);
@@ -1585,9 +1714,7 @@
           const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
           try {
             await updateDoc(docRef, {
-              freeTickets: newFree,
-              paidTickets: newPaid,
-              totalPts: newPts
+              freeTickets: newFree, paidTickets: newPaid, totalPts: newPts
             });
           } catch (e) {
             console.error("Ticket update error:", e);
@@ -1595,20 +1722,16 @@
         }
       };
 
-      // アイドルへの投票を全ユーザーに共有（Firestoreパブリックデータへ保存）
       const handleVoteForIdol = async (idolId, amount) => {
         const currentIdol = idolsData.find(i => i.id === idolId);
         if (!currentIdol) return;
         
         const newTotalVotes = (currentIdol.totalVotes || 0) + amount;
-
-        // メモリの更新（即時反映）
         const updatedIdols = idolsData.map(idol => 
           idol.id === idolId ? { ...idol, totalVotes: newTotalVotes } : idol
         );
         setIdolsData(updatedIdols);
 
-        // Firestoreへの保存
         if (firebaseLoaded && dbRef.current) {
           const { doc, setDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1621,6 +1744,37 @@
         }
       };
 
+      const handleQuickVote = async (e, idol) => {
+        e.stopPropagation(); 
+        
+        if (!user || user.isAnonymous) {
+          setShowAuthModal(true);
+          return;
+        }
+
+        if (userData.freeTickets >= 1) {
+          await updateTickets(-1, 0, 1);
+          await handleVoteForIdol(idol.id, 1);
+          showToast(`💝 ${idol.name} に1票投票しました！`);
+          
+          if (typeof confetti !== 'undefined') {
+            const rect = e.target.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+            confetti({
+              particleCount: 40,
+              spread: 50,
+              origin: { x, y },
+              colors: ['#f472b6', '#ec4899', '#fbcfe8', '#fb7185'],
+              disableForReducedMotion: true,
+              zIndex: 9999
+            });
+          }
+        } else {
+          showToast("無料票が不足しています。詳細からギフトを贈って応援しましょう！");
+        }
+      };
+
       const filteredIdols = useMemo(() => {
         return idolsData.filter(idol => {
           if (idolSearchText && !idol.name.includes(idolSearchText)) return false;
@@ -1629,8 +1783,36 @@
         });
       }, [idolsData, idolSearchText, idolFilterType]);
 
-      const openIdolDetail = (idol) => { setSelectedIdol(idol); setActiveTab('idolDetail'); window.scrollTo(0,0); };
-      const openProducerDetail = (producer) => { setSelectedProducer(producer); setActiveTab('producerDetail'); window.scrollTo(0,0); };
+      const scrollPosRef = useRef(0);
+
+      const openIdolDetail = (idol) => { 
+        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
+        setSelectedIdol(idol); 
+        setActiveTab('idolDetail'); 
+        window.scrollTo(0,0); 
+      };
+
+      const openEventDetail = (event) => {
+        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY;
+        setSelectedEvent(event);
+        setActiveTab('eventDetail');
+        window.scrollTo(0,0);
+      };
+      
+      const openProducerDetail = (producer) => { 
+        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
+        setSelectedProducer(producer); 
+        setActiveTab('producerDetail'); 
+        window.scrollTo(0,0); 
+      };
+
+      const handleBackToHome = () => {
+        setActiveTab('home');
+        setTimeout(() => {
+          window.scrollTo({ top: scrollPosRef.current, behavior: 'instant' });
+        }, 50);
+      };
+
       const scrollToSection = (id) => { if(activeTab !== 'home') setActiveTab('home'); setTimeout(() => { const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100); };
 
       return (
@@ -1650,7 +1832,6 @@
                 <span style={{display: 'none'}} className="text-2xl font-light text-slate-800 font-serif tracking-widest">Moshi-Ai</span>
               </div>
               <div className="flex flex-col items-end gap-4 pointer-events-auto mt-4 md:mt-0">
-                {/* ログイン・マイページボタン */}
                 <div className="flex items-center gap-4">
                   {user && !user.isAnonymous ? (
                     <div className="flex items-center gap-2 md:gap-4">
@@ -1689,11 +1870,13 @@
             ) : activeTab === 'idolMyPage' && user && !user.isAnonymous ? (
               <IdolMyPage idolData={idolsData.find(i => i.id === userData.idolId) || idolsData[0]} onLogout={handleLogout} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
-              <IdolDetailView idol={selectedIdol} onBack={() => setActiveTab('home')} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
+              <IdolDetailView idol={selectedIdol} onBack={handleBackToHome} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
+            ) : activeTab === 'eventDetail' && selectedEvent ? (
+              <EventDetailView event={selectedEvent} onBack={handleBackToHome} idolsData={idolsData} onIdolSelect={openIdolDetail} onQuickVote={handleQuickVote} />
             ) : activeTab === 'producerDetail' && selectedProducer ? (
-              <ProducerDetailView producer={selectedProducer} onBack={() => setActiveTab('home')} />
+              <ProducerDetailView producer={selectedProducer} onBack={handleBackToHome} />
             ) : activeTab === 'allIdolsList' ? (
-              <AllIdolsView onBack={() => setActiveTab('home')} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
+              <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
             ) : (
               <div className="animate-fade-in">
                 {/* HERO SECTION */}
@@ -1756,7 +1939,7 @@
                   </div>
                 </section>
 
-                {/* EVENT DASHBOARD */}
+                {/* EVENT DASHBOARD & RANKING */}
                 <section id="ranking" className="py-24 bg-white/50 backdrop-blur-xl border-y border-white mb-20">
                   <div className="max-w-6xl mx-auto px-4 md:px-8">
                     <SectionTitle title="Campaigns" subtitle="開催中のイベントとランキング" />
@@ -1799,7 +1982,6 @@
                                 {(() => {
                                   let currentRankingData = ev.rankingData[currentRankingTab] || [];
                                   
-                                  // 総合ランキングの場合は、動的にidolsDataから計算する
                                   if (currentRankingTab === 'overall') {
                                     currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
                                       const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
@@ -1814,7 +1996,7 @@
                                   }
 
                                   const topThree = currentRankingData.slice(0, 3);
-                                  const others = currentRankingData.slice(3);
+                                  const others = currentRankingData.slice(3, 6); // TOPページでは上位6名のみ表示
                                   const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
 
                                   return (
@@ -1831,15 +2013,29 @@
                                             return (
                                               <div key={index} onClick={() => { if(idolData) openIdolDetail(idolData) }} className={`flex flex-col items-center cursor-pointer group animate-podium ${orderClass} ${sizeClass}`} style={{animationDelay: `${index * 0.15}s`}}>
                                                 <div className={`font-serif text-3xl md:text-4xl font-light mb-4 ${badgeColors} tracking-wider`}>{rankNum}</div>
-                                                <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2`}>
+                                                <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2 relative overflow-hidden`}>
                                                   <div className="w-full h-full relative overflow-hidden bg-slate-50">
                                                     {idolData && <MediaDisplay src={idolData.profileImage} fallbackSrc={`./profile${item.rank}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" />}
                                                   </div>
                                                 </div>
-                                                <div className="text-center mt-6 w-full">
-                                                  <h4 className="font-light tracking-wide text-slate-800 text-sm md:text-base">{item.name}</h4>
-                                                  <p className={`text-xs md:text-sm font-timer font-light mt-1 ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{item.value}</p>
-                                                  {item.diff && item.diff !== "-" && <p className="text-[9px] text-pink-400 font-medium tracking-widest mt-2 uppercase">{item.diff}</p>}
+                                                
+                                                <div className="text-center mt-5 w-full relative">
+                                                  <h4 className="font-light tracking-wide text-slate-800 text-sm md:text-base truncate px-1">{item.name}</h4>
+                                                  <div className="flex items-center justify-center gap-2 mt-1">
+                                                    <p className={`text-xs md:text-sm font-timer font-light ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{item.value}</p>
+                                                  </div>
+                                                  {item.diff && item.diff !== "-" && <p className="text-[9px] text-pink-400 font-medium tracking-widest mt-1.5 uppercase">{item.diff}</p>}
+                                                  
+                                                  {currentRankingTab !== 'producers' && (
+                                                    <div className="mt-3 flex justify-center h-8">
+                                                      <button 
+                                                        onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }}
+                                                        className="bg-pink-50 border border-pink-100 text-pink-500 hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white hover:border-transparent px-4 py-1.5 rounded-full text-[9px] tracking-widest font-medium transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.3)] hover:scale-105 active:scale-95 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+                                                      >
+                                                        <i className="fa-solid fa-heart"></i> VOTE
+                                                      </button>
+                                                    </div>
+                                                  )}
                                                 </div>
                                               </div>
                                             );
@@ -1860,24 +2056,50 @@
                                                 <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
                                                    <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" />
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                   <div className="flex justify-between items-baseline mb-1">
-                                                    <h4 className="font-light text-slate-800 tracking-wide">{item.name}</h4>
-                                                    <p className={`font-timer font-light text-sm ${themeText}`}>{item.value}</p>
+                                                    <h4 className="font-light text-slate-800 tracking-wide text-xs md:text-sm truncate pr-2">{item.name}</h4>
+                                                    <p className={`font-timer font-light text-xs md:text-sm ${themeText} shrink-0`}>{item.value}</p>
                                                   </div>
                                                   <div className="w-full bg-slate-100 h-px relative">
                                                     <div className={`absolute top-0 left-0 h-full transition-all duration-1000 bg-slate-400`} style={{ width: `${percentage}%` }}></div>
                                                   </div>
                                                 </div>
-                                                <div className="ml-6 hidden sm:block w-32 text-right">
-                                                  {item.diff && <span className="text-[9px] font-medium tracking-widest text-slate-400 uppercase">{item.diff}</span>}
+                                                
+                                                <div className="ml-4 sm:ml-6 flex items-center gap-3 w-24 sm:w-32 justify-end shrink-0">
+                                                  {currentRankingTab !== 'producers' ? (
+                                                    <div className="flex items-center gap-3">
+                                                      {item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}
+                                                      <button 
+                                                        onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }}
+                                                        className="w-9 h-9 shrink-0 rounded-full bg-white border border-pink-100 text-pink-400 flex items-center justify-center hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.4)] hover:scale-110 active:scale-95 group/vote relative overflow-hidden"
+                                                        title="1票投票する"
+                                                      >
+                                                        <span className="absolute inset-0 bg-white/30 rounded-full scale-0 group-hover/vote:scale-150 transition-transform duration-500 ease-out opacity-0 group-hover/vote:opacity-100"></span>
+                                                        <i className="fa-solid fa-heart text-xs relative z-10 group-hover/vote:scale-110 transition-transform"></i>
+                                                      </button>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="flex items-center gap-4 w-full justify-end">
+                                                      {item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}
+                                                      <i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors font-light"></i>
+                                                    </div>
+                                                  )}
                                                 </div>
-                                                <i className="fa-solid fa-arrow-right-long text-slate-300 ml-6 group-hover:text-slate-800 transition-colors font-light"></i>
+
                                               </div>
                                             );
                                           })}
                                         </div>
                                       )}
+
+                                      {/* VIEW ALL BUTTON (EVENT DETAILS) */}
+                                      <div className="text-center mt-12 pt-8 border-t border-slate-200">
+                                        <button onClick={() => openEventDetail(ev)} className="bg-slate-900 text-white px-8 py-4 text-[10px] tracking-[0.2em] font-light hover:bg-slate-800 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:-translate-y-1">
+                                          VIEW FULL RANKING & DETAILS <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                        </button>
+                                      </div>
+
                                     </div>
                                   );
                                 })()}
@@ -1890,14 +2112,17 @@
                                   <h3 className="text-2xl md:text-3xl font-light text-slate-800 font-serif mb-12 tracking-wide">{ev.aboutTitle}</h3>
                                   <div className="space-y-8">
                                     {ev.aboutImages.map((imgSrc, idx) => (
-                                      <div key={idx} className="bg-white p-2 border border-slate-100 shadow-sm">
+                                      <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
                                         <img src={imgSrc} alt={`イベント詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
                                       </div>
                                     ))}
                                   </div>
                                 </div>
-                                <div className="p-8 border-t border-slate-200">
-                                  <p className="text-slate-600 leading-loose font-light whitespace-pre-wrap text-center">{ev.aboutText}</p>
+                                <div className="p-8 border-t border-slate-200 text-center">
+                                  <p className="text-slate-600 leading-loose font-light whitespace-pre-wrap">{ev.aboutText}</p>
+                                  <button onClick={() => openEventDetail(ev)} className="mt-12 bg-transparent border border-slate-300 text-slate-600 px-8 py-3 text-[10px] tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-sm hover:shadow-md">
+                                    READ MORE DETAILS <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                  </button>
                                 </div>
                               </div>
                             )}
@@ -1906,14 +2131,14 @@
                               <div className="max-w-3xl mx-auto space-y-12 animate-fade-in-up pt-8">
                                 <div className="space-y-8">
                                   {ev.benefitImages.map((imgSrc, idx) => (
-                                    <div key={idx} className="bg-white p-2 border border-slate-100 shadow-sm">
+                                    <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
                                       <img src={imgSrc} alt={`特典詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
                                     </div>
                                   ))}
                                 </div>
                                 <div className="space-y-8 mt-16 border-t border-slate-200 pt-16">
                                   {ev.benefits.map((benefit, idx) => (
-                                    <div key={idx} className={`p-8 md:p-10 border ${benefit.type === 'producer' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <div key={idx} className={`p-8 md:p-10 border shadow-sm ${benefit.type === 'producer' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200'}`}>
                                       <h3 className={`text-lg md:text-xl font-light font-serif mb-6 tracking-wide ${benefit.type === 'producer' ? 'text-white' : 'text-slate-800'}`}>{benefit.title}</h3>
                                       <ul className="space-y-4">
                                         {benefit.items.map((item, i) => (
@@ -1927,6 +2152,11 @@
                                       </ul>
                                     </div>
                                   ))}
+                                </div>
+                                <div className="text-center pt-8">
+                                  <button onClick={() => openEventDetail(ev)} className="bg-transparent border border-slate-300 text-slate-600 px-8 py-3 text-[10px] tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-sm hover:shadow-md">
+                                    SEE ALL EVENTS DATA <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                  </button>
                                 </div>
                               </div>
                             )}
@@ -1944,7 +2174,7 @@
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 mb-16">
                     {filteredIdols.slice(0, 8).map((idol) => (
                       <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
-                        <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50">
+                        <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)]">
                           <MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
                           {idol.isStreaming && (
                             <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
@@ -1953,14 +2183,14 @@
                           )}
                         </div>
                         <div className="text-center px-2">
-                          <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-base group-hover:text-pink-600 transition-colors">{idol.name}</h4>
+                          <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-base group-hover:text-pink-600 transition-colors truncate">{idol.name}</h4>
                           <p className="text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="text-center mt-10">
-                    <button onClick={() => { setActiveTab('allIdolsList'); window.scrollTo(0,0); }} className="bg-transparent border border-slate-300 text-slate-600 px-12 py-4 text-xs tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-4">
+                    <button onClick={() => { if(activeTab === 'home') scrollPosRef.current = window.scrollY; setActiveTab('allIdolsList'); window.scrollTo(0,0); }} className="bg-transparent border border-slate-300 text-slate-600 px-12 py-4 text-xs tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-4">
                       VIEW ALL MUSES <i className="fa-solid fa-arrow-right-long font-light"></i>
                     </button>
                   </div>
