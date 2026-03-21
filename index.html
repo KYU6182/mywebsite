@@ -111,11 +111,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.FirebaseHelper = {
       initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification,
-      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot
+      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, query, where
     };
   </script>
 
@@ -489,7 +489,7 @@
                   return (
                     <div key={idol.id} onClick={() => onIdolSelect(idol)} className={`flex flex-col items-center cursor-pointer group animate-podium ${orderClass} ${sizeClass}`} style={{animationDelay: `${index * 0.15}s`}}>
                       <div className={`font-serif text-2xl md:text-3xl font-light mb-3 ${badgeColors} tracking-wider`}>{rankNum}</div><div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 transition-transform duration-500 group-hover:-translate-y-2 relative overflow-hidden`}><div className="w-full h-full relative overflow-hidden bg-slate-50"><MediaDisplay src={idol.profileImage} fallbackSrc={`./idol${idol.id}.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" /></div></div>
-                      <div className="text-center mt-4 w-full relative"><h4 className="font-light tracking-wide text-slate-800 text-xs md:text-sm truncate px-1">{idol.name}</h4><div className="flex items-center justify-center mt-1"><p className={`text-[10px] md:text-xs font-timer font-light ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{(idol.totalVotes || 0).toLocaleString()} 票</p></div>{diff !== "-" && <p className="text-[8px] text-pink-400 font-medium tracking-widest mt-1 uppercase">{diff}</p>}<div className="mt-2 flex justify-center h-8"><button onClick={(e) => onQuickVote(e, idol)} className="bg-pink-50 border border-pink-100 text-pink-500 hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white px-3 py-1 rounded-full text-[8px] font-medium transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"><i className="fa-solid fa-heart"></i> VOTE</button></div></div>
+                      <div className="text-center mt-4 w-full relative"><h4 className="font-light text-slate-800 text-xs md:text-sm truncate px-1">{idol.name}</h4><div className="flex items-center justify-center mt-1"><p className={`text-[10px] md:text-xs font-timer font-light ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{(idol.totalVotes || 0).toLocaleString()} 票</p></div>{diff !== "-" && <p className="text-[8px] text-pink-400 font-medium tracking-widest mt-1 uppercase">{diff}</p>}<div className="mt-2 flex justify-center h-8"><button onClick={(e) => onQuickVote(e, idol)} className="bg-pink-50 border border-pink-100 text-pink-500 hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white px-3 py-1 rounded-full text-[8px] font-medium transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"><i className="fa-solid fa-heart"></i> VOTE</button></div></div>
                     </div>
                   );
                 })}
@@ -523,7 +523,7 @@
       const [message, setMessage] = useState(userData.message || "");
       const [oshiId, setOshiId] = useState(userData.oshiId || "");
       useEffect(() => { setName(userData.name || "ゲスト プロデューサー"); setProfileImage(userData.profileImage || ""); setMessage(userData.message || ""); setOshiId(userData.oshiId || ""); }, [userData]);
-      const handleSave = async (e) => { e.preventDefault(); const result = await onUpdateProfile({ name, profileImage, message, oshiId }); if (result && !result.success) { showToast(`保存エラー: 権限の設定を確認してください。`); } else { showToast("プロフィールを保存しました。"); } };
+      const handleSave = async (e) => { e.preventDefault(); const result = await onUpdateProfile({ name, profileImage, message, oshiId }); if (result && !result.success) { showToast(`保存エラーが発生しました。`); } else { showToast("プロフィールを保存しました。"); } };
       const oshiIdol = idolsData.find(i => i.id === Number(oshiId));
       return (
         <div className="animate-fade-in-up pb-0"><div className="max-w-5xl mx-auto px-4 py-12 pb-24"><SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" />
@@ -544,14 +544,9 @@
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
       const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
-      const [wishlist, setWishlist] = useState([]);
-      const [timelineText, setTimelineText] = useState("");
-      const [timelineImg, setTimelineImg] = useState("");
       useEffect(() => { setProfileImage(idolData?.profileImage || ""); setCatchphrase(idolData?.catchphrase || ""); setStory(idolData?.story || ""); setIsStreaming(idolData?.isStreaming || false); }, [idolData]);
       if (!idolData) return <div className="text-center py-20">Loading...</div>;
-      const handleSaveProfile = async (e) => { e.preventDefault(); const result = await onUpdateProfile({ profileImage, catchphrase, story, isStreaming }); if (result && !result.success) { showToast(`エラーが発生しました。`); } else { showToast("設定を更新しました。"); } };
-      const handlePostTimeline = (e) => { e.preventDefault(); if(!timelineText) return; showToast("タイムラインに投稿しました！"); setTimelineText(""); setTimelineImg(""); };
-      const toggleWishlist = (itemId) => { setWishlist(prev => prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]); };
+      const handleSaveProfile = async (e) => { e.preventDefault(); const result = await onUpdateProfile({ profileImage, catchphrase, story, isStreaming }); if (result && !result.success) { showToast(`保存エラーが発生しました。`); } else { showToast("設定を更新しました。"); } };
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up pb-32"><SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -575,7 +570,6 @@
       const [activeTab, setActiveTab] = useState('home'); const [selectedIdol, setSelectedIdol] = useState(null); const [selectedEvent, setSelectedEvent] = useState(null); const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); const idolsDataRef = useRef(idolsData); const [selectedProducer, setSelectedProducer] = useState(null); const [eventTabs, setEventTabs] = useState({ main: 'ranking', off_melty: 'ranking' }); const [rankingTabs, setRankingTabs] = useState({ main: 'overall', off_melty: 'overall' }); const [idolSearchText, setIdolSearchText] = useState(''); const [idolFilterType, setIdolFilterType] = useState('all'); const [showAuthModal, setShowAuthModal] = useState(false); const [showVoteModal, setShowVoteModal] = useState(false); const [showOutfitModal, setShowOutfitModal] = useState(false); const [showGiftModal, setShowGiftModal] = useState(false); const [successModalData, setSuccessModalData] = useState(null); const [toastMessage, setToastMessage] = useState(""); const [firebaseLoaded, setFirebaseLoaded] = useState(false); const [user, setUser] = useState(null); const [userRole, setUserRole] = useState('guest'); const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 }); const authRef = useRef(null); const dbRef = useRef(null);
       
       const showToast = (msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
-      
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
       useEffect(() => { idolsDataRef.current = idolsData; }, [idolsData]);
@@ -626,9 +620,9 @@
             });
             setIdolsData(mergedIdols);
           }
-        }, (err) => console.error("Snapshot error:", err));
+        }, (err) => console.error("Idols sync error:", err));
         return () => unsubscribe();
-      }, [user, firebaseLoaded]);
+      }, [user, firebaseLoaded, appId]);
 
       useEffect(() => {
         if (!user || user.isAnonymous || !firebaseLoaded || !dbRef.current) return;
@@ -658,10 +652,10 @@
                  if (targetIdolId) initData.idolId = targetIdolId;
                  await setDoc(docRef, initData); setUserRole(defaultRole); setUserData(initData);
                }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Profile fetch error:", e); }
         };
         fetchUserProfile();
-      }, [user, firebaseLoaded, idolsData]);
+      }, [user, firebaseLoaded, idolsData, appId]);
 
       const handleUpdateProfile = async (newProfile) => {
         const updatedData = { ...userData, ...newProfile }; setUserData(updatedData);
@@ -687,7 +681,10 @@
             await setDoc(doc(db, 'artifacts', appId, 'users', userCredential.user.uid, 'profile', 'data'), initData);
             setShowAuthModal(false); showToast(defaultRole === 'idol' ? "アイドルとして登録されました。" : "プロデューサー登録完了！");
           }
-        } catch (error) { showToast("エラー: " + error.code); }
+        } catch (error) { 
+          const msg = error.code ? "エラー: " + error.code : "エラーが発生しました";
+          showToast(msg); 
+        }
       };
 
       const handleLogout = async () => { await window.FirebaseHelper.signOut(authRef.current); setUser(null); setUserRole('guest'); setActiveTab('home'); showToast("ログアウトしました。"); };
@@ -778,7 +775,7 @@
                 <section id="ranking" className="py-24 bg-white/50 backdrop-blur-xl border-y border-white mb-20">
                   <div className="max-w-6xl mx-auto px-4 md:px-8"><SectionTitle title="Campaigns" subtitle="開催中のイベントとランキング" />
                     {EVENTS_DATA.map((ev) => {
-                      const isMain = ev.id === 'main'; const themeBg = 'bg-slate-800'; const themeText = 'text-slate-900'; const currentEventTab = eventTabs[ev.id]; const currentRankingTab = rankingTabs[ev.id];
+                      const themeBg = 'bg-slate-800'; const themeText = 'text-slate-900'; const currentEventTab = eventTabs[ev.id]; const currentRankingTab = rankingTabs[ev.id];
                       return (
                         <div key={ev.id} className="mb-24 last:mb-0 bg-transparent">
                           <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16 group"><div className="aspect-[21/9] overflow-hidden relative bg-slate-50"><img src={ev.bannerImg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 mix-blend-multiply" onError={handleImgError} /></div></div>
@@ -808,7 +805,7 @@
                                           const idolData = idolsData.find(idl => idl.id === item.idolId); const itemPt = parseVote(item.value); const percentage = Math.min(100, Math.max(0, (itemPt / maxPt) * 100));
                                           return (
                                             <div key={item.rank} onClick={() => { if(idolData) openIdolDetail(idolData) }} className="flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-white/50 transition-colors px-4"><div className="w-12 font-serif text-xl font-light text-slate-400 group-hover:text-slate-800">0{item.rank}</div><div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50"><MediaDisplay src={idolData?.profileImage} fallbackSrc={`./idol${item.idolId}.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" /></div><div className="flex-1 min-w-0"><div className="flex justify-between items-baseline mb-1"><h4 className="font-light text-slate-800 text-xs md:text-sm truncate pr-2">{item.name}</h4><p className={`font-timer font-light text-xs md:text-sm ${themeText} shrink-0`}>{item.value}</p></div><div className="w-full bg-slate-100 h-px relative"><div className="absolute top-0 left-0 h-full transition-all duration-1000 bg-slate-400" style={{ width: `${percentage}%` }}></div></div></div>
-                                              <div className="ml-4 sm:ml-6 flex items-center gap-3 w-24 sm:w-32 justify-end shrink-0">{currentRankingTab !== 'producers' ? (<div className="flex items-center gap-3">{item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}<button onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }} className="w-9 h-9 shrink-0 rounded-full bg-white border border-pink-100 text-pink-400 flex items-center justify-center hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white transition-all shadow-sm group/vote relative overflow-hidden"><i className="fa-solid fa-heart text-xs relative z-10 group-hover/vote:scale-110"></i></button></div>) : (<div className="flex items-center gap-4 w-full justify-end">{item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}<i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors"></i></div>)}</div>
+                                              <div className="ml-4 sm:ml-6 flex items-center gap-3 w-24 sm:w-32 justify-end shrink-0">{currentRankingTab !== 'producers' ? (<div className="flex items-center gap-3">{item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}<button onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }} className="w-9 h-9 shrink-0 rounded-full bg-white border border-pink-100 text-pink-400 flex items-center justify-center hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white shadow-sm group/vote relative overflow-hidden"><i className="fa-solid fa-heart text-xs relative z-10 group-hover/vote:scale-110"></i></button></div>) : (<div className="flex items-center gap-4 w-full justify-end">{item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}<i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors"></i></div>)}</div>
                                             </div>
                                           );
                                         })}
