@@ -6,14 +6,10 @@
   <title>もしも私が, アイドルになったら。 | 公式ポータルサイト</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
@@ -63,6 +59,14 @@
       70% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
       100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
     }
+    /* ▼追加: スーパールーキー用のキラキラエフェクト */
+    @keyframes sparkle-border {
+      0% { border-color: rgba(244, 114, 182, 0.3); box-shadow: 0 0 5px rgba(244, 114, 182, 0.2); }
+      50% { border-color: rgba(244, 114, 182, 1); box-shadow: 0 0 20px rgba(244, 114, 182, 0.6), inset 0 0 10px rgba(244, 114, 182, 0.2); }
+      100% { border-color: rgba(244, 114, 182, 0.3); box-shadow: 0 0 5px rgba(244, 114, 182, 0.2); }
+    }
+    .animate-sparkle { animation: sparkle-border 2s infinite; }
+    /* ▲追加ここまで */
     
     .animate-fade-in { animation: fade-in 0.8s ease-out; }
     .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
@@ -148,7 +152,6 @@
     const PREFECTURES = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
     const STYLES = ["王道", "ガーリー", "KPOP"];
 
-    // ファイルアップロードの共通関数
     const uploadFile = (file) => {
       return new Promise((resolve, reject) => {
         if (!file) {
@@ -1072,7 +1075,7 @@
       );
     };
 
-    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
+    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline, producersData }) => {
       const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
@@ -1088,6 +1091,53 @@
       const [timelineText, setTimelineText] = useState("");
       const [timelineImg, setTimelineImg] = useState("");
       const [uploadingTimeline, setUploadingTimeline] = useState(false);
+
+      // ▼追加: 称号の計算と紙吹雪エフェクトトリガー
+      const currentVotes = idolData?.totalVotes || 0;
+      const prevVotesRef = useRef(currentVotes);
+      
+      const myProducersCount = useMemo(() => {
+        if (!idolData) return 0;
+        return producersData.filter(p => p.votes && p.votes[idolData.id] > 0).length;
+      }, [producersData, idolData]);
+      const prevProducersCountRef = useRef(myProducersCount);
+
+      const idolTitle = useMemo(() => {
+        if (currentVotes >= 1000) return "🌟 正規メンバー";
+        if (currentVotes >= 100) return "✨ 見習いアイドル";
+        return "🌱 候補生";
+      }, [currentVotes]);
+
+      useEffect(() => {
+        if (!idolData) return;
+        let shouldTriggerConfetti = false;
+        let milestoneMessage = "";
+
+        // 初めての票を獲得
+        if (prevVotesRef.current === 0 && currentVotes > 0) {
+          shouldTriggerConfetti = true;
+          milestoneMessage = "Congratulations! 初めての票を獲得しました！✨";
+        }
+        // 累計100票達成
+        else if (prevVotesRef.current < 100 && currentVotes >= 100) {
+          shouldTriggerConfetti = true;
+          milestoneMessage = "Congratulations! 累計100票達成！「見習いアイドル」に昇格しました！🎉";
+        }
+        // 新規プロデューサー獲得
+        else if (prevProducersCountRef.current < myProducersCount && myProducersCount > 0) {
+          shouldTriggerConfetti = true;
+          milestoneMessage = `新しいプロデューサー（No.${String(myProducersCount).padStart(3, '0')}）が誕生しました！💝`;
+        }
+
+        if (shouldTriggerConfetti && typeof confetti !== 'undefined') {
+          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f472b6', '#ec4899', '#fbcfe8', '#cbd5e1', '#f1f5f9'] });
+          showToast(milestoneMessage);
+        }
+
+        prevVotesRef.current = currentVotes;
+        prevProducersCountRef.current = myProducersCount;
+      }, [currentVotes, myProducersCount, idolData]);
+      // ▲追加ここまで
 
       useEffect(() => {
         setProfileImage(idolData?.profileImage || "");
@@ -1189,7 +1239,8 @@
                 )}
 
                 <h3 className="font-serif text-xl font-light text-slate-800 mb-2">{idolData.name}</h3>
-                <p className="text-xs text-pink-500 font-light italic mb-2 px-2 leading-tight">"{catchphrase}"</p>
+                <p className="text-[10px] text-pink-500 font-medium tracking-widest mb-4 uppercase">{idolTitle}</p>
+                <p className="text-xs text-slate-500 font-light italic mb-2 px-2 leading-tight">"{catchphrase}"</p>
                 <div className="mt-4 border-t border-slate-100 pt-4 flex flex-col gap-2 items-center">
                   <span className="text-[10px] text-slate-800 font-timer bg-pink-50 border border-pink-100 px-3 py-1">{idolData.totalVotes || 0} 票</span>
                   <p className="text-[9px] text-slate-400 tracking-widest uppercase">Moshi-Ai IDOL ACCOUNT</p>
@@ -1221,7 +1272,6 @@
 
             <div className="lg:col-span-3 space-y-10">
               
-              {/* ▼▼▼ 新機能：Financial Insights（報酬管理UI）ここから ▼▼▼ */}
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3">
                   <span className="w-6 h-px bg-slate-300"></span> Financial Insights <span className="text-[9px] text-pink-400 normal-case">活動支援金レポート</span>
@@ -1230,7 +1280,6 @@
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="p-6 bg-slate-50 border border-slate-100">
                     <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">現在のプロデュース予算</p>
-                    {/* ※モックアップ計算：1票＝12円と仮定した表示です。実際はFirebase Functionsで計算した値を参照します */}
                     <p className="text-3xl font-timer font-light text-slate-800">¥{((idolData.totalVotes || 0) * 12).toLocaleString()}</p>
                     <p className="text-[9px] text-slate-400 mt-2">※源泉徴収税（10.21%）控除前の目安</p>
                   </div>
@@ -1254,7 +1303,6 @@
                   </div>
                 </div>
               </div>
-              {/* ▲▲▲ 新機能：Financial Insights（報酬管理UI）ここまで ▲▲▲ */}
 
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
@@ -1435,6 +1483,16 @@
       const top3Producers = idolProducers.slice(0, 3);
       const top3Ids = top3Producers.map(p => p.id);
 
+      // ▼追加: FC会員番号の取得（自分が何番目のプロデューサーか）
+      const myProducerRank = useMemo(() => {
+        if (!user) return null;
+        // 投票した順（createdAt）でソートするのが理想ですが、簡易的に現在のプロデューサー一覧のインデックスを使用します
+        const allMyProducers = [...idolProducers].reverse(); // 古い順と仮定
+        const myIndex = allMyProducers.findIndex(p => p.id === user.uid);
+        return myIndex !== -1 ? String(myIndex + 1).padStart(3, '0') : null;
+      }, [idolProducers, user]);
+      // ▲追加ここまで
+
       const [commentText, setCommentText] = useState('');
 
       return (
@@ -1459,6 +1517,18 @@
                   <p className="text-[10px] text-pink-500 tracking-[0.3em] font-medium mb-4 uppercase">{idol.style} | {idol.pref}</p>
                   <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 font-serif tracking-wide">{idol.name}</h1>
                   <p className="text-slate-500 font-light text-sm md:text-base leading-relaxed italic border-l border-slate-300 pl-4">"{idol.catchphrase}"</p>
+                  
+                  {/* ▼追加: FC会員番号の表示 */}
+                  {myProducerRank && (
+                    <div className="mt-6 inline-flex items-center gap-3 bg-slate-900 px-4 py-2 rounded-none shadow-sm border border-slate-800">
+                      <i className="fa-solid fa-id-card text-pink-400"></i>
+                      <p className="text-[10px] text-white tracking-widest font-light uppercase">
+                        PRODUCER No. <span className="font-timer text-lg text-pink-400 ml-1">{myProducerRank}</span>
+                      </p>
+                    </div>
+                  )}
+                  {/* ▲追加ここまで */}
+
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-10 border-y border-slate-200 py-8">
                   <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Rank</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentRank}<span className="text-sm">th</span></p></div>
@@ -1689,7 +1759,6 @@
       </div>
     );
 
-    // --- メイン App コンポーネント ---
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
@@ -1717,7 +1786,6 @@
       const [userRole, setUserRole] = useState('guest'); 
       const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
       
-      // 新機能用ステート
       const [postsData, setPostsData] = useState([]);
       const [commentsData, setCommentsData] = useState([]);
       const [producersData, setProducersData] = useState([]);
@@ -1803,7 +1871,6 @@
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
-      // データ購読（全て）
       useEffect(() => {
         if (!user || !firebaseLoaded || !dbRef.current) return;
         const { collection, onSnapshot } = window.FirebaseHelper;
@@ -2207,6 +2274,12 @@
 
       const topProducersList = [...producersData].sort((a,b) => (b.totalVotes || 0) - (a.totalVotes || 0)).slice(0,3);
 
+      // ▼追加: 新人（スーパールーキー）の抽出
+      const superRookies = useMemo(() => {
+        return idolsData.filter(idol => idol.isRookie).slice(0, 4); // 最新の4人をピックアップ
+      }, [idolsData]);
+      // ▲追加ここまで
+
       const scrollPosRef = useRef(0);
 
       const openIdolDetail = (idol) => { 
@@ -2301,7 +2374,7 @@
             ) : activeTab === 'producerMyPage' && userRole !== 'admin' && user && !user.isAnonymous ? (
               <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onUpdateProfile={handleUpdateProfile} showToast={showToast} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
             ) : activeTab === 'idolMyPage' && userRole !== 'admin' && user && !user.isAnonymous ? (
-              <IdolMyPage idolData={idolsData.find(i => String(i.id) === String(userData.idolId))} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} onPostTimeline={handlePostTimeline} />
+              <IdolMyPage idolData={idolsData.find(i => String(i.id) === String(userData.idolId))} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} onPostTimeline={handlePostTimeline} producersData={producersData} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView idol={selectedIdol} onBack={handleBackToHome} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} producersData={producersData} postsData={postsData} commentsData={commentsData} onPostComment={(text) => handlePostComment(selectedIdol.id, text)} onLikePost={handleLikePost} onDirectGift={(itemId, votes, actionType) => handleDirectGift(selectedIdol, itemId, votes, actionType)} user={user} />
             ) : activeTab === 'eventDetail' && selectedEvent ? (
@@ -2323,6 +2396,42 @@
                     </div>
                   </div>
                 </section>
+
+                {/* ▼▼▼ 追加: スーパールーキー特別待遇枠 ▼▼▼ */}
+                {superRookies.length > 0 && (
+                  <section className="py-12 bg-white/60 backdrop-blur-md mb-8 relative border-y border-pink-100/50">
+                    <div className="max-w-7xl mx-auto">
+                      <div className="flex items-center justify-center gap-4 mb-8">
+                        <i className="fa-solid fa-sparkles text-pink-400 animate-pulse"></i>
+                        <h2 className="text-xl md:text-2xl font-serif text-slate-800 tracking-[0.2em] uppercase">
+                          <span className="text-pink-500">New Debut</span> Muses
+                        </h2>
+                        <i className="fa-solid fa-sparkles text-pink-400 animate-pulse"></i>
+                      </div>
+                      
+                      <div className="flex gap-6 overflow-x-auto hide-scrollbar px-8 pb-4 justify-start md:justify-center">
+                        {superRookies.map((idol) => (
+                          <div key={`rookie-${idol.id}`} onClick={() => openIdolDetail(idol)} className="w-48 md:w-56 shrink-0 relative cursor-pointer group">
+                            <div className="absolute -top-3 -right-3 z-10 bg-pink-500 text-white text-[9px] font-bold px-3 py-1 rotate-12 shadow-md uppercase tracking-widest">
+                              New
+                            </div>
+                            {/* キラキラ光るエフェクトの枠線 */}
+                            <div className="aspect-[3/4] relative bg-white border-2 border-pink-300 shadow-[0_0_15px_rgba(244,114,182,0.3)] animate-sparkle overflow-hidden">
+                              <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-pink-900/80 via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                              
+                              <div className="absolute inset-x-0 bottom-0 p-4 text-white text-center">
+                                <h3 className="font-serif font-light text-lg mb-1 tracking-wide truncate drop-shadow-md">{idol.name}</h3>
+                                <p className="text-[8px] tracking-[0.2em] text-pink-200 uppercase opacity-90">{idol.style}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                )}
+                {/* ▲▲▲ 追加ここまで ▲▲▲ */}
 
                 {/* PICK UP IDOLS */}
                 <section id="idol-slider" className="py-16 bg-white/40 backdrop-blur-md border-y border-white/60 mb-20 relative">
