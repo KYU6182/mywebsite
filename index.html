@@ -412,7 +412,96 @@
         </div>
       );
     };
+// ▼▼▼ ここから追加（抜けていたイベント詳細画面） ▼▼▼
+    const EventDetailView = ({ event, onBack, idolsData, onIdolSelect, onQuickVote }) => {
+      const [currentRankingTab, setCurrentRankingTab] = useState('overall');
 
+      let currentRankingData = event.rankingData[currentRankingTab] || [];
+      if (currentRankingTab === 'overall') {
+         currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
+           const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+           return {
+             rank: index + 1,
+             idolId: idol.id,
+             name: idol.name,
+             value: `${(idol.totalVotes || 0).toLocaleString()} 票`,
+             diff: diff
+           };
+         });
+      }
+      const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
+
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
+          <button onClick={onBack} className="mb-12 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO TOP
+          </button>
+          
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-serif text-slate-900 font-light mb-4">{event.title}</h2>
+            <p className="text-slate-500 text-xs md:text-sm font-light tracking-widest leading-relaxed whitespace-pre-wrap">{event.subtitle}</p>
+          </div>
+
+          <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16">
+            <div className="aspect-[21/9] overflow-hidden relative bg-slate-50">
+              <img src={event.bannerImg} className="w-full h-full object-cover opacity-90 mix-blend-multiply" onError={handleImgError} />
+            </div>
+          </div>
+          
+          <CountdownTimer endDate={event.endDate} themeColor={event.themeColor} />
+
+          <div className="mt-20 max-w-4xl mx-auto">
+             <div className="flex gap-4 overflow-x-auto pb-8 hide-scrollbar justify-center border-b border-slate-200 mb-10">
+                {RANKING_TABS.map(tab => (
+                  <button key={tab.id} onClick={() => setCurrentRankingTab(tab.id)} className={`px-5 py-2 rounded-none text-[10px] tracking-widest uppercase transition-all border ${currentRankingTab === tab.id ? `bg-slate-800 text-white border-transparent` : `bg-transparent text-slate-500 border-slate-200 hover:border-slate-400`}`}>{tab.label}</button>
+                ))}
+             </div>
+             
+             {currentRankingData.length === 0 ? <p className="text-center text-sm text-slate-500 font-light py-10">集計データがありません。</p> : (
+                <div className="space-y-2 pb-20">
+                  {currentRankingData.map((item, i) => {
+                     const idolData = idolsData.find(idl => String(idl.id) === String(item.idolId));
+                     const itemPt = parseVote(item.value);
+                     const percentage = Math.min(100, Math.max(0, (itemPt / maxPt) * 100));
+                     const isTop3 = i < 3;
+
+                     return (
+                       <div key={item.rank} onClick={() => { if(idolData) onIdolSelect(idolData) }} className={`flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-pink-50/30 transition-colors px-4 ${isTop3 ? 'bg-white shadow-sm mb-4 border' : ''}`}>
+                          <div className={`w-12 font-serif text-xl md:text-2xl font-light ${i===0?'text-amber-500':i===1?'text-slate-400':i===2?'text-orange-400':'text-slate-400'} group-hover:text-slate-800 transition-colors`}>0{item.rank}</div>
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
+                             <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all mix-blend-multiply" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline mb-2">
+                              <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-lg truncate pr-2">{item.name}</h4>
+                              <p className={`font-timer font-light text-sm md:text-base text-slate-900 shrink-0`}>{item.value}</p>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1.5 relative rounded-full overflow-hidden">
+                              <div className={`absolute top-0 left-0 h-full transition-all duration-1000 ${i===0?'bg-amber-400':i===1?'bg-slate-400':i===2?'bg-orange-400':'bg-slate-800'}`} style={{ width: `${percentage}%` }}></div>
+                            </div>
+                          </div>
+                          <div className="ml-4 sm:ml-8 flex items-center gap-4 w-24 sm:w-32 justify-end shrink-0">
+                             {currentRankingTab !== 'producers' ? (
+                                <div className="flex flex-col items-end gap-2">
+                                  {item.diff && item.diff !== "-" && <span className="hidden sm:block text-[9px] font-medium tracking-widest text-pink-400 uppercase text-right">{item.diff}</span>}
+                                  <button onClick={(e) => { e.stopPropagation(); if(idolData) onQuickVote(e, idolData); }} className="bg-slate-900 text-white hover:bg-pink-600 px-4 py-1.5 rounded-none text-[9px] tracking-widest font-light transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                                    <i className="fa-solid fa-heart"></i> VOTE
+                                  </button>
+                                </div>
+                             ) : (
+                                <i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors font-light"></i>
+                             )}
+                          </div>
+                       </div>
+                     );
+                  })}
+                </div>
+             )}
+          </div>
+        </div>
+      );
+    };
+    
     const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false }) => {
       const [isLogin, setIsLogin] = useState(true);
       const [email, setEmail] = useState('');
