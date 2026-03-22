@@ -993,12 +993,19 @@
       );
     };
 
-    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
+  
+const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
       const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
       const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
       const [wishlist, setWishlist] = useState(idolData?.wishlist || []);
+      
+      // ▼追加：誕生日・出身地・特技のState
+      const [birthday, setBirthday] = useState(idolData?.birthday || "");
+      const [hometown, setHometown] = useState(idolData?.hometown || "");
+      const [specialSkill, setSpecialSkill] = useState(idolData?.specialSkill || "");
+
       const [uploading, setUploading] = useState(false);
       
       const [timelineText, setTimelineText] = useState("");
@@ -1011,6 +1018,11 @@
         setStory(idolData?.story || "");
         setIsStreaming(idolData?.isStreaming || false);
         setWishlist(idolData?.wishlist || []);
+        
+        // ▼追加：データの読み込み同期
+        setBirthday(idolData?.birthday || "");
+        setHometown(idolData?.hometown || "");
+        setSpecialSkill(idolData?.specialSkill || "");
       }, [idolData]);
 
       if (!idolData) return <div className="text-center py-20 text-slate-500 font-light">Loading or Idol not found...</div>;
@@ -1050,7 +1062,12 @@
           catchphrase, 
           story, 
           isStreaming,
-          wishlist
+          wishlist,
+          
+          // ▼追加：保存処理に追加
+          birthday,
+          hometown,
+          specialSkill
         });
         
         if (result && !result.success) {
@@ -1153,6 +1170,23 @@
                     <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Catchphrase (キャッチフレーズ)</label>
                     <input type="text" value={catchphrase} onChange={(e) => setCatchphrase(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" />
                   </div>
+
+                  {/* ▼追加：プロフィール入力枠 */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Birthday (生年月日)</label>
+                      <input type="text" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: 2005.12.25" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Hometown (出身地)</label>
+                      <input type="text" value={hometown} onChange={(e) => setHometown(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: 東京都" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Specialty (特技)</label>
+                      <input type="text" value={specialSkill} onChange={(e) => setSpecialSkill(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: クラシックバレエ" />
+                    </div>
+                  </div>
+                  {/* ▲追加：プロフィール入力枠 */}
                   
                   <div>
                     <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Her Story (私の物語 / 自己紹介)</label>
@@ -1230,7 +1264,6 @@
         </div>
       );
     };
-
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
