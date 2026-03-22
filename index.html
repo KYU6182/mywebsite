@@ -1083,14 +1083,1091 @@
     };
 
   
-const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>もしも私が, アイドルになったら。 | 公式ポータルサイト</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Oswald:wght@300;400;700&display=swap');
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+      background-color: #faf5f7; 
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('./bg.png'); 
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      z-index: -2; 
+      opacity: 0.8; 
+    }
+
+    .font-serif { font-family: 'Noto Serif JP', serif; }
+    .font-timer { font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
+    
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes podium-up {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.2); }
+      50% { box-shadow: 0 0 25px 10px rgba(244, 114, 182, 0.1); }
+    }
+    @keyframes live-pulse {
+      0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+      100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+    
+    .animate-fade-in { animation: fade-in 0.8s ease-out; }
+    .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-podium { animation: podium-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .animate-pulse-glow { animation: pulse-glow 3s infinite; }
+    .animate-live { animation: live-pulse 2s infinite; }
+    
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .magazine-line { position: relative; }
+    .magazine-line::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 1px;
+      background-color: #f472b6;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active{
+        -webkit-box-shadow: 0 0 0 30px white inset !important;
+        -webkit-text-fill-color: #334155 !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-pink-100 selection:text-pink-900 text-slate-800 tracking-wide font-light">
+
+  <div class="fixed inset-0 bg-white/60 backdrop-blur-[6px] pointer-events-none z-[-1]"></div>
+
+  <div id="root"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, deleteDoc, increment, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+    window.FirebaseHelper = {
+      initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification,
+      getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, deleteDoc, increment, arrayUnion,
+      getStorage, ref, uploadBytes, getDownloadURL
+    };
+  </script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    const parseVote = (str) => {
+      if (!str) return 0;
+      const numStr = String(str).replace(/[^0-9]/g, '');
+      return parseInt(numStr, 10) || 0;
+    };
+
+    const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E";
+    const handleImgError = (e) => {
+      e.currentTarget.onerror = null; 
+      e.currentTarget.src = FALLBACK_IMAGE;
+    };
+
+    const MediaDisplay = ({ src, fallbackSrc, className }) => {
+      const [mediaError, setMediaError] = useState(false);
+      
+      useEffect(() => {
+        setMediaError(false);
+      }, [src]);
+
+      const isVideo = src && typeof src === 'string' && src.match(/\.(mp4|webm|ogg|mov)$/i);
+      
+      if (isVideo && !mediaError) {
+        return <video src={src} autoPlay loop muted playsInline className={className} onError={() => setMediaError(true)} />;
+      }
+      return <img src={mediaError ? fallbackSrc : (src || fallbackSrc)} className={className} onError={handleImgError} />;
+    };
+
+    const PREFECTURES = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+    const STYLES = ["王道", "ガーリー", "KPOP"];
+
+    // ファイルアップロードの共通関数（Storage不要・完全無料のBase64圧縮版）
+    const uploadFile = (file) => {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          resolve(null);
+          return;
+        }
+        
+        // 無料枠のデータベース(Firestore)を使うため、動画は弾く
+        if (file.type.startsWith('video/')) {
+          alert("【エラー】完全無料設定のため、動画のアップロードはできません。画像のみ選択してください。");
+          reject(new Error("動画はアップロードできません"));
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            // 画像の横幅を最大800pxに縮小してデータ容量を節約
+            const MAX_WIDTH = 800;
+            let width = img.width;
+            let height = img.height;
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            // 0.6 は画質設定（容量を1MB以下に抑えるため圧縮）
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    };
+
+    const INITIAL_IDOLS = [];
+
+    const OFF_MELTY_CATALOG = [
+      { id: 'item1', name: "リボンフリル・セットアップ", price: "9,800", votes: 15000, img: "./off_melty_item1.png", stock: 1, deadline: null },
+      { id: 'item2', name: "シースルー・あざとカーディガン", price: "6,500", votes: 8000, img: "./off_melty_item2.png", stock: null, deadline: "3/31まで限定" },
+      { id: 'item3', name: "プリンセス・ティアードワンピ", price: "12,800", votes: 20000, img: "./off_melty_item3.png", stock: 2, deadline: null },
+      { id: 'item4', name: "キラキラ・ビジューヘアアクセ", price: "3,200", votes: 3500, img: "./off_melty_item4.png", stock: null, deadline: null },
+    ];
+
+    const TOPICS_DATA = [
+      { id: 1, date: "2026.02.20", label: "NEWS", title: "LARME特別編集カワラボBOOKが今年も登場♡" },
+      { id: 2, date: "2026.01.15", label: "NEWS", title: "星野 きらら 記念イベント開催決定！" },
+      { id: 3, date: "2025.12.17", label: "OTHER", title: "michelMacaron × 桜井 ひな 誌面タイアップ" },
+      { id: 4, date: "2025.12.10", label: "NEWS", title: "天音 くるみ 独占インタビュー公開中！" },
+    ];
+
+    const MAGAZINES = [
+      { id: 3, issue: "第3号 (最新号)", title: "夏色アイドル宣言！", coverModel: "投票で決定！", status: "投票受付中" },
+      { id: 2, issue: "第2号", title: "キラキラ輝く、私の原石", coverModel: "桜井 ひな", status: "発売中" },
+      { id: 1, issue: "第1号", title: "あなたの新しい物語のスタート", coverModel: "星野 きらら", status: "発売中" },
+    ];
+
+    const RANKING_TABS = [
+      { id: 'overall', label: 'アイドル総合', icon: 'fa-crown' },
+      { id: 'producers', label: 'ファン数', icon: 'fa-users' },
+      { id: 'regional', label: 'エリア別', icon: 'fa-map-location-dot' },
+      { id: 'style', label: 'スタイル', icon: 'fa-ribbon' },
+      { id: 'rookie', label: '新人', icon: 'fa-seedling' },
+    ];
+
+    const HOW_TO_JOIN_STEPS = [
+      { step: 'STEP 01', icon: 'fa-mobile-screen', title: 'LINE公式を友だち追加', desc: 'まずは公式LINEを登録。オーディションの最新情報やエントリーフォームをお届けします。' },
+      { step: 'STEP 02', icon: 'fa-pen-to-square', title: 'エントリーフォーム入力', desc: '必要事項とあなたの魅力が伝わる写真・動画をアップロードして送信！' },
+      { step: 'STEP 03', icon: 'fa-comments', title: '書類・オンライン面接審査', desc: '通過者には個別にメッセージでご連絡します。リラックスしてあなたの夢を語ってください。' },
+      { step: 'STEP 04', icon: 'fa-microphone-lines', title: '配信＆ファン獲得スタート！', desc: '「もしアイ」ポータルにプロフィールが公開。ファンと一緒に目標を目指しましょう！' }
+    ];
+
+    const EVENTS_DATA = [
+      {
+        id: 'main',
+        title: '【掲載確約】表紙＆巻頭特集 争奪戦！',
+        subtitle: '〜次世代のシンデレラは誰だ？ もしアイの「顔」を決める頂上決戦〜',
+        bannerImg: './event_main_banner.png',
+        themeColor: 'pink',
+        endDate: '2026-03-31T23:59:59',
+        aboutTitle: '『もしも私が、アイドルになったら。』とは？',
+        aboutImages: ['./event_main_about_1.png', './event_main_about_2.png'], 
+        aboutText: '王道のアイドルや、雑誌の看板モデルを目指す女の子のためのメイン企画です。\nプロデューサーからの総得票数で「もしアイ」創刊号のトップを飾るヒロインを決定します！\n\nエントリーで全員１/4ページ掲載確約！',
+        benefitImages: ['./event_main_benefit_1.png', './event_main_benefit_2.png'], 
+        benefits: [
+          { type: 'grand', title: '👑 グランプリ特典（ランキング1〜3位）', items: ['雑誌の「表紙」＆「巻頭特集（4P）」を独占！！', '次号以降の「もしアイ」レギュラーモデルへの就任確約！', '【特典】渋谷・新宿などの大型街頭ビジョンジャック放映！'] },
+          { type: 'top', title: '✨ 上位入賞特典（ランキング上位 / 10人）', items: ['雑誌「1ページ」フル特集へのグレードアップ！'] },
+          { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['推しを上位に導いた「筆頭プロデューサー（TO）」の皆様は、実際の雑誌の掲載ページに**『Supported by [あなたのお名前]』**として大きくクレジット掲載されます！'] }
+        ],
+        howToJoin: HOW_TO_JOIN_STEPS,
+        rankingData: {
+          overall: [], 
+          producers: [], 
+          regional: [],
+          style: [],
+          rookie: []
+        }
+      },
+      {
+        id: 'off_melty',
+        title: '【Off-Melty公式モデル】アンバサダー・オーディション！',
+        subtitle: '〜アパレル公式モデルへの道〜',
+        bannerImg: './event_off_melty_banner.png',
+        themeColor: 'purple',
+        endDate: '2026-04-15T23:59:59',
+        aboutTitle: '『Off-Melty（オフメルティ）』とは？',
+        aboutImages: ['./event_off_melty_about_1.png'],
+        aboutText: 'もしアイ姉妹アパレルブランド『Off-Melty（オフメルティ）』の公式モデル（アンバサダー）を決定する特別企画です。\nブランドコンセプトである「Practice & Chill（ステージを降りた、一番かわいい私）」を体現してくれる、ファッションセンスと表現力を持った女の子を募集します！',
+        benefitImages: ['./event_off_melty_benefit_1.png'],
+        benefits: [
+          { type: 'grand', title: '👗 アンバサダー就任特典（上位入賞者）', items: ['『Off-Melty』2026年シーズンの公式アンバサダーに就任！', 'ブランドの公式ECサイトやSNSでのモデル起用！', '毎月新作アイテムの無償提供＆特別割引枠の付与！', '雑誌内の「Off-Melty特別ルックブック・ページ」への大々的な掲載！'] },
+          { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['この企画では、プロデューサー様がOff-Meltyのカタログから推しに「衣装をプレゼント」することで強烈に応援できます。', '衣装を提供してくださったエグゼクティブ・プロデューサー様には、雑誌掲載ページに**『Outfit Provided by [あなたのお名前]』**とスポンサー名の独占クレジットが掲載されるほか、推しの限定着用自撮り動画をお届けします！'] }
+        ],
+        howToJoin: HOW_TO_JOIN_STEPS,
+        rankingData: {
+          overall: [],
+          producers: [],
+          regional: [],
+          style: [],
+          rookie: []
+        }
+      }
+    ];
+
+    // --- 共通UIコンポーネント ---
+    const SectionTitle = ({ title, subtitle }) => (
+      <div className="text-center mb-16 pt-8">
+        <h2 className="text-5xl md:text-6xl font-serif text-slate-900 uppercase tracking-[0.25em] font-light mb-4 magazine-line">
+          {title}
+        </h2>
+        {subtitle && <p className="text-slate-500 mt-6 text-xs md:text-sm font-light tracking-widest">{subtitle}</p>}
+      </div>
+    );
+
+    const Toast = ({ message }) => {
+      if (!message) return null;
+      return (
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[300] bg-slate-900/80 backdrop-blur-xl text-white px-8 py-4 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] flex items-center gap-4 animate-fade-in-up border border-white/10">
+          <i className="fa-solid fa-bell text-pink-400/80 text-lg"></i>
+          <span className="font-light tracking-wide text-sm whitespace-nowrap">{message}</span>
+        </div>
+      );
+    };
+
+    const CountdownTimer = ({ endDate, themeColor }) => {
+      const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      useEffect(() => {
+        const timer = setInterval(() => {
+          const difference = new Date(endDate) - new Date();
+          if (difference > 0) {
+            setTimeLeft({ days: Math.floor(difference / (1000 * 60 * 60 * 24)), hours: Math.floor((difference / (1000 * 60 * 60)) % 24), minutes: Math.floor((difference / 1000 / 60) % 60), seconds: Math.floor((difference / 1000) % 60) });
+          }
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [endDate]);
+
+      const pad = (num) => String(num).padStart(2, '0');
+      const bgColor = themeColor === 'pink' ? 'bg-pink-500/90' : 'bg-indigo-500/90';
+      const textColor = themeColor === 'pink' ? 'text-pink-600' : 'text-indigo-600';
+
+      return (
+        <div className="flex flex-col items-center justify-center bg-white/80 backdrop-blur-xl p-6 rounded-none shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] border border-white/60 mx-auto max-w-sm relative -mt-12 z-20">
+          <div className={`absolute -top-3 ${bgColor} text-white text-[9px] font-bold tracking-[0.2em] px-4 py-1 shadow-sm`}>TIME REMAINING</div>
+          <div className="flex items-center gap-3 mt-3">
+            <div className="text-center"><div className={`w-12 h-14 bg-white/50 flex items-center justify-center border-b border-slate-200 ${textColor}`}><span className="font-timer text-3xl font-light">{pad(timeLeft.days)}</span></div><p className="text-[9px] font-medium tracking-widest text-slate-400 mt-2">DAYS</p></div><span className={`font-timer text-2xl font-light mb-5 text-slate-300`}>:</span>
+            <div className="text-center"><div className={`w-12 h-14 bg-white/50 flex items-center justify-center border-b border-slate-200 ${textColor}`}><span className="font-timer text-3xl font-light">{pad(timeLeft.hours)}</span></div><p className="text-[9px] font-medium tracking-widest text-slate-400 mt-2">HRS</p></div><span className={`font-timer text-2xl font-light mb-5 text-slate-300`}>:</span>
+            <div className="text-center"><div className={`w-12 h-14 bg-white/50 flex items-center justify-center border-b border-slate-200 ${textColor}`}><span className="font-timer text-3xl font-light">{pad(timeLeft.minutes)}</span></div><p className="text-[9px] font-medium tracking-widest text-slate-400 mt-2">MIN</p></div><span className={`font-timer text-2xl font-light mb-5 text-slate-300`}>:</span>
+            <div className="text-center"><div className={`w-12 h-14 bg-white/50 flex items-center justify-center border-b border-slate-200 ${textColor}`}><span className="font-timer text-3xl font-light">{pad(timeLeft.seconds)}</span></div><p className="text-[9px] font-medium tracking-widest text-slate-400 mt-2">SEC</p></div>
+          </div>
+        </div>
+      );
+    };
+
+    const CrossNavSection = ({ idolsData, currentIdolId, onIdolSelect, onNavigate }) => {
+      const recommendIdols = useMemo(() => {
+        let list = idolsData;
+        if (currentIdolId) {
+          list = list.filter(i => String(i.id) !== String(currentIdolId));
+        }
+        return list.slice(0, 4); 
+      }, [idolsData, currentIdolId]);
+
+      if (recommendIdols.length === 0) return null;
+
+      return (
+        <div className="w-full bg-slate-50/50 border-t border-slate-200 mt-16 pt-20 pb-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <SectionTitle title="Discover More" subtitle="さらに広がる「もしアイ」の世界" />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+              <div>
+                <div className="flex items-center gap-3 mb-8">
+                  <span className="w-8 h-px bg-pink-300"></span>
+                  <h3 className="text-sm font-light text-slate-600 tracking-[0.2em] uppercase">Featured Muses</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+                  {recommendIdols.map((idol) => (
+                    <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
+                      <div className="aspect-[3/4] relative overflow-hidden bg-white mb-4 border border-slate-200/50 shadow-sm group-hover:shadow-md transition-all">
+                        <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                        {idol.isStreaming && (
+                          <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
+                            On Air
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center px-2">
+                        <h4 className="font-light text-slate-800 tracking-wide text-sm group-hover:text-pink-600 transition-colors">{idol.name}</h4>
+                        <p className="text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-3 mb-8">
+                  <span className="w-8 h-px bg-pink-300"></span>
+                  <h3 className="text-sm font-light text-slate-600 tracking-[0.2em] uppercase">Hot Campaigns</h3>
+                </div>
+                <div className="space-y-6">
+                  {EVENTS_DATA.map(ev => (
+                    <div key={ev.id} onClick={() => onNavigate('ranking')} className="cursor-pointer group relative overflow-hidden rounded-none border border-slate-200 shadow-sm hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] transition-all flex flex-col sm:flex-row bg-white">
+                      <div className="sm:w-2/5 aspect-[21/9] sm:aspect-[4/3] overflow-hidden relative bg-slate-50">
+                        <img src={ev.bannerImg} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 mix-blend-multiply" onError={handleImgError}/>
+                      </div>
+                      <div className="p-5 sm:w-3/5 flex flex-col justify-center">
+                        <p className="text-[9px] font-medium text-pink-500 tracking-[0.2em] mb-2 uppercase">Event</p>
+                        <h4 className="text-sm font-serif font-light text-slate-800 leading-relaxed mb-3 group-hover:text-pink-600 transition-colors">{ev.title}</h4>
+                        <div className="mt-auto flex items-center gap-2 text-[10px] text-slate-400 font-light tracking-widest">
+                           <i className="fa-regular fa-clock"></i> 開催中
+                        </div>
+                      </div>
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-200 group-hover:text-pink-300 transition-colors hidden sm:block">
+                        <i className="fa-solid fa-chevron-right font-light"></i>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 text-center sm:text-left pl-0 sm:pl-2">
+                   <button onClick={() => onNavigate('ranking')} className="text-xs text-slate-500 hover:text-slate-900 tracking-widest font-light transition-colors border-b border-slate-300 hover:border-slate-900 pb-1">
+                      VIEW ALL CAMPAIGNS <i className="fa-solid fa-arrow-right-long ml-2"></i>
+                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const EventDetailView = ({ event, onBack, idolsData, onIdolSelect, onQuickVote }) => {
+      const [currentRankingTab, setCurrentRankingTab] = useState('overall');
+
+      let currentRankingData = event.rankingData[currentRankingTab] || [];
+      if (currentRankingTab === 'overall') {
+         currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
+           const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+           return {
+             rank: index + 1,
+             idolId: idol.id,
+             name: idol.name,
+             value: `${(idol.totalVotes || 0).toLocaleString()} 票`,
+             diff: diff
+           };
+         });
+      }
+      const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
+
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
+          <button onClick={onBack} className="mb-12 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO TOP
+          </button>
+          
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-serif text-slate-900 font-light mb-4">{event.title}</h2>
+            <p className="text-slate-500 text-xs md:text-sm font-light tracking-widest leading-relaxed whitespace-pre-wrap">{event.subtitle}</p>
+          </div>
+
+          <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16">
+            <div className="aspect-[21/9] overflow-hidden relative bg-slate-50">
+              <img src={event.bannerImg} className="w-full h-full object-cover opacity-90 mix-blend-multiply" onError={handleImgError} />
+            </div>
+          </div>
+          
+          <CountdownTimer endDate={event.endDate} themeColor={event.themeColor} />
+
+          <div className="mt-20 max-w-4xl mx-auto">
+             <div className="flex gap-4 overflow-x-auto pb-8 hide-scrollbar justify-center border-b border-slate-200 mb-10">
+                {RANKING_TABS.map(tab => (
+                  <button key={tab.id} onClick={() => setCurrentRankingTab(tab.id)} className={`px-5 py-2 rounded-none text-[10px] tracking-widest uppercase transition-all border ${currentRankingTab === tab.id ? `bg-slate-800 text-white border-transparent` : `bg-transparent text-slate-500 border-slate-200 hover:border-slate-400`}`}>{tab.label}</button>
+                ))}
+             </div>
+             
+             {currentRankingData.length === 0 ? <p className="text-center text-sm text-slate-500 font-light py-10">集計データがありません。</p> : (
+                <div className="space-y-2 pb-20">
+                  {currentRankingData.map((item, i) => {
+                     const idolData = idolsData.find(idl => String(idl.id) === String(item.idolId));
+                     const itemPt = parseVote(item.value);
+                     const percentage = Math.min(100, Math.max(0, (itemPt / maxPt) * 100));
+                     const isTop3 = i < 3;
+
+                     return (
+                       <div key={item.rank} onClick={() => { if(idolData) onIdolSelect(idolData) }} className={`flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-pink-50/30 transition-colors px-4 ${isTop3 ? 'bg-white shadow-sm mb-4 border' : ''}`}>
+                          <div className={`w-12 font-serif text-xl md:text-2xl font-light ${i===0?'text-amber-500':i===1?'text-slate-400':i===2?'text-orange-400':'text-slate-400'} group-hover:text-slate-800 transition-colors`}>0{item.rank}</div>
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
+                             <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all mix-blend-multiply" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline mb-2">
+                              <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-lg truncate pr-2">{item.name}</h4>
+                              <p className={`font-timer font-light text-sm md:text-base text-slate-900 shrink-0`}>{item.value}</p>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1.5 relative rounded-full overflow-hidden">
+                              <div className={`absolute top-0 left-0 h-full transition-all duration-1000 ${i===0?'bg-amber-400':i===1?'bg-slate-400':i===2?'bg-orange-400':'bg-slate-800'}`} style={{ width: `${percentage}%` }}></div>
+                            </div>
+                          </div>
+                          <div className="ml-4 sm:ml-8 flex items-center gap-4 w-24 sm:w-32 justify-end shrink-0">
+                             {currentRankingTab !== 'producers' ? (
+                                <div className="flex flex-col items-end gap-2">
+                                  {item.diff && item.diff !== "-" && <span className="hidden sm:block text-[9px] font-medium tracking-widest text-pink-400 uppercase text-right">{item.diff}</span>}
+                                  <button onClick={(e) => { e.stopPropagation(); if(idolData) onQuickVote(e, idolData); }} className="bg-slate-900 text-white hover:bg-pink-600 px-4 py-1.5 rounded-none text-[9px] tracking-widest font-light transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                                    <i className="fa-solid fa-heart"></i> VOTE
+                                  </button>
+                                </div>
+                             ) : (
+                                <i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors font-light"></i>
+                             )}
+                          </div>
+                       </div>
+                     );
+                  })}
+                </div>
+             )}
+          </div>
+        </div>
+      );
+    };
+    
+    const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false }) => {
+      const [isLogin, setIsLogin] = useState(true);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        await onAuthSubmit(email, password, isLogin);
+        setLoading(false);
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[500] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none overflow-hidden max-w-sm w-full shadow-2xl border border-slate-100 relative">
+            <button onClick={onClose} disabled={loading} className="absolute right-4 top-4 text-slate-400 hover:text-slate-800 transition-colors z-10"><i className="fa-solid fa-xmark text-lg"></i></button>
+            
+            <div className="flex border-b border-slate-100">
+              <button onClick={() => setIsLogin(true)} disabled={loading} className={`flex-1 py-4 text-xs font-medium tracking-widest uppercase transition-colors ${isLogin ? 'bg-white text-slate-800 border-b-2 border-slate-800' : 'bg-slate-50 text-slate-400'}`}>Log In</button>
+              <button onClick={() => setIsLogin(false)} disabled={loading} className={`flex-1 py-4 text-xs font-medium tracking-widest uppercase transition-colors ${!isLogin ? 'bg-white text-slate-800 border-b-2 border-slate-800' : 'bg-slate-50 text-slate-400'}`}>Sign Up</button>
+            </div>
+
+            <div className="p-8">
+              <h3 className="text-2xl font-light font-serif text-slate-800 mb-6 text-center">{isAdminOnly ? 'Admin Access' : (isLogin ? 'Welcome Back' : 'Create Account')}</h3>
+              {isAdminOnly && <p className="text-[10px] text-center text-slate-400 mb-4">管理者用メールアドレスでログインしてください</p>}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Email Address</label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800" placeholder="your@email.com" />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Password</label>
+                  <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800" placeholder="••••••••" />
+                </div>
+                <button type="submit" disabled={loading} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none hover:bg-slate-800 transition-colors mt-4 disabled:bg-slate-400 flex justify-center items-center gap-2">
+                  {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : (isLogin ? 'LOGIN' : 'REGISTER')}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const AdminDashboard = ({ idolsData, showToast }) => {
+      const [newIdol, setNewIdol] = useState({ name: '', loginEmail: '', profileImage: '', catchphrase: '', pref: '', style: '', birthday: '' });
+      const [deleteId, setDeleteId] = useState(null);
+      const [uploading, setUploading] = useState(false);
+
+      const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+          const url = await uploadFile(file);
+          setNewIdol({...newIdol, profileImage: url});
+          showToast("画像がアップロードされました");
+        } catch (err) {
+          showToast("アップロードに失敗しました");
+        }
+        setUploading(false);
+      };
+
+      const handleAddIdol = async (e) => {
+        e.preventDefault();
+        if(!newIdol.name || !newIdol.loginEmail) return showToast("名前とログインEmailは必須です");
+        
+        const { collection, addDoc } = window.FirebaseHelper;
+        const db = window.FirebaseDbRef;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        try {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'idols'), {
+            ...newIdol,
+            type: "新規エントリー",
+            issue: "未掲載",
+            isOffMelty: false,
+            isRookie: true,
+            story: "新しい物語がここから始まります。",
+            titleBadge: "注目",
+            producerCount: "0",
+            totalVotes: 0,
+            wishlist: [],
+            receivedGifts: [],
+            createdAt: new Date().toISOString()
+          });
+          showToast("アイドルを新規追加しました");
+          setNewIdol({ name: '', loginEmail: '', profileImage: '', catchphrase: '', pref: '', style: '', birthday: '' });
+        } catch(err) {
+          showToast("追加エラー: " + err.message);
+        }
+      };
+
+      const handleDelete = async (id) => {
+        if (deleteId === id) {
+          const { doc, deleteDoc } = window.FirebaseHelper;
+          const db = window.FirebaseDbRef;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'idols', String(id)));
+            showToast("アイドルを削除しました");
+            setDeleteId(null);
+          } catch(e) {
+            showToast("削除エラー");
+          }
+        } else {
+          setDeleteId(id);
+          setTimeout(() => setDeleteId(null), 3000);
+        }
+      };
+
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-12 pt-32 animate-fade-in">
+          <SectionTitle title="ADMIN" subtitle="管理者コントロールパネル" />
+          
+          <div className="bg-white p-8 shadow-sm border border-slate-200 mb-12">
+            <h3 className="text-lg font-serif mb-6 text-slate-800">アイドルの新規追加</h3>
+            <form onSubmit={handleAddIdol} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">名前 *</label>
+                <input required type="text" value={newIdol.name} onChange={e=>setNewIdol({...newIdol, name: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">ログイン用Email * (IdolログインID)</label>
+                <input required type="email" value={newIdol.loginEmail} onChange={e=>setNewIdol({...newIdol, loginEmail: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">プロフィール画像 (写真/動画)</label>
+                <input type="file" accept="image/*,video/mp4" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer" />
+                {uploading && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
+                {newIdol.profileImage && !uploading && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">キャッチフレーズ</label>
+                <input type="text" value={newIdol.catchphrase} onChange={e=>setNewIdol({...newIdol, catchphrase: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">出身地</label>
+                <select value={newIdol.pref} onChange={e=>setNewIdol({...newIdol, pref: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white">
+                  <option value="">選択してください</option>
+                  {PREFECTURES.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">スタイル</label>
+                <select value={newIdol.style} onChange={e=>setNewIdol({...newIdol, style: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white">
+                  <option value="">選択してください</option>
+                  {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 mb-1">生年月日</label>
+                <input type="date" value={newIdol.birthday} onChange={e=>setNewIdol({...newIdol, birthday: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white" />
+              </div>
+              <div className="md:col-span-2 text-right mt-4">
+                <button type="submit" disabled={uploading} className="bg-slate-900 text-white px-8 py-3 text-[10px] tracking-widest hover:bg-slate-800 transition-colors uppercase disabled:bg-slate-400">追加する</button>
+              </div>
+            </form>
+          </div>
+
+          <div className="bg-white p-8 shadow-sm border border-slate-200">
+            <h3 className="text-lg font-serif mb-6 text-slate-800">登録済みアイドル一覧</h3>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-4">
+              {idolsData.map(idol => (
+                <div key={idol.id} className="flex items-center justify-between border-b border-slate-100 py-4">
+                  <div className="flex items-center gap-4">
+                    <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-12 h-12 object-cover rounded-full bg-slate-100" />
+                    <div>
+                      <div className="font-medium text-slate-800">{idol.name}</div>
+                      <div className="text-[10px] text-slate-400">{idol.loginEmail} | {idol.totalVotes || 0} 票</div>
+                    </div>
+                  </div>
+                  <button onClick={() => handleDelete(idol.id)} className={`px-4 py-2 text-[10px] tracking-widest text-white transition-colors ${deleteId === idol.id ? 'bg-red-600' : 'bg-slate-300 hover:bg-red-500'}`}>
+                    {deleteId === idol.id ? '本当に削除？' : '削除'}
+                  </button>
+                </div>
+              ))}
+              {idolsData.length === 0 && <p className="text-sm text-slate-500 py-8 text-center border border-dashed border-slate-300">現在登録されているアイドルはいません。</p>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user || user.isAnonymous) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">プロデューサー登録（無料）で、<br/>毎日<span className="text-pink-500 font-medium">「3票の無料投票券」</span>を進呈いたします。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER & VOTE
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleVote = (amount) => {
+        if (userData.freeTickets >= amount) {
+          updateTickets(-amount, 0); // consume tickets
+          onSuccess(amount, '無料投票');
+          onClose();
+        } else {
+          showToast("無料票が不足しています。");
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative">
+              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Voting Room</h3>
+              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
+              <div className="flex items-center gap-5 mb-10 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
+                <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover border border-slate-100" />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
+                  <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-white border border-slate-200 p-8 rounded-none text-center shadow-sm relative">
+                  <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Daily Free Votes <span className="text-pink-400 lowercase text-[9px] tracking-normal">(3/day)</span></p>
+                  <p className="text-xs text-slate-500 mb-6 font-light">毎日ログインして、推しに愛を届けましょう。</p>
+                  <div className="text-5xl font-light font-timer text-slate-800 mb-8">{userData.freeTickets}</div>
+                  <button onClick={() => handleVote(1)} disabled={userData.freeTickets < 1} className="w-full py-4 bg-slate-800 text-white text-xs tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors hover:bg-slate-900">
+                    VOTE NOW (1票)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user || user.isAnonymous) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">ギフト・雑誌を購入して応援するには、<br/>プロデューサー登録（無料）が必要です。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleBuyGift = (name, price, votes) => {
+        onSuccess(votes, `ギフト購入(${name})`);
+        onClose();
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative z-10">
+              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Gift & Magazine</h3>
+              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
+              <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">
+                ささやかなギフトから、公式プロデューサーの称号まで。<br/>あなたの特別な想いを大量の「票」に変えて届けます。
+              </p>
+              
+              <div className="space-y-4">
+                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+                  <div className="flex items-center gap-5">
+                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4>
+                      <p className="text-[10px] text-slate-400 font-medium tracking-wider">+120 票</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('応援メガホン', 100, 120)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+                  <div className="flex items-center gap-5">
+                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">フラワースタンド</h4>
+                      <p className="text-[10px] text-pink-400 font-medium tracking-wider">+500 票</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
+                </div>
+
+                <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
+                  <div className="flex items-center gap-5 pl-3">
+                    <div className="text-2xl opacity-90 grayscale group-hover:grayscale-0 transition-all">🎂</div>
+                    <div>
+                      <h4 className="font-light text-sm text-slate-800 mb-1">特大バースデーケーキ</h4>
+                      <p className="text-[10px] text-slate-500 font-medium tracking-wider">+3,000 票</p>
+                    </div>
+                  </div>
+                  <button onClick={() => handleBuyGift('特大バースデーケーキ', 2000, 3000)} className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-slate-700 transition-colors">¥2,000</button>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-8 mt-8">
+                <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Official Magazine</h5>
+                <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を購入して大量の票と公式プロデューサーの称号を獲得しましょう。</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 1冊', 980, 1800)}>
+                    <div className="flex gap-4 items-center">
+                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
+                      <div>
+                        <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
+                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +1,800 票</p>
+                        <p className="text-[8px] text-slate-500 mt-1">特典: 公式プロデューサーとしてWEB掲載</p>
+                      </div>
+                    </div>
+                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥980</button>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors relative cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 5冊セット', 2490, 4000)}>
+                    <div className="flex gap-4 items-center pl-1">
+                      <div className="relative w-12 h-14">
+                        <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
+                        <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
+                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
+                      </div>
+                      <div>
+                        <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
+                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +4,000 票</p>
+                        <p className="text-[8px] text-slate-500 mt-1">特典: WEB＆雑誌の誌面に名前掲載</p>
+                      </div>
+                    </div>
+                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥2,490</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+      if (!user || user.isAnonymous) {
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+              <i className="fa-solid fa-shirt text-3xl text-slate-300 mb-6"></i>
+              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">衣装を提供して推しを支援するには、<br/>プロデューサー登録（無料）が必要です。</p>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+                REGISTER
+              </button>
+              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+            </div>
+          </div>
+        );
+      }
+
+      const handleProvideOutfit = (item) => {
+        onSuccess(item.votes, '衣装提供', item.id);
+        onClose();
+      };
+
+      return (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#fafafa] rounded-none overflow-hidden max-w-4xl w-full shadow-2xl relative border border-slate-200">
+            <div className="bg-white p-6 md:p-8 text-center relative border-b border-slate-100 z-10 flex flex-col items-center justify-center">
+              <img src="./off_melty_logo.png" className="h-6 mx-auto mb-3 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
+              <h3 style={{display: 'none'}} className="font-serif font-light text-slate-800 text-xl mb-2 tracking-wide">Off-Melty</h3>
+              <p className="text-slate-400 text-[9px] font-medium tracking-[0.3em] uppercase">Lookbook / Outfit Provision</p>
+              <button onClick={onClose} className="absolute right-6 top-8 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div className="p-6 md:p-10 max-h-[75vh] overflow-y-auto hide-scrollbar relative">
+              <div className="text-center mb-10">
+                 <p className="text-xs text-slate-500 leading-loose font-light max-w-xl mx-auto">
+                   最新のコレクションから、彼女にふさわしい一着をセレクト。<br/>
+                   提供された衣装は大量の「票」として換算され、ランキングを強力に後押しします。
+                 </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                {OFF_MELTY_CATALOG.map(item => {
+                  const isReceived = idol.receivedGifts?.find(g => g.itemId === item.id);
+                  return (
+                    <div key={item.id} className="bg-transparent flex flex-col group relative">
+                      <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative mb-4 border border-slate-200">
+                        <img src={item.img} className={`w-full h-full object-cover transition-transform duration-1000 ${isReceived ? 'grayscale opacity-50' : 'group-hover:scale-105'} mix-blend-multiply`} onError={handleImgError} />
+                        
+                        {!isReceived && (
+                          <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <button onClick={() => handleProvideOutfit(item)} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-6 py-3 hover:bg-pink-600 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300">
+                              SELECT
+                            </button>
+                          </div>
+                        )}
+
+                        {isReceived && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                            <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1 shadow-md rotate-[-10deg]">
+                              SOLD OUT
+                            </div>
+                          </div>
+                        )}
+                        
+                        {!isReceived && item.stock !== null && (
+                          <div className="absolute top-3 left-3 bg-white text-slate-800 border border-slate-200 text-[8px] font-medium px-2 py-1 tracking-widest shadow-sm">
+                            ONLY {item.stock} LEFT
+                          </div>
+                        )}
+                      </div>
+                      
+                      <h4 className="font-serif font-light text-sm text-slate-800 line-clamp-2 mb-2 leading-relaxed">{item.name}</h4>
+                      <div className="flex justify-between items-baseline mt-auto">
+                        <p className="text-xs text-slate-500 font-light tracking-wide">¥{item.price}</p>
+                        <p className="text-[9px] font-medium tracking-widest text-pink-400">+{item.votes.toLocaleString()} 票</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ProducerMyPage = ({ user, userData, idolsData, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
+      const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
+      const [profileImage, setProfileImage] = useState(userData.profileImage || "");
+      const [message, setMessage] = useState(userData.message || "");
+      const [oshiId, setOshiId] = useState(userData.oshiId || "");
+      const [uploading, setUploading] = useState(false);
+
+      useEffect(() => {
+        setName(userData.name || "ゲスト プロデューサー");
+        setProfileImage(userData.profileImage || "");
+        setMessage(userData.message || "");
+        setOshiId(userData.oshiId || "");
+      }, [userData]);
+
+      const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+          const url = await uploadFile(file);
+          setProfileImage(url);
+          showToast("画像がアップロードされました");
+        } catch (err) {
+          showToast("アップロードに失敗しました");
+        }
+        setUploading(false);
+      };
+
+      const handleSave = async (e) => {
+        e.preventDefault();
+        const result = await onUpdateProfile({ name, profileImage, message, oshiId });
+        if (result && !result.success) {
+           showToast(`保存エラー: 権限(ルール)の設定を確認してください。`);
+        } else {
+           showToast("プロフィールを保存しました。");
+        }
+      };
+
+      const oshiIdol = idolsData.find(i => String(i.id) === String(oshiId));
+
+      return (
+        <div className="animate-fade-in-up pb-0">
+          <div className="max-w-5xl mx-auto px-4 py-12 pb-24">
+            <SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              <div className="md:col-span-1 space-y-6">
+                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
+                  <div className="w-24 h-24 rounded-full mx-auto bg-slate-50 flex items-center justify-center mb-6 overflow-hidden border border-slate-200">
+                    {profileImage ? (
+                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={handleImgError} />
+                    ) : (
+                      <i className="fa-solid fa-user-tie text-3xl text-slate-300"></i>
+                    )}
+                  </div>
+                  <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name}</h3>
+                  <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{user?.email || 'demo@example.com'}</p>
+                  {message && (
+                    <p className="text-xs text-slate-500 font-light italic mb-6 leading-relaxed">"{message}"</p>
+                  )}
+                  
+                  <div className="border-t border-slate-100 pt-6">
+                    <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
+                    {oshiIdol ? (
+                      <div className="flex items-center justify-center gap-3 cursor-pointer group" onClick={() => onIdolSelect(oshiIdol)}>
+                        <MediaDisplay src={oshiIdol.profileImage} fallbackSrc={`./default_idol.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200 group-hover:border-pink-300 transition-colors" />
+                        <span className="font-light text-slate-800 text-sm group-hover:text-pink-600 transition-colors">{oshiIdol.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 font-light">未設定</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-10">
+                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Dashboard</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="bg-slate-50 p-6 text-center border border-slate-100">
+                      <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-3">Daily Free Votes</p>
+                      <p className="text-4xl font-timer font-light text-slate-800">{userData.freeTickets} <span className="text-sm font-sans font-light text-slate-400">票</span></p>
+                    </div>
+                    <div className="bg-pink-50/50 p-6 text-center border border-pink-100">
+                      <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-3">Total Votes</p>
+                      <p className="text-4xl font-timer font-light text-pink-600">{userData.totalPts?.toLocaleString() || 0} <span className="text-sm font-sans font-light text-pink-400/70">票</span></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Edit Profile</h4>
+                  
+                  <form onSubmit={handleSave} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Nickname (プロデューサー名)</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800 text-sm" placeholder="名無しプロデューサー" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Image (写真)</label>
+                        <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer border-b border-slate-300 pb-2" />
+                        {uploading && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
+                        {profileImage && !uploading && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">My Oshi (推しメン設定)</label>
+                      <select value={oshiId} onChange={(e) => setOshiId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 py-3 px-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-slate-800 text-sm appearance-none">
+                        <option value="">-- 選択してください --</option>
+                        {idolsData.map(idol => (
+                          <option key={idol.id} value={idol.id}>{idol.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Short Message (一言メッセージ)</label>
+                      <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="3" className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-sm resize-none" placeholder="推しへの想いや意気込みを..."></textarea>
+                    </div>
+
+                    <div className="pt-4 text-right">
+                      <button type="submit" disabled={uploading} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-10 py-4 hover:bg-slate-800 transition-colors uppercase disabled:bg-slate-400">Save Changes</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <CrossNavSection idolsData={idolsData} currentIdolId={null} onIdolSelect={onIdolSelect} onNavigate={onNavigate} />
+        </div>
+      );
+    };
+
+    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
       const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
       const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
       const [story, setStory] = useState(idolData?.story || "");
       const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
       const [wishlist, setWishlist] = useState(idolData?.wishlist || []);
       
-      // ▼追加：誕生日・出身地・特技のState
       const [birthday, setBirthday] = useState(idolData?.birthday || "");
       const [hometown, setHometown] = useState(idolData?.hometown || "");
       const [specialSkill, setSpecialSkill] = useState(idolData?.specialSkill || "");
@@ -1108,7 +2185,6 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
         setIsStreaming(idolData?.isStreaming || false);
         setWishlist(idolData?.wishlist || []);
         
-        // ▼追加：データの読み込み同期
         setBirthday(idolData?.birthday || "");
         setHometown(idolData?.hometown || "");
         setSpecialSkill(idolData?.specialSkill || "");
@@ -1152,8 +2228,6 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
           story, 
           isStreaming,
           wishlist,
-          
-          // ▼追加：保存処理に追加
           birthday,
           hometown,
           specialSkill
@@ -1236,6 +2310,41 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
 
             <div className="lg:col-span-3 space-y-10">
               
+              {/* ▼▼▼ 新機能：Financial Insights（報酬管理UI）ここから ▼▼▼ */}
+              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3">
+                  <span className="w-6 h-px bg-slate-300"></span> Financial Insights <span className="text-[9px] text-pink-400 normal-case">活動支援金レポート</span>
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-6 bg-slate-50 border border-slate-100">
+                    <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">現在のプロデュース予算</p>
+                    {/* ※モックアップ計算：1票＝12円と仮定した表示です。実際はFirebase Functionsで計算した値を参照します */}
+                    <p className="text-3xl font-timer font-light text-slate-800">¥{((idolData.totalVotes || 0) * 12).toLocaleString()}</p>
+                    <p className="text-[9px] text-slate-400 mt-2">※源泉徴収税（10.21%）控除前の目安</p>
+                  </div>
+                  
+                  <div className="p-6 bg-pink-50/30 border border-pink-100">
+                    <p className="text-[10px] text-pink-400 font-medium tracking-widest mb-2 uppercase">次回お受取り予定</p>
+                    <p className="text-xl font-light text-slate-800">2026.04.25</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      <span className="text-[10px] text-slate-500">振込申請可能まであと少し</span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 bg-white border border-slate-100">
+                    <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">プロデュース効率</p>
+                    <p className="text-xl font-light text-slate-800">
+                      {((idolData.totalVotes || 0) / Math.max(1, (idolData.receivedGifts?.length || 1))).toFixed(1)} 
+                      <span className="text-xs text-slate-400 ml-1">PP / Gift</span>
+                    </p>
+                    <p className="text-[9px] text-slate-500 mt-2">ギフト1件あたりの平均獲得票</p>
+                  </div>
+                </div>
+              </div>
+              {/* ▲▲▲ 新機能：Financial Insights（報酬管理UI）ここまで ▲▲▲ */}
+
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
                 <form onSubmit={handleSaveProfile} className="space-y-6">
@@ -1260,7 +2369,6 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
                     <input type="text" value={catchphrase} onChange={(e) => setCatchphrase(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" />
                   </div>
 
-                  {/* ▼追加：プロフィール入力枠 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Birthday (生年月日)</label>
@@ -1275,7 +2383,6 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
                       <input type="text" value={specialSkill} onChange={(e) => setSpecialSkill(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: クラシックバレエ" />
                     </div>
                   </div>
-                  {/* ▲追加：プロフィール入力枠 */}
                   
                   <div>
                     <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Her Story (私の物語 / 自己紹介)</label>
@@ -1353,6 +2460,8 @@ const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) =>
         </div>
       );
     };
+    
+    // ... [以下、AllIdolsView など元のコードが続きます] ...
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
