@@ -199,12 +199,6 @@
       { id: 'item4', name: "キラキラ・ビジューヘアアクセ", price: "3,200", votes: 3500, img: "./off_melty_item4.png", stock: null, deadline: null },
     ];
 
-    const TOPICS_DATA = [
-      { id: 1, date: "2026.02.20", label: "NEWS", title: "LARME特別編集カワラボBOOKが今年も登場♡" },
-      { id: 2, date: "2026.01.15", label: "NEWS", title: "星野 きらら 記念イベント開催決定！" },
-      { id: 3, date: "2025.12.17", label: "OTHER", title: "michelMacaron × 桜井 ひな 誌面タイアップ" },
-      { id: 4, date: "2025.12.10", label: "NEWS", title: "天音 くるみ 独占インタビュー公開中！" },
-    ];
 
     const MAG_CATEGORIES = ["ALL", "INTERVIEW", "GUIDE", "TREND", "NEWS", "REPORT"];
 
@@ -1975,7 +1969,7 @@
 
       return (
         <section id="moshi-ai-magazine" className="py-16 md:py-24 max-w-7xl mx-auto px-4 md:px-6 mb-16 border-t border-slate-200 mt-20">
-          <SectionTitle title="もしアイマガジン" subtitle="Moshi-Ai Web Magazine" />
+          <SectionTitle title="MAGAZINE" subtitle="Moshi-Ai Web Magazine" />
           
           <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
             {/* 左カラム：メインコンテンツ */}
@@ -3085,26 +3079,7 @@
                   </div>
                 </section>
 
-                {/* TOPICS SECTION */}
-                <section id="topics" className="py-16 max-w-6xl mx-auto px-4 mb-10">
-                  <SectionTitle title="Journal" subtitle="最新ニュースとトピックス" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
-                    {TOPICS_DATA.map((topic, index) => (
-                      <div key={topic.id} className={`group cursor-pointer flex flex-col ${index % 2 !== 0 ? 'md:mt-16' : ''}`}>
-                        <div className="relative overflow-hidden rounded-none mb-6 shadow-sm bg-slate-50 aspect-[4/3] border border-slate-100">
-                          <img src={`./topic${topic.id}.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError} />
-                        </div>
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-[10px] tracking-widest text-slate-400">{topic.date}</span>
-                          <span className="w-4 h-px bg-slate-300"></span>
-                          <span className="text-[10px] tracking-widest text-slate-800 font-medium">{topic.label}</span>
-                        </div>
-                        <h3 className="font-serif font-light text-slate-800 text-lg md:text-xl leading-relaxed group-hover:text-pink-600 transition-colors">{topic.title}</h3>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
+             
                 {/* MAGAZINE ARCHIVE */}
                 <section id="magazine" className="py-24 relative overflow-hidden max-w-7xl mx-auto px-6 mb-20">
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full bg-slate-50/50 blur-3xl -z-10 rounded-full"></div>
