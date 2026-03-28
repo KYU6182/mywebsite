@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -8,46 +6,14 @@
   <title>もしも私が, アイドルになったら。 | 公式ポータルサイト</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   
   <style>
-
-
-    @keyframes slide-in-up {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fade-in {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-    @keyframes sparkle-move {
-      0% { background-position: 0 0, 5px 5px; }
-      100% { background-position: -10px -10px, -5px -5px; }
-    }
-
-    .animate-slide-in-up { animation: slide-in-up 0.5s ease-out forwards; }
-    .animate-fade-in { animation: fade-in 1s ease-out forwards; }
-
-    /* キラキラしたエフェクト（CSS） */
-    .sparkle-effect {
-      background: radial-gradient(circle, #fff 0%, transparent 1%), radial-gradient(circle, #fff 0%, transparent 1%);
-      background-size: 10px 10px, 10px 10px;
-      background-position: 0 0, 5px 5px;
-      opacity: 0.3;
-      filter: blur(2px);
-      animation: sparkle-move 5s linear infinite;
-    }
-
-
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Oswald:wght@300;400;700&display=swap');
     
     body { 
@@ -94,14 +60,23 @@
       70% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
       100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
     }
+    @keyframes slide-in-up {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes sparkle-move {
+      0% { background-position: 0 0, 5px 5px; }
+      100% { background-position: -10px -10px, -5px -5px; }
+    }
     
-    .animate-fade-in { animation: fade-in 0.8s ease-out; }
+    .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
     .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     .animate-float { animation: float 6s ease-in-out infinite; }
     .animate-podium { animation: podium-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     .animate-pulse-glow { animation: pulse-glow 3s infinite; }
     .animate-live { animation: live-pulse 2s infinite; }
-    
+    .animate-slide-in-up { animation: slide-in-up 0.5s ease-out forwards; }
+
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -130,7 +105,6 @@
 <body class="antialiased selection:bg-pink-100 selection:text-pink-900 text-slate-800 tracking-wide font-light">
 
   <div class="fixed inset-0 bg-white/60 backdrop-blur-[6px] pointer-events-none z-[-1]"></div>
-
   <div id="root"></div>
 
   <script type="module">
@@ -155,6 +129,14 @@
       return parseInt(numStr, 10) || 0;
     };
 
+    // --- 追加: プロデューサーの称号計算ロジック ---
+    const getProducerTitle = (votes) => {
+      if (votes >= 1000) return { name: "God P", border: "border-transparent bg-clip-border p-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500", text: "text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500", glow: "shadow-[0_0_15px_rgba(168,85,247,0.5)]", badge: "bg-gradient-to-r from-indigo-500 to-pink-500 text-white" };
+      if (votes >= 500) return { name: "Royal P", border: "border-2 border-yellow-400 p-[1px]", text: "text-yellow-600", glow: "shadow-[0_0_10px_rgba(234,179,8,0.4)]", badge: "bg-gradient-to-r from-yellow-400 to-amber-500 text-white" };
+      if (votes >= 100) return { name: "VIP P", border: "border-2 border-slate-300 p-[1px]", text: "text-slate-600", glow: "shadow-sm", badge: "bg-slate-300 text-slate-700" };
+      return { name: "Producer", border: "border border-slate-200", text: "text-slate-500", glow: "", badge: "bg-slate-100 text-slate-500" };
+    };
+
     const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E";
     const handleImgError = (e) => {
       e.currentTarget.onerror = null; 
@@ -163,11 +145,7 @@
 
     const MediaDisplay = ({ src, fallbackSrc, className }) => {
       const [mediaError, setMediaError] = useState(false);
-      
-      useEffect(() => {
-        setMediaError(false);
-      }, [src]);
-
+      useEffect(() => { setMediaError(false); }, [src]);
       const isVideo = src && typeof src === 'string' && src.match(/\.(mp4|webm|ogg|mov)$/i);
       
       if (isVideo && !mediaError) {
@@ -179,20 +157,13 @@
     const PREFECTURES = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
     const STYLES = ["王道", "ガーリー", "KPOP"];
 
-    // ファイルアップロードの共通関数
     const uploadFile = (file) => {
       return new Promise((resolve, reject) => {
-        if (!file) {
-          resolve(null);
-          return;
-        }
-        
+        if (!file) return resolve(null);
         if (file.type.startsWith('video/')) {
-          alert("【エラー】完全無料設定のため、動画のアップロードはできません。画像のみ選択してください。");
-          reject(new Error("動画はアップロードできません"));
-          return;
+          alert("【エラー】動画のアップロードはできません。画像のみ選択してください。");
+          return reject(new Error("動画は不可"));
         }
-
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = (e) => {
@@ -203,12 +174,8 @@
             const MAX_WIDTH = 800;
             let width = img.width;
             let height = img.height;
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-            canvas.width = width;
-            canvas.height = height;
+            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             resolve(canvas.toDataURL('image/jpeg', 0.6));
@@ -228,9 +195,7 @@
       { id: 'item4', name: "キラキラ・ビジューヘアアクセ", price: "3,200", votes: 3500, img: "./off_melty_item4.png", stock: null, deadline: null },
     ];
 
-
     const MAG_CATEGORIES = ["ALL", "INTERVIEW", "GUIDE", "TREND", "NEWS", "REPORT"];
-
     const WEB_MAGAZINE_ARTICLES = [
       { id: "how-to-entry", title: "【独占】「普通の女の子」から「表紙モデル」へ。桜井ひなが語る推し活のリアル", category: "INTERVIEW", date: "2026.03.20", thumb: "./topic1.png", isPickup: true, views: 15400, desc: "第2号の表紙を飾った桜井ひなさんに独占インタビュー。配信での苦悩、そしてプロデューサーへの感謝の想いを語ってくれました。" },
       { id: "guide1", title: "【完全保存版】オーディションを勝ち抜く！プロデューサーの目を惹く自己PRの極意", category: "GUIDE", date: "2026.03.18", thumb: "./topic2.png", isPickup: false, views: 32000, desc: "書類選考を突破する写真の選び方から、自己PRの書き方まで大公開。" },
@@ -277,13 +242,7 @@
           { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['推しを上位に導いた「筆頭プロデューサー（TO）」の皆様は、実際の雑誌の掲載ページに**『Supported by [あなたのお名前]』**として大きくクレジット掲載されます！'] }
         ],
         howToJoin: HOW_TO_JOIN_STEPS,
-        rankingData: {
-          overall: [], 
-          producers: [], 
-          regional: [],
-          style: [],
-          rookie: []
-        }
+        rankingData: { overall: [], producers: [], regional: [], style: [], rookie: [] }
       },
       {
         id: 'off_melty',
@@ -301,21 +260,13 @@
           { type: 'producer', title: '💼 プロデューサー（ファン）様 報酬', items: ['この企画では、プロデューサー様がOff-Meltyのカタログから推しに「衣装をプレゼント」することで強烈に応援できます。', '衣装を提供してくださったエグゼクティブ・プロデューサー様には、雑誌掲載ページに**『Outfit Provided by [あなたのお名前]』**とスポンサー名の独占クレジットが掲載されるほか、推しの限定着用自撮り動画をお届けします！'] }
         ],
         howToJoin: HOW_TO_JOIN_STEPS,
-        rankingData: {
-          overall: [],
-          producers: [],
-          regional: [],
-          style: [],
-          rookie: []
-        }
+        rankingData: { overall: [], producers: [], regional: [], style: [], rookie: [] }
       }
     ];
 
     const SectionTitle = ({ title, subtitle }) => (
       <div className="text-center mb-16 pt-8">
-        <h2 className="text-5xl md:text-6xl font-serif text-slate-900 uppercase tracking-[0.25em] font-light mb-4 magazine-line">
-          {title}
-        </h2>
+        <h2 className="text-5xl md:text-6xl font-serif text-slate-900 uppercase tracking-[0.25em] font-light mb-4 magazine-line">{title}</h2>
         {subtitle && <p className="text-slate-500 mt-6 text-xs md:text-sm font-light tracking-widest">{subtitle}</p>}
       </div>
     );
@@ -371,173 +322,35 @@
       );
     };
 
-    const CrossNavSection = ({ idolsData, currentIdolId, onIdolSelect, onNavigate }) => {
-      const recommendIdols = useMemo(() => {
-        let list = idolsData;
-        if (currentIdolId) {
-          list = list.filter(i => String(i.id) !== String(currentIdolId));
+    // --- 追加: デイリーエール（ログインボーナス）モーダル ---
+    const DailyYellModal = ({ onClose, tickets }) => {
+      useEffect(() => {
+        if (typeof confetti !== 'undefined') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#f472b6', '#38bdf8', '#818cf8'] });
         }
-        return list.slice(0, 4); 
-      }, [idolsData, currentIdolId]);
-
-      if (recommendIdols.length === 0) return null;
+      }, []);
 
       return (
-        <div className="w-full bg-slate-50/50 border-t border-slate-200 mt-16 pt-20 pb-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <SectionTitle title="Discover More" subtitle="さらに広がる「もしアイ」の世界" />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              <div>
-                <div className="flex items-center gap-3 mb-8">
-                  <span className="w-8 h-px bg-pink-300"></span>
-                  <h3 className="text-sm font-light text-slate-600 tracking-[0.2em] uppercase">Featured Muses</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-                  {recommendIdols.map((idol) => (
-                    <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
-                      <div className="aspect-[3/4] relative overflow-hidden bg-white mb-4 border border-slate-200/50 shadow-sm group-hover:shadow-md transition-all">
-                        <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
-                        {idol.isStreaming && (
-                          <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
-                            On Air
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-center px-2">
-                        <h4 className="font-light text-slate-800 tracking-wide text-sm group-hover:text-pink-600 transition-colors">{idol.name}</h4>
-                        <p className="text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-3 mb-8">
-                  <span className="w-8 h-px bg-pink-300"></span>
-                  <h3 className="text-sm font-light text-slate-600 tracking-[0.2em] uppercase">Hot Campaigns</h3>
-                </div>
-                <div className="space-y-6">
-                  {EVENTS_DATA.map(ev => (
-                    <div key={ev.id} onClick={() => onNavigate('ranking')} className="cursor-pointer group relative overflow-hidden rounded-none border border-slate-200 shadow-sm hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.15)] transition-all flex flex-col sm:flex-row bg-white">
-                      <div className="sm:w-2/5 aspect-[21/9] sm:aspect-[4/3] overflow-hidden relative bg-slate-50">
-                        <img src={ev.bannerImg} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 mix-blend-multiply" onError={handleImgError}/>
-                      </div>
-                      <div className="p-5 sm:w-3/5 flex flex-col justify-center">
-                        <p className="text-[9px] font-medium text-pink-500 tracking-[0.2em] mb-2 uppercase">Event</p>
-                        <h4 className="text-sm font-serif font-light text-slate-800 leading-relaxed mb-3 group-hover:text-pink-600 transition-colors">{ev.title}</h4>
-                        <div className="mt-auto flex items-center gap-2 text-[10px] text-slate-400 font-light tracking-widest">
-                           <i className="fa-regular fa-clock"></i> 開催中
-                        </div>
-                      </div>
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-200 group-hover:text-pink-300 transition-colors hidden sm:block">
-                        <i className="fa-solid fa-chevron-right font-light"></i>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8 text-center sm:text-left pl-0 sm:pl-2">
-                   <button onClick={() => onNavigate('ranking')} className="text-xs text-slate-500 hover:text-slate-900 tracking-widest font-light transition-colors border-b border-slate-300 hover:border-slate-900 pb-1">
-                      VIEW ALL CAMPAIGNS <i className="fa-solid fa-arrow-right-long ml-2"></i>
-                   </button>
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[500] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative overflow-hidden border border-pink-200">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400"></div>
+            <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <i className="fa-solid fa-bullhorn text-3xl text-pink-500 animate-pulse"></i>
             </div>
+            <h2 className="text-2xl font-light font-serif text-slate-800 mb-2 tracking-widest">DAILY YELL</h2>
+            <p className="text-[10px] font-medium text-pink-500 tracking-[0.2em] mb-6 uppercase">本日の無料応援チケット</p>
+            <div className="bg-slate-50 border border-slate-100 p-6 mb-8">
+              <p className="text-5xl font-timer font-light text-slate-800">+{tickets}</p>
+              <p className="text-xs text-slate-500 mt-2 font-light">毎日推しに愛を届けましょう！</p>
+            </div>
+            <button onClick={onClose} className="w-full bg-slate-900 text-white py-4 text-xs tracking-widest font-light hover:bg-pink-600 transition-colors shadow-md">
+              受け取る
+            </button>
           </div>
         </div>
       );
     };
 
-    const EventDetailView = ({ event, onBack, idolsData, onIdolSelect, onQuickVote }) => {
-      const [currentRankingTab, setCurrentRankingTab] = useState('overall');
-
-      let currentRankingData = event.rankingData[currentRankingTab] || [];
-      if (currentRankingTab === 'overall') {
-         currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
-           const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
-           return {
-             rank: index + 1,
-             idolId: idol.id,
-             name: idol.name,
-             value: `${(idol.totalVotes || 0).toLocaleString()} 票`,
-             diff: diff
-           };
-         });
-      }
-      const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
-
-      return (
-        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up">
-          <button onClick={onBack} className="mb-12 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
-            <i className="fa-solid fa-arrow-left-long"></i> BACK TO TOP
-          </button>
-          
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-serif text-slate-900 font-light mb-4">{event.title}</h2>
-            <p className="text-slate-500 text-xs md:text-sm font-light tracking-widest leading-relaxed whitespace-pre-wrap">{event.subtitle}</p>
-          </div>
-
-          <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16">
-            <div className="aspect-[21/9] overflow-hidden relative bg-slate-50">
-              <img src={event.bannerImg} className="w-full h-full object-cover opacity-90 mix-blend-multiply" onError={handleImgError} />
-            </div>
-          </div>
-          
-          <CountdownTimer endDate={event.endDate} themeColor={event.themeColor} />
-
-          <div className="mt-20 max-w-4xl mx-auto">
-             <div className="flex gap-4 overflow-x-auto pb-8 hide-scrollbar justify-center border-b border-slate-200 mb-10">
-                {RANKING_TABS.map(tab => (
-                  <button key={tab.id} onClick={() => setCurrentRankingTab(tab.id)} className={`px-5 py-2 rounded-none text-[10px] tracking-widest uppercase transition-all border ${currentRankingTab === tab.id ? `bg-slate-800 text-white border-transparent` : `bg-transparent text-slate-500 border-slate-200 hover:border-slate-400`}`}>{tab.label}</button>
-                ))}
-             </div>
-             
-             {currentRankingData.length === 0 ? <p className="text-center text-sm text-slate-500 font-light py-10">集計データがありません。</p> : (
-                <div className="space-y-2 pb-20">
-                  {currentRankingData.map((item, i) => {
-                     const idolData = idolsData.find(idl => String(idl.id) === String(item.idolId));
-                     const itemPt = parseVote(item.value);
-                     const percentage = Math.min(100, Math.max(0, (itemPt / maxPt) * 100));
-                     const isTop3 = i < 3;
-
-                     return (
-                       <div key={item.rank} onClick={() => { if(idolData) onIdolSelect(idolData) }} className={`flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-pink-50/30 transition-colors px-4 ${isTop3 ? 'bg-white shadow-sm mb-4 border' : ''}`}>
-                          <div className={`w-12 font-serif text-xl md:text-2xl font-light ${i===0?'text-amber-500':i===1?'text-slate-400':i===2?'text-orange-400':'text-slate-400'} group-hover:text-slate-800 transition-colors`}>0{item.rank}</div>
-                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
-                             <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all mix-blend-multiply" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-baseline mb-2">
-                              <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-lg truncate pr-2">{item.name}</h4>
-                              <p className={`font-timer font-light text-sm md:text-base text-slate-900 shrink-0`}>{item.value}</p>
-                            </div>
-                            <div className="w-full bg-slate-100 h-1.5 relative rounded-full overflow-hidden">
-                              <div className={`absolute top-0 left-0 h-full transition-all duration-1000 ${i===0?'bg-amber-400':i===1?'bg-slate-400':i===2?'bg-orange-400':'bg-slate-800'}`} style={{ width: `${percentage}%` }}></div>
-                            </div>
-                          </div>
-                          <div className="ml-4 sm:ml-8 flex items-center gap-4 w-24 sm:w-32 justify-end shrink-0">
-                             {currentRankingTab !== 'producers' ? (
-                                <div className="flex flex-col items-end gap-2">
-                                  {item.diff && item.diff !== "-" && <span className="hidden sm:block text-[9px] font-medium tracking-widest text-pink-400 uppercase text-right">{item.diff}</span>}
-                                  <button onClick={(e) => { e.stopPropagation(); if(idolData) onQuickVote(e, idolData); }} className="bg-slate-900 text-white hover:bg-pink-600 px-4 py-1.5 rounded-none text-[9px] tracking-widest font-light transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap">
-                                    <i className="fa-solid fa-heart"></i> VOTE
-                                  </button>
-                                </div>
-                             ) : (
-                                <i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors font-light"></i>
-                             )}
-                          </div>
-                       </div>
-                     );
-                  })}
-                </div>
-             )}
-          </div>
-        </div>
-      );
-    };
-    
     const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false }) => {
       const [isLogin, setIsLogin] = useState(true);
       const [email, setEmail] = useState('');
@@ -555,12 +368,10 @@
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[500] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-none overflow-hidden max-w-sm w-full shadow-2xl border border-slate-100 relative">
             <button onClick={onClose} disabled={loading} className="absolute right-4 top-4 text-slate-400 hover:text-slate-800 transition-colors z-10"><i className="fa-solid fa-xmark text-lg"></i></button>
-            
             <div className="flex border-b border-slate-100">
               <button onClick={() => setIsLogin(true)} disabled={loading} className={`flex-1 py-4 text-xs font-medium tracking-widest uppercase transition-colors ${isLogin ? 'bg-white text-slate-800 border-b-2 border-slate-800' : 'bg-slate-50 text-slate-400'}`}>Log In</button>
               <button onClick={() => setIsLogin(false)} disabled={loading} className={`flex-1 py-4 text-xs font-medium tracking-widest uppercase transition-colors ${!isLogin ? 'bg-white text-slate-800 border-b-2 border-slate-800' : 'bg-slate-50 text-slate-400'}`}>Sign Up</button>
             </div>
-
             <div className="p-8">
               <h3 className="text-2xl font-light font-serif text-slate-800 mb-6 text-center">{isAdminOnly ? 'Admin Access' : (isLogin ? 'Welcome Back' : 'Create Account')}</h3>
               {isAdminOnly && <p className="text-[10px] text-center text-slate-400 mb-4">管理者用メールアドレスでログインしてください</p>}
@@ -605,25 +416,13 @@
       const handleAddIdol = async (e) => {
         e.preventDefault();
         if(!newIdol.name || !newIdol.loginEmail) return showToast("名前とログインEmailは必須です");
-        
         const { collection, addDoc } = window.FirebaseHelper;
         const db = window.FirebaseDbRef;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
         try {
           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'idols'), {
-            ...newIdol,
-            type: "新規エントリー",
-            issue: "未掲載",
-            isOffMelty: false,
-            isRookie: true,
-            story: "新しい物語がここから始まります。",
-            titleBadge: "注目",
-            producerCount: "0",
-            totalVotes: 0,
-            wishlist: [],
-            receivedGifts: [],
-            createdAt: new Date().toISOString()
+            ...newIdol, type: "新規エントリー", issue: "未掲載", isOffMelty: false, isRookie: true,
+            story: "新しい物語がここから始まります。", titleBadge: "注目", producerCount: "0", totalVotes: 0, wishlist: [], receivedGifts: [], createdAt: new Date().toISOString()
           });
           showToast("アイドルを新規追加しました");
           setNewIdol({ name: '', loginEmail: '', profileImage: '', catchphrase: '', pref: '', style: '', birthday: '' });
@@ -641,9 +440,7 @@
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'idols', String(id)));
             showToast("アイドルを削除しました");
             setDeleteId(null);
-          } catch(e) {
-            showToast("削除エラー");
-          }
+          } catch(e) { showToast("削除エラー"); }
         } else {
           setDeleteId(id);
           setTimeout(() => setDeleteId(null), 3000);
@@ -653,75 +450,42 @@
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 pt-32 animate-fade-in">
           <SectionTitle title="ADMIN" subtitle="管理者コントロールパネル" />
-          
           <div className="bg-white p-8 shadow-sm border border-slate-200 mb-12">
             <h3 className="text-lg font-serif mb-6 text-slate-800">アイドルの新規追加</h3>
             <form onSubmit={handleAddIdol} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-[10px] text-slate-500 mb-1">名前 *</label>
-                <input required type="text" value={newIdol.name} onChange={e=>setNewIdol({...newIdol, name: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-500 mb-1">ログイン用Email * (IdolログインID)</label>
-                <input required type="email" value={newIdol.loginEmail} onChange={e=>setNewIdol({...newIdol, loginEmail: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-500 mb-1">プロフィール画像 (写真/動画)</label>
-                <input type="file" accept="image/*,video/mp4" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer" />
-                {uploading && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
-                {newIdol.profileImage && !uploading && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-500 mb-1">キャッチフレーズ</label>
-                <input type="text" value={newIdol.catchphrase} onChange={e=>setNewIdol({...newIdol, catchphrase: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" />
-              </div>
+              <div><label className="block text-[10px] text-slate-500 mb-1">名前 *</label><input required type="text" value={newIdol.name} onChange={e=>setNewIdol({...newIdol, name: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" /></div>
+              <div><label className="block text-[10px] text-slate-500 mb-1">ログイン用Email *</label><input required type="email" value={newIdol.loginEmail} onChange={e=>setNewIdol({...newIdol, loginEmail: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" /></div>
+              <div><label className="block text-[10px] text-slate-500 mb-1">プロフィール画像</label><input type="file" accept="image/*,video/mp4" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-slate-100 file:text-slate-700 cursor-pointer" /></div>
+              <div><label className="block text-[10px] text-slate-500 mb-1">キャッチフレーズ</label><input type="text" value={newIdol.catchphrase} onChange={e=>setNewIdol({...newIdol, catchphrase: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400" /></div>
               <div>
                 <label className="block text-[10px] text-slate-500 mb-1">出身地</label>
                 <select value={newIdol.pref} onChange={e=>setNewIdol({...newIdol, pref: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white">
-                  <option value="">選択してください</option>
-                  {PREFECTURES.map(p => <option key={p} value={p}>{p}</option>)}
+                  <option value="">選択してください</option>{PREFECTURES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] text-slate-500 mb-1">スタイル</label>
                 <select value={newIdol.style} onChange={e=>setNewIdol({...newIdol, style: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white">
-                  <option value="">選択してください</option>
-                  {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                  <option value="">選択してください</option>{STYLES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-[10px] text-slate-500 mb-1">生年月日</label>
-                <input type="date" value={newIdol.birthday} onChange={e=>setNewIdol({...newIdol, birthday: e.target.value})} className="w-full border-b border-slate-300 py-2 text-sm focus:outline-none focus:border-pink-400 bg-white" />
-              </div>
-              <div className="md:col-span-2 text-right mt-4">
-                <button type="submit" disabled={uploading} className="bg-slate-900 text-white px-8 py-3 text-[10px] tracking-widest hover:bg-slate-800 transition-colors uppercase disabled:bg-slate-400">追加する</button>
-              </div>
+              <div className="md:col-span-2 text-right mt-4"><button type="submit" disabled={uploading} className="bg-slate-900 text-white px-8 py-3 text-[10px] tracking-widest hover:bg-slate-800 transition-colors uppercase disabled:bg-slate-400">追加する</button></div>
             </form>
           </div>
-
           <div className="bg-white p-8 shadow-sm border border-slate-200">
             <h3 className="text-lg font-serif mb-6 text-slate-800">登録済みアイドル一覧</h3>
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-4">
               {idolsData.map(idol => (
                 <div key={idol.id} className="flex items-center justify-between border-b border-slate-100 py-4">
-                  <div className="flex items-center gap-4">
-                    <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-12 h-12 object-cover rounded-full bg-slate-100" />
-                    <div>
-                      <div className="font-medium text-slate-800">{idol.name}</div>
-                      <div className="text-[10px] text-slate-400">{idol.loginEmail} | {idol.totalVotes || 0} 票</div>
-                    </div>
-                  </div>
-                  <button onClick={() => handleDelete(idol.id)} className={`px-4 py-2 text-[10px] tracking-widest text-white transition-colors ${deleteId === idol.id ? 'bg-red-600' : 'bg-slate-300 hover:bg-red-500'}`}>
-                    {deleteId === idol.id ? '本当に削除？' : '削除'}
-                  </button>
+                  <div className="flex items-center gap-4"><MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-12 h-12 object-cover rounded-full bg-slate-100" /><div><div className="font-medium text-slate-800">{idol.name}</div><div className="text-[10px] text-slate-400">{idol.loginEmail} | {idol.totalVotes || 0} 票</div></div></div>
+                  <button onClick={() => handleDelete(idol.id)} className={`px-4 py-2 text-[10px] tracking-widest text-white transition-colors ${deleteId === idol.id ? 'bg-red-600' : 'bg-slate-300 hover:bg-red-500'}`}>{deleteId === idol.id ? '本当に削除？' : '削除'}</button>
                 </div>
               ))}
-              {idolsData.length === 0 && <p className="text-sm text-slate-500 py-8 text-center border border-dashed border-slate-300">現在登録されているアイドルはいません。</p>}
             </div>
           </div>
         </div>
       );
-    }
+    };
 
     const VoteModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
@@ -731,9 +495,7 @@
               <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
               <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
               <p className="text-xs text-slate-500 mb-8 leading-loose font-light">プロデューサー登録（無料）で、<br/>毎日<span className="text-pink-500 font-medium">「3票の無料投票券」</span>を進呈いたします。</p>
-              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
-                REGISTER & VOTE
-              </button>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">REGISTER & VOTE</button>
               <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
             </div>
           </div>
@@ -741,40 +503,24 @@
       }
 
       const handleVote = (amount) => {
-        if (userData.freeTickets >= amount) {
-          updateTickets(-amount, 0); // consume tickets
-          onSuccess(amount, '無料投票');
-          onClose();
-        } else {
-          showToast("無料票が不足しています。");
-        }
+        if (userData.freeTickets >= amount) { updateTickets(-amount, 0); onSuccess(amount, '無料投票'); onClose(); } 
+        else { showToast("無料票が不足しています。"); }
       };
 
       return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
-            <div className="bg-white border-b border-slate-100 p-6 text-center relative">
-              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Voting Room</h3>
-              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative"><h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Voting Room</h3><button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button></div>
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
               <div className="flex items-center gap-5 mb-10 bg-white p-4 rounded-none border border-slate-100 shadow-sm">
                 <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover border border-slate-100" />
-                <div>
-                  <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p>
-                  <h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4>
-                </div>
+                <div><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-1 uppercase">Target</p><h4 className="font-light font-serif text-lg text-slate-800 leading-none">{idol.name}</h4></div>
               </div>
-
               <div className="mb-6">
                 <div className="bg-white border border-slate-200 p-8 rounded-none text-center shadow-sm relative">
                   <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Daily Free Votes <span className="text-pink-400 lowercase text-[9px] tracking-normal">(3/day)</span></p>
-                  <p className="text-xs text-slate-500 mb-6 font-light">毎日ログインして、推しに愛を届けましょう。</p>
                   <div className="text-5xl font-light font-timer text-slate-800 mb-8">{userData.freeTickets}</div>
-                  <button onClick={() => handleVote(1)} disabled={userData.freeTickets < 1} className="w-full py-4 bg-slate-800 text-white text-xs tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors hover:bg-slate-900">
-                    VOTE NOW (1票)
-                  </button>
+                  <button onClick={() => handleVote(1)} disabled={userData.freeTickets < 1} className="w-full py-4 bg-slate-800 text-white text-xs tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors hover:bg-slate-900">VOTE NOW (1票)</button>
                 </div>
               </div>
             </div>
@@ -791,104 +537,24 @@
               <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
               <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
               <p className="text-xs text-slate-500 mb-8 leading-loose font-light">ギフト・雑誌を購入して応援するには、<br/>プロデューサー登録（無料）が必要です。</p>
-              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
-                REGISTER
-              </button>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">REGISTER</button>
               <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
             </div>
           </div>
         );
       }
 
-      const handleBuyGift = (name, price, votes) => {
-        onSuccess(votes, `ギフト購入(${name})`);
-        onClose();
-      };
-
       return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
-            <div className="bg-white border-b border-slate-100 p-6 text-center relative z-10">
-              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Gift & Magazine</h3>
-              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
+            <div className="bg-white border-b border-slate-100 p-6 text-center relative z-10"><h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Gift & Magazine</h3><button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button></div>
             <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
-              <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">
-                ささやかなギフトから、公式プロデューサーの称号まで。<br/>あなたの特別な想いを大量の「票」に変えて届けます。
-              </p>
-              
               <div className="space-y-4">
                 <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
-                  <div className="flex items-center gap-5">
-                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4>
-                      <p className="text-[10px] text-slate-400 font-medium tracking-wider">+120 票</p>
-                    </div>
-                  </div>
-                  <button onClick={() => handleBuyGift('応援メガホン', 100, 120)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
-                  <div className="flex items-center gap-5">
-                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">フラワースタンド</h4>
-                      <p className="text-[10px] text-pink-400 font-medium tracking-wider">+500 票</p>
-                    </div>
-                  </div>
-                  <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
-                </div>
-
-                <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
-                  <div className="flex items-center gap-5 pl-3">
-                    <div className="text-2xl opacity-90 grayscale group-hover:grayscale-0 transition-all">🎂</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">特大バースデーケーキ</h4>
-                      <p className="text-[10px] text-slate-500 font-medium tracking-wider">+3,000 票</p>
-                    </div>
-                  </div>
-                  <button onClick={() => handleBuyGift('特大バースデーケーキ', 2000, 3000)} className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-slate-700 transition-colors">¥2,000</button>
+                  <div className="flex items-center gap-5"><div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div><div><h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4><p className="text-[10px] text-slate-400 font-medium tracking-wider">+120 票</p></div></div>
+                  <button onClick={() => {onSuccess(120, 'ギフト購入(応援メガホン)'); onClose();}} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
                 </div>
               </div>
-
-              <div className="border-t border-slate-200 pt-8 mt-8">
-                <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Official Magazine</h5>
-                <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を購入して大量の票と公式プロデューサーの称号を獲得しましょう。</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 1冊', 980, 1800)}>
-                    <div className="flex gap-4 items-center">
-                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
-                      <div>
-                        <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
-                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +1,800 票</p>
-                        <p className="text-[8px] text-slate-500 mt-1">特典: 公式プロデューサーとしてWEB掲載</p>
-                      </div>
-                    </div>
-                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥980</button>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors relative cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 5冊セット', 2490, 4000)}>
-                    <div className="flex gap-4 items-center pl-1">
-                      <div className="relative w-12 h-14">
-                        <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
-                        <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
-                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
-                      </div>
-                      <div>
-                        <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
-                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +4,000 票</p>
-                        <p className="text-[8px] text-slate-500 mt-1">特典: WEB＆雑誌の誌面に名前掲載</p>
-                      </div>
-                    </div>
-                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥2,490</button>
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
@@ -900,41 +566,24 @@
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
             <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
-              <i className="fa-solid fa-shirt text-3xl text-slate-300 mb-6"></i>
               <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
               <p className="text-xs text-slate-500 mb-8 leading-loose font-light">衣装を提供して推しを支援するには、<br/>プロデューサー登録（無料）が必要です。</p>
-              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
-                REGISTER
-              </button>
+              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">REGISTER</button>
               <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
             </div>
           </div>
         );
       }
 
-      const handleProvideOutfit = (item) => {
-        onSuccess(item.votes, '衣装提供', item.id);
-        onClose();
-      };
-
       return (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-[#fafafa] rounded-none overflow-hidden max-w-4xl w-full shadow-2xl relative border border-slate-200">
             <div className="bg-white p-6 md:p-8 text-center relative border-b border-slate-100 z-10 flex flex-col items-center justify-center">
-              <img src="./off_melty_logo.png" className="h-6 mx-auto mb-3 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-              <h3 style={{display: 'none'}} className="font-serif font-light text-slate-800 text-xl mb-2 tracking-wide">Off-Melty</h3>
+              <h3 className="font-serif font-light text-slate-800 text-xl mb-2 tracking-wide">Off-Melty</h3>
               <p className="text-slate-400 text-[9px] font-medium tracking-[0.3em] uppercase">Lookbook / Outfit Provision</p>
               <button onClick={onClose} className="absolute right-6 top-8 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-xl"></i></button>
             </div>
-
             <div className="p-6 md:p-10 max-h-[75vh] overflow-y-auto hide-scrollbar relative">
-              <div className="text-center mb-10">
-                 <p className="text-xs text-slate-500 leading-loose font-light max-w-xl mx-auto">
-                   最新のコレクションから、彼女にふさわしい一着をセレクト。<br/>
-                   提供された衣装は大量の「票」として換算され、ランキングを強力に後押しします。
-                 </p>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 {OFF_MELTY_CATALOG.map(item => {
                   const isReceived = idol.receivedGifts?.find(g => g.itemId === item.id);
@@ -942,30 +591,13 @@
                     <div key={item.id} className="bg-transparent flex flex-col group relative">
                       <div className="aspect-[3/4] bg-slate-100 overflow-hidden relative mb-4 border border-slate-200">
                         <img src={item.img} className={`w-full h-full object-cover transition-transform duration-1000 ${isReceived ? 'grayscale opacity-50' : 'group-hover:scale-105'} mix-blend-multiply`} onError={handleImgError} />
-                        
                         {!isReceived && (
                           <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <button onClick={() => handleProvideOutfit(item)} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-6 py-3 hover:bg-pink-600 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300">
-                              SELECT
-                            </button>
+                            <button onClick={() => {onSuccess(item.votes, '衣装提供', item.id); onClose();}} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-6 py-3 hover:bg-pink-600 transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300">SELECT</button>
                           </div>
                         )}
-
-                        {isReceived && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                            <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1 shadow-md rotate-[-10deg]">
-                              SOLD OUT
-                            </div>
-                          </div>
-                        )}
-                        
-                        {!isReceived && item.stock !== null && (
-                          <div className="absolute top-3 left-3 bg-white text-slate-800 border border-slate-200 text-[8px] font-medium px-2 py-1 tracking-widest shadow-sm">
-                            ONLY {item.stock} LEFT
-                          </div>
-                        )}
+                        {isReceived && <div className="absolute inset-0 flex items-center justify-center bg-white/50"><div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1 shadow-md rotate-[-10deg]">SOLD OUT</div></div>}
                       </div>
-                      
                       <h4 className="font-serif font-light text-sm text-slate-800 line-clamp-2 mb-2 leading-relaxed">{item.name}</h4>
                       <div className="flex justify-between items-baseline mt-auto">
                         <p className="text-xs text-slate-500 font-light tracking-wide">¥{item.price}</p>
@@ -981,790 +613,24 @@
       );
     };
 
-    const ProducerMyPage = ({ user, userData, idolsData, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
-      const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
-      const [profileImage, setProfileImage] = useState(userData.profileImage || "");
-      const [message, setMessage] = useState(userData.message || "");
-      const [oshiId, setOshiId] = useState(userData.oshiId || "");
-      const [uploading, setUploading] = useState(false);
-
-      useEffect(() => {
-        setName(userData.name || "ゲスト プロデューサー");
-        setProfileImage(userData.profileImage || "");
-        setMessage(userData.message || "");
-        setOshiId(userData.oshiId || "");
-      }, [userData]);
-
-      const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setUploading(true);
-        try {
-          const url = await uploadFile(file);
-          setProfileImage(url);
-          showToast("画像がアップロードされました");
-        } catch (err) {
-          showToast("アップロードに失敗しました");
-        }
-        setUploading(false);
-      };
-
-      const handleSave = async (e) => {
-        e.preventDefault();
-        const result = await onUpdateProfile({ name, profileImage, message, oshiId });
-        if (result && !result.success) {
-           showToast(`保存エラー: 権限(ルール)の設定を確認してください。`);
-        } else {
-           showToast("プロフィールを保存しました。");
-        }
-      };
-
-      const oshiIdol = idolsData.find(i => String(i.id) === String(oshiId));
-
-      return (
-        <div className="animate-fade-in-up pb-0">
-          <div className="max-w-5xl mx-auto px-4 py-12 pb-24">
-            <SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div className="md:col-span-1 space-y-6">
-                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-slate-800"></div>
-                  <div className="w-24 h-24 rounded-full mx-auto bg-slate-50 flex items-center justify-center mb-6 overflow-hidden border border-slate-200">
-                    {profileImage ? (
-                      <img src={profileImage} alt="Profile" className="w-full h-full object-cover" onError={handleImgError} />
-                    ) : (
-                      <i className="fa-solid fa-user-tie text-3xl text-slate-300"></i>
-                    )}
-                  </div>
-                  <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name}</h3>
-                  <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{user?.email || 'demo@example.com'}</p>
-                  {message && (
-                    <p className="text-xs text-slate-500 font-light italic mb-6 leading-relaxed">"{message}"</p>
-                  )}
-                  
-                  <div className="border-t border-slate-100 pt-6">
-                    <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">My Oshi</p>
-                    {oshiIdol ? (
-                      <div className="flex items-center justify-center gap-3 cursor-pointer group" onClick={() => onIdolSelect(oshiIdol)}>
-                        <MediaDisplay src={oshiIdol.profileImage} fallbackSrc={`./default_idol.png`} className="w-8 h-8 rounded-full object-cover border border-slate-200 group-hover:border-pink-300 transition-colors" />
-                        <span className="font-light text-slate-800 text-sm group-hover:text-pink-600 transition-colors">{oshiIdol.name}</span>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-400 font-light">未設定</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="md:col-span-2 space-y-10">
-                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Dashboard</h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-slate-50 p-6 text-center border border-slate-100">
-                      <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-3">Daily Free Votes</p>
-                      <p className="text-4xl font-timer font-light text-slate-800">{userData.freeTickets} <span className="text-sm font-sans font-light text-slate-400">票</span></p>
-                    </div>
-                    <div className="bg-pink-50/50 p-6 text-center border border-pink-100">
-                      <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-3">Total Votes</p>
-                      <p className="text-4xl font-timer font-light text-pink-600">{userData.totalPts?.toLocaleString() || 0} <span className="text-sm font-sans font-light text-pink-400/70">票</span></p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Edit Profile</h4>
-                  
-                  <form onSubmit={handleSave} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Nickname (プロデューサー名)</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800 text-sm" placeholder="名無しプロデューサー" />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Image (写真)</label>
-                        <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer border-b border-slate-300 pb-2" />
-                        {uploading && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
-                        {profileImage && !uploading && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">My Oshi (推しメン設定)</label>
-                      <select value={oshiId} onChange={(e) => setOshiId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 py-3 px-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-slate-800 text-sm appearance-none">
-                        <option value="">-- 選択してください --</option>
-                        {idolsData.map(idol => (
-                          <option key={idol.id} value={idol.id}>{idol.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Short Message (一言メッセージ)</label>
-                      <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="3" className="w-full bg-slate-50 border border-slate-200 p-3 focus:outline-none focus:border-slate-400 transition-colors font-light text-sm resize-none" placeholder="推しへの想いや意気込みを..."></textarea>
-                    </div>
-
-                    <div className="pt-4 text-right">
-                      <button type="submit" disabled={uploading} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-10 py-4 hover:bg-slate-800 transition-colors uppercase disabled:bg-slate-400">Save Changes</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          <CrossNavSection idolsData={idolsData} currentIdolId={null} onIdolSelect={onIdolSelect} onNavigate={onNavigate} />
-        </div>
-      );
-    };
-
-    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
-      const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
-      const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
-      const [story, setStory] = useState(idolData?.story || "");
-      const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
-      const [wishlist, setWishlist] = useState(idolData?.wishlist || []);
-      
-      const [birthday, setBirthday] = useState(idolData?.birthday || "");
-      const [hometown, setHometown] = useState(idolData?.hometown || "");
-      const [specialSkill, setSpecialSkill] = useState(idolData?.specialSkill || "");
-
-      const [uploading, setUploading] = useState(false);
-      
-      const [timelineText, setTimelineText] = useState("");
-      const [timelineImg, setTimelineImg] = useState("");
-      const [uploadingTimeline, setUploadingTimeline] = useState(false);
-
-      useEffect(() => {
-        setProfileImage(idolData?.profileImage || "");
-        setCatchphrase(idolData?.catchphrase || "");
-        setStory(idolData?.story || "");
-        setIsStreaming(idolData?.isStreaming || false);
-        setWishlist(idolData?.wishlist || []);
-        
-        setBirthday(idolData?.birthday || "");
-        setHometown(idolData?.hometown || "");
-        setSpecialSkill(idolData?.specialSkill || "");
-      }, [idolData]);
-
-      if (!idolData) return <div className="text-center py-20 text-slate-500 font-light">Loading or Idol not found...</div>;
-
-      const handleFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setUploading(true);
-        try {
-          const url = await uploadFile(file);
-          setProfileImage(url);
-          showToast("メディアがアップロードされました");
-        } catch (err) {
-          showToast("アップロードに失敗しました");
-        }
-        setUploading(false);
-      };
-
-      const handleTimelineFileChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setUploadingTimeline(true);
-        try {
-          const url = await uploadFile(file);
-          setTimelineImg(url);
-          showToast("画像がアップロードされました");
-        } catch (err) {
-          showToast("アップロードに失敗しました");
-        }
-        setUploadingTimeline(false);
-      };
-
-      const handleSaveProfile = async (e) => {
-        e.preventDefault();
-        const result = await onUpdateProfile({ 
-          profileImage,
-          catchphrase, 
-          story, 
-          isStreaming,
-          wishlist,
-          birthday,
-          hometown,
-          specialSkill
-        });
-        
-        if (result && !result.success) {
-          showToast(`保存エラー: 権限(ルール)の設定を確認してください。`);
-        } else {
-          showToast("プロフィール設定を更新しました。");
-        }
-      };
-
-// ▼▼▼ 既存のコード（ここを書き換えます） ▼▼▼
-      const handlePostTimelineSubmit = async (e) => {
-        e.preventDefault();
-        if(!timelineText) return;
-        
-        // 🌟🌟🌟 isSecret を追加して送るように書き換え 🌟🌟🌟
-        await onPostTimeline({ idolId: idolData.id, text: timelineText, img: timelineImg, isSecret: isSecretPost });
-        
-        showToast("活動報告をタイムラインに投稿しました！");
-        setTimelineText("");
-        setTimelineImg("");
-        setIsSecretPost(false); // 送信後にリセット
-      };
-
-      const toggleWishlist = (itemId) => {
-        setWishlist(prev => 
-          prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
-        );
-      };
-
-      return (
-        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
-          <SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-pink-400"></div>
-                
-                <div className="w-32 h-32 rounded-full mx-auto overflow-hidden mb-6 border border-slate-100 shadow-inner relative group bg-slate-50">
-                  <MediaDisplay src={profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i className="fa-solid fa-camera text-white"></i>
-                  </div>
-                </div>
-                
-                {isStreaming && (
-                  <div className="inline-flex items-center gap-1.5 bg-red-50 text-red-500 border border-red-100 text-[9px] font-bold px-3 py-1 tracking-widest uppercase mb-4 shadow-sm">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span> ON AIR
-                  </div>
-                )}
-
-                <h3 className="font-serif text-xl font-light text-slate-800 mb-2">{idolData.name}</h3>
-                <p className="text-xs text-pink-500 font-light italic mb-2 px-2 leading-tight">"{catchphrase}"</p>
-                <div className="mt-4 border-t border-slate-100 pt-4 flex flex-col gap-2 items-center">
-                  <span className="text-[10px] text-slate-800 font-timer bg-pink-50 border border-pink-100 px-3 py-1">{idolData.totalVotes || 0} 票</span>
-                  <p className="text-[9px] text-slate-400 tracking-widest uppercase">Moshi-Ai IDOL ACCOUNT</p>
-                </div>
-              </div>
-
-              {/* 届いたプレゼント一覧 */}
-              <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                <div className="mb-6">
-                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-4 h-px bg-slate-300"></span> Received Gifts</h4>
-                </div>
-                <div className="space-y-4 max-h-64 overflow-y-auto pr-2">
-                  {idolData.receivedGifts && idolData.receivedGifts.length > 0 ? idolData.receivedGifts.map((gift, i) => {
-                    const item = OFF_MELTY_CATALOG.find(c => c.id === gift.itemId);
-                    return (
-                      <div key={i} className="flex items-center gap-3 p-3 border border-pink-100 bg-pink-50/30">
-                        <img src={item?.img || './default_gift.png'} className="w-10 h-10 object-cover border border-slate-200 bg-white" />
-                        <div>
-                          <p className="text-[9px] text-pink-500 font-bold mb-0.5">🎁 {gift.producerName} P より</p>
-                          <p className="text-xs font-medium text-slate-800 line-clamp-1">{item?.name || '素敵なプレゼント'}</p>
-                          <p className="text-[8px] text-slate-400">{new Date(gift.timestamp).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    )
-                  }) : <p className="text-xs text-slate-400">まだプレゼントは届いていません。</p>}
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-3 space-y-10">
-              
-              {/* ▼▼▼ 新機能：Financial Insights（報酬管理UI）ここから ▼▼▼ */}
-              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3">
-                  <span className="w-6 h-px bg-slate-300"></span> Financial Insights <span className="text-[9px] text-pink-400 normal-case">活動支援金レポート</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-6 bg-slate-50 border border-slate-100">
-                    <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">現在のプロデュース予算</p>
-                    {/* ※モックアップ計算：1票＝12円と仮定した表示です。実際はFirebase Functionsで計算した値を参照します */}
-                    <p className="text-3xl font-timer font-light text-slate-800">¥{((idolData.totalVotes || 0) * 12).toLocaleString()}</p>
-                    <p className="text-[9px] text-slate-400 mt-2">※源泉徴収税（10.21%）控除前の目安</p>
-                  </div>
-                  
-                  <div className="p-6 bg-pink-50/30 border border-pink-100">
-                    <p className="text-[10px] text-pink-400 font-medium tracking-widest mb-2 uppercase">次回お受取り予定</p>
-                    <p className="text-xl font-light text-slate-800">2026.04.25</p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                      <span className="text-[10px] text-slate-500">振込申請可能まであと少し</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 bg-white border border-slate-100">
-                    <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">プロデュース効率</p>
-                    <p className="text-xl font-light text-slate-800">
-                      {((idolData.totalVotes || 0) / Math.max(1, (idolData.receivedGifts?.length || 1))).toFixed(1)} 
-                      <span className="text-xs text-slate-400 ml-1">PP / Gift</span>
-                    </p>
-                    <p className="text-[9px] text-slate-500 mt-2">ギフト1件あたりの平均獲得票</p>
-                  </div>
-                </div>
-              </div>
-              {/* ▲▲▲ 新機能：Financial Insights（報酬管理UI）ここまで ▲▲▲ */}
-
-              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
-                <form onSubmit={handleSaveProfile} className="space-y-6">
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Profile Media (写真/動画の変更)</label>
-                      <input type="file" accept="image/*,video/mp4" onChange={handleFileChange} disabled={uploading} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 transition-colors cursor-pointer border-b border-slate-300 pb-2" />
-                      {uploading && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
-                      {profileImage && !uploading && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Live Status (配信中ステータス)</label>
-                      <button type="button" onClick={() => setIsStreaming(!isStreaming)} className={`w-full py-2.5 text-xs tracking-widest font-light transition-all border ${isStreaming ? 'bg-red-50 text-red-600 border-red-200 shadow-inner' : 'bg-transparent text-slate-500 border-slate-300 hover:border-slate-400'}`}>
-                        {isStreaming ? '🔴 配信中 (ON AIR)' : '⚪️ オフライン (OFF)'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Catchphrase (キャッチフレーズ)</label>
-                    <input type="text" value={catchphrase} onChange={(e) => setCatchphrase(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Birthday (生年月日)</label>
-                      <input type="text" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: 2005.12.25" />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Hometown (出身地)</label>
-                      <input type="text" value={hometown} onChange={(e) => setHometown(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: 東京都" />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Specialty (特技)</label>
-                      <input type="text" value={specialSkill} onChange={(e) => setSpecialSkill(e.target.value)} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-pink-400 transition-colors font-light text-sm" placeholder="例: クラシックバレエ" />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Her Story (私の物語 / 自己紹介)</label>
-                    <textarea value={story} onChange={(e) => setStory(e.target.value)} rows="5" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none leading-loose"></textarea>
-                  </div>
-                  
-                  <div className="text-right pt-4">
-                    <button type="submit" disabled={uploading} className="bg-slate-900 text-white text-[10px] tracking-widest font-light px-10 py-4 hover:bg-pink-600 transition-colors uppercase disabled:bg-slate-400">Update Profile & Wishlist</button>
-                  </div>
-                </form>
-              </div>
-
-              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                <div className="mb-8 flex justify-between items-end">
-                  <div>
-                    <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Outfit Wishlist</h4>
-                    <p className="text-[10px] text-slate-400 font-light">カタログから「欲しい衣装」を選んでアピールしましょう。</p>
-                  </div>
-                  <button onClick={handleSaveProfile} className="text-[10px] text-pink-500 font-medium tracking-widest border-b border-pink-500 pb-0.5 hover:text-pink-600">保存する</button>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {OFF_MELTY_CATALOG.map(item => {
-                    const isSelected = wishlist.includes(item.id);
-                    const isReceived = idolData.receivedGifts?.find(g => g.itemId === item.id);
-
-                    return (
-                      <div key={item.id} onClick={() => !isReceived && toggleWishlist(item.id)} className={`relative ${isReceived ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'} group border transition-all ${isSelected ? 'border-pink-400 shadow-md ring-1 ring-pink-100' : 'border-slate-100 hover:border-slate-300'}`}>
-                        <div className="aspect-[3/4] bg-slate-50 overflow-hidden relative">
-                          <img src={item.img} className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? '' : 'grayscale-[20%] group-hover:grayscale-0'} mix-blend-multiply`} onError={handleImgError} />
-                          {isSelected && !isReceived && (
-                            <div className="absolute top-2 right-2 bg-pink-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md">
-                              <i className="fa-solid fa-check text-xs"></i>
-                            </div>
-                          )}
-                          {isReceived && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                               <div className="bg-pink-500 text-white text-[10px] font-bold px-2 py-1 shadow-md rotate-[-10deg]">獲得済</div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-2 text-center bg-white">
-                          <h5 className="font-light text-[10px] text-slate-700 line-clamp-1">{item.name}</h5>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
-                <div className="mb-8">
-                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> New Post</h4>
-                  <p className="text-[10px] text-slate-400 font-light">プロデューサーへ向けて、日々の活動や感謝を投稿しましょう。</p>
-                </div>
-
-                <form onSubmit={handlePostTimelineSubmit} className="space-y-6">
-                  <div>
-                    <textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="今日はどんな一日でしたか？..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
-                  </div>
-                  <div className="flex items-center gap-2 bg-pink-50/50 p-3 border border-pink-100">
-                    <input type="checkbox" id="secretPost" checked={isSecretPost} onChange={(e) => setIsSecretPost(e.target.checked)} className="accent-pink-500 w-4 h-4" />
-                    <label htmlFor="secretPost" className="text-[10px] text-slate-600 font-medium cursor-pointer tracking-wider">
-                      シークレット投稿にする <span className="text-pink-500 font-light">（累計100票以上のプロデューサー限定公開）</span>
-                    </label>
-                  </div>
-                  <div>
-                    <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Image Upload (写真添付)</label>
-                    <input type="file" accept="image/*" onChange={handleTimelineFileChange} disabled={uploadingTimeline} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-[10px] file:font-medium file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 transition-colors cursor-pointer border-b border-slate-300 pb-2" />
-                    {uploadingTimeline && <p className="text-[9px] text-pink-500 mt-1">アップロード中...</p>}
-                    {timelineImg && !uploadingTimeline && <p className="text-[9px] text-green-500 mt-1">アップロード完了</p>}
-                  </div>
-                  <div className="text-right pt-2">
-                    <button type="submit" disabled={!timelineText || uploadingTimeline} className="bg-pink-500 text-white text-[10px] tracking-widest font-light px-12 py-4 hover:bg-pink-600 transition-colors uppercase disabled:bg-slate-300">Post Now</button>
-                  </div>
-                </form>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-
-
-
-
-    const IdolRecruitLP = ({ onBack }) => {
-      return (
-        <div className="max-w-5xl mx-auto px-4 py-16 animate-fade-in-up pb-32 pt-32 text-center">
-          <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none mx-auto">
-            <i className="fa-solid fa-arrow-left-long"></i> BACK TO HOME
-          </button>
-
-          <div className="bg-white border border-pink-200 shadow-2xl p-10 md:p-20 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400"></div>
-            
-            <h1 className="text-3xl md:text-5xl font-serif text-slate-900 leading-tight mb-8 tracking-widest">
-              「もしも」が、<br className="md:hidden" />今日から「現実」に。
-            </h1>
-            <p className="text-sm md:text-lg text-pink-500 tracking-widest mb-12 font-medium">あなたの夢、ここから始まる。</p>
-            
-            {/* ここにLP用のメインのコンテンツを作り込んでいきます */}
-            <div className="aspect-video bg-pink-50 border border-pink-100 flex items-center justify-center mb-12">
-              <span className="text-pink-400 tracking-widest font-light text-xs">※ここに詳細なLPコンテンツを作ります</span>
-            </div>
-
-            <p className="text-slate-600 leading-loose font-light mb-12 max-w-2xl mx-auto text-sm md:text-base">
-              王道Kawaii ＆ Kawaii Laboスタイル！<br/>
-              未経験でも大丈夫。私たちと一緒に、新しい物語を作りませんか？
-            </p>
-
-            <a href="https://line.me" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-4 bg-[#06C755] hover:bg-[#05b34c] text-white px-12 py-5 rounded-full font-bold tracking-widest transition-all duration-300 shadow-[0_10px_20px_rgba(6,199,85,0.3)] hover:-translate-y-1 text-sm md:text-base">
-              <i className="fa-brands fa-line text-2xl"></i> LINEで無料エントリー
-            </a>
-          </div>
-        </div>
-      );
-    };
-
-
-    const IdolRecruitLPFirstView = ({ onLineEntry }) => {
-      // 生成画像のURL（ここに私が生成した画像のURLが入ります）
-      const mainImageUrl = 'uploaded:uploaded_id_recruitment_lp_top_v1.png';
-
-      return (
-        <section id="recruit-lp-top" class="w-full h-screen bg-cover bg-center bg-no-repeat relative flex flex-col justify-end items-center pb-20 px-4 md:px-10 overflow-hidden" style="background-image: url('${mainImageUrl}')">
-          {/* キラキラしたエフェクト（CSSで生成） */}
-          <div className="absolute inset-0 sparkle-effect"></div>
-
-          {/* キャッチコピー（HTMLテキストで再配置） */}
-          <div className="absolute top-1/4 left-10 md:left-20 max-w-lg z-20 text-left">
-            <h1 className="font-serif text-5xl md:text-7xl leading-tight mb-8">
-              <span className="block text-pink-100 opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.1s;">もしも</span>
-              <span className="block text-pink-100 opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.3s;">私が、</span>
-              <span className="block text-white font-bold opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.5s;">アイドルに</span>
-              <span className="block text-white font-bold opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.7s;">なったら。</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-pink-300 tracking-widest opacity-0 animate-fade-in" style="animation-delay: 1s;">あなたの夢、ここから始まる。</p>
-          </div>
-
-          {/* ユーザー提供バナー（クリック可能なボタン） */}
-          <button onclick={onLineEntry} class="w-[85%] sm:w-[70%] max-w-lg relative z-30 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none">
-            <img src="./line_entry_banner.png" alt="アイドルオーディション開催中！" class="w-full h-auto object-contain" />
-          </button>
-
-          {/* 生成画像に含まれる、その他要素（吹き出し、カテゴリーアイコンなど）は、生成画像の内容と重ならないようにCSSで再配置可能（今回は不要と判断） */}
-        </section>
-      );
-    };
- 
-
-
-    const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
-      return (
-        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
-          <button onClick={onBack} className="mb-12 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
-            <i className="fa-solid fa-arrow-left-long"></i> BACK TO TOP
-          </button>
-          <SectionTitle title="ALL IDOLS" subtitle="あいうえお順で見つける、あなたの推し" />
-
-          <div className="bg-white/60 backdrop-blur-xl rounded-sm p-6 md:p-8 shadow-sm border border-slate-100 mb-12 max-w-4xl mx-auto">
-            <div className="relative mb-8">
-              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none"><i className="fa-solid fa-magnifying-glass text-slate-300"></i></div>
-              <input type="text" placeholder="Search by name..." value={idolSearchText} onChange={(e) => setIdolSearchText(e.target.value)} className="w-full pl-14 py-4 bg-transparent border-b border-slate-300 focus:border-pink-300 rounded-none focus:outline-none font-light text-slate-700 placeholder-slate-300 transition-colors" />
-            </div>
-            <div className="flex flex-wrap gap-3 justify-center">
-               {['all', 'rookie', 'pref', 'style'].map(type => (
-                 <button 
-                   key={type} 
-                   onClick={() => setIdolFilterType(type)} 
-                   className={`px-6 py-2 rounded-full text-[10px] tracking-widest font-medium transition-all ${idolFilterType === type ? 'bg-slate-800 text-white shadow-md' : 'bg-transparent text-slate-500 border border-slate-200 hover:border-slate-400'}`}
-                 >
-                   {type === 'all' ? 'ALL' : type === 'rookie' ? 'ROOKIE' : type === 'pref' ? 'AREA' : 'STYLE'}
-                 </button>
-               ))}
-            </div>
-          </div>
-
-          {idols.length === 0 ? <p className="text-center text-sm text-slate-500 font-light">該当するアイドルがいません。</p> : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {idols.map((idol) => (
-                <div key={idol.id} onClick={() => onIdolSelect(idol)} className="bg-white/80 backdrop-blur-md p-5 rounded-none border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] flex items-center gap-5 cursor-pointer hover:shadow-[0_10px_30px_-10px_rgba(244,114,182,0.15)] hover:border-pink-100 transition-all duration-300 group">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border border-slate-50 flex-shrink-0 shadow-inner bg-slate-50">
-                    <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-serif font-light text-slate-800 text-lg tracking-wide">{idol.name}</h3>
-                    </div>
-                    <span className="text-[9px] text-slate-400 tracking-widest uppercase border border-slate-200 px-2 py-0.5 rounded-sm inline-block mb-2">{idol.type}</span>
-                    <p className="text-xs text-slate-500 line-clamp-1 italic font-light">"{idol.catchphrase}"</p>
-                    <div className="flex gap-3 mt-3">
-                      <span className="text-[9px] text-slate-400 tracking-wider"><i className="fa-solid fa-location-dot mr-1 text-slate-300"></i>{idol.pref}</span>
-                      <span className="text-[9px] text-slate-400 tracking-wider"><i className="fa-solid fa-ribbon mr-1 text-slate-300"></i>{idol.style}</span>
-                    </div>
-                  </div>
-                  <i className="fa-solid fa-chevron-right text-slate-200 group-hover:text-pink-300 transition-colors pr-2 font-light"></i>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    const IdolDetailView = ({ idol, onBack, onVoteClick, onOutfitClick, onGiftClick, idolsData, onIdolSelect, onNavigate, producersData, postsData, commentsData, onPostComment, onLikePost, onDirectGift, user }) => {
-      const sortedIdols = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0));
-      const currentRank = sortedIdols.findIndex(i => String(i.id) === String(idol.id)) + 1;
-      const currentVotes = (idol.totalVotes || 0).toLocaleString();
-
-      // このアイドルのTop3プロデューサーを算出
-      const idolProducers = producersData.filter(p => p.votes && p.votes[idol.id]).sort((a,b) => b.votes[idol.id] - a.votes[idol.id]);
-      const top3Producers = idolProducers.slice(0, 3);
-      const top3Ids = top3Producers.map(p => p.id);
-
-      const [commentText, setCommentText] = useState('');
-
-      return (
-        <div className="animate-fade-in-up pb-0">
-          <div className="max-w-4xl mx-auto px-4 py-10 pb-20">
-            <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none"><i className="fa-solid fa-arrow-left-long"></i> BACK</button>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-              <div className="relative">
-                <div className="relative rounded-none overflow-hidden bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] aspect-[3/4] p-3 md:p-4 mx-auto group border border-slate-100">
-                  {idol.isStreaming && (<a href="#" className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-md text-red-500 text-[10px] font-bold tracking-widest px-4 py-2 rounded-none shadow-lg flex items-center gap-2 animate-live border border-red-100 cursor-pointer hover:bg-red-50 transition-colors"><div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> ON AIR</a>)}
-                  {idol.titleBadge && !idol.isStreaming && (<div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-medium tracking-widest px-4 py-2 rounded-none shadow-sm z-10 border border-slate-100">{idol.titleBadge}</div>)}
-                  <div className="absolute top-6 right-6 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-light tracking-[0.2em] px-3 py-1.5 rounded-none z-10 uppercase">{idol.type}</div>
-                  <div className="w-full h-full relative overflow-hidden bg-slate-50">
-                    <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-center px-4 md:px-0">
-                <div className="mb-10">
-                  <p className="text-[10px] text-pink-500 tracking-[0.3em] font-medium mb-4 uppercase">{idol.style} | {idol.pref}</p>
-                  <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 font-serif tracking-wide">{idol.name}</h1>
-                  <p className="text-slate-500 font-light text-sm md:text-base leading-relaxed italic border-l border-slate-300 pl-4">"{idol.catchphrase}"</p>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mb-10 border-y border-slate-200 py-8">
-                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Rank</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentRank}<span className="text-sm">th</span></p></div>
-                  <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Votes</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentVotes}</p></div>
-                  <div className="text-center"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Producers</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{idolProducers.length}</p></div>
-                </div>
-                <div className="space-y-4">
-                  <button onClick={onVoteClick} className="w-full bg-slate-900 text-white py-4 md:py-5 rounded-none shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center gap-3 hover:bg-slate-800 transition-colors group"><i className="fa-regular fa-heart text-pink-400 group-hover:scale-110 transition-transform"></i><span className="text-xs tracking-[0.2em] font-light">VOTE FOR HER</span></button>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={onGiftClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-gift text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">GIFT & MAG</span></button>
-                    <button onClick={onOutfitClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-shirt text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">OUTFIT CATALOG</span></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 新機能: 欲しいものリスト(Wishlist) */}
-            <div className="bg-white/80 backdrop-blur-xl p-8 mb-12 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
-              <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Her Wishlist</h3>
-              {idol.wishlist && idol.wishlist.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {idol.wishlist.map(itemId => {
-                    const item = OFF_MELTY_CATALOG.find(c => c.id === itemId);
-                    if(!item) return null;
-                    const isReceived = idol.receivedGifts?.find(g => g.itemId === itemId);
-                    
-                    return (
-                      <div key={itemId} className="border border-slate-100 p-2 bg-white relative">
-                        <img src={item.img} className={`w-full aspect-[3/4] object-cover ${isReceived ? 'opacity-40 grayscale' : ''}`} onError={handleImgError}/>
-                        <p className="text-[10px] mt-3 font-light text-slate-800 line-clamp-1">{item.name}</p>
-                        
-                        {isReceived ? (
-                          <div className="mt-2 p-1.5 bg-slate-50 border border-slate-200 text-center">
-                            <p className="text-[8px] text-pink-500 font-bold">🎁 {isReceived.producerName} P が提供</p>
-                          </div>
-                        ) : (
-                          <button onClick={() => onDirectGift(item.id, item.votes, '衣装提供(Wishlist)')} className="w-full bg-slate-900 hover:bg-pink-600 transition-colors text-white text-[9px] tracking-widest py-2.5 mt-2 uppercase">
-                            プレゼント (+{item.votes.toLocaleString()}票)
-                          </button>
-                        )}
-                        {isReceived && (
-                          <div className="absolute top-4 left-0 w-full flex justify-center pointer-events-none">
-                             <div className="bg-pink-500 text-white text-[10px] font-bold px-3 py-1 shadow-md rotate-[-10deg]">獲得済</div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : <p className="text-center text-xs text-slate-400 font-light py-4">まだ欲しいものリストが登録されていません。</p>}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-              <div className="lg:col-span-2 space-y-8">
-                
-                {/* 新機能: 活動タイムライン (Posts) */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
-                  <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Timeline</h3>
-                  <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4 hide-scrollbar">
-                    {postsData.filter(p => p.idolId === String(idol.id)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(post => (
-                      <div key={post.id} className="border-b border-slate-100 pb-8 last:border-0 last:pb-0">
-                        <div className="flex items-center gap-3 mb-4">
-                          <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-8 h-8 rounded-full object-cover" />
-                          <div>
-                            <p className="text-xs font-medium text-slate-800">{idol.name}</p>
-                            <p className="text-[9px] text-slate-400">{new Date(post.createdAt).toLocaleString()}</p>
-                          </div>
-                        </div>
-                        <p className="text-sm text-slate-600 mb-4 whitespace-pre-wrap leading-loose font-light">{post.text}</p>
-                        {post.img && <img src={post.img} className="w-full max-h-80 object-cover mb-4 rounded-sm border border-slate-100" onError={handleImgError} />}
-                        <div className="flex justify-end">
-                           <button onClick={() => onLikePost(post.id)} className={`flex items-center gap-2 text-xs transition-colors ${post.likedBy?.includes(user?.uid) ? 'text-pink-500' : 'text-slate-400 hover:text-pink-400'}`}>
-                             <i className={`${post.likedBy?.includes(user?.uid) ? 'fa-solid' : 'fa-regular'} fa-heart`}></i> {post.likes}
-                           </button>
-                        </div>
-                      </div>
-                    ))}
-                    {postsData.filter(p => p.idolId === String(idol.id)).length === 0 && <p className="text-xs text-slate-400 font-light text-center py-4">まだ投稿がありません。</p>}
-                  </div>
-                </div>
-
-                {/* Profile & Story */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
-                  <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Profile & Story</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                    <div className="p-4 border border-slate-100 bg-slate-50/50 flex flex-col items-start"><p className="text-[9px] text-slate-400 font-medium tracking-widest uppercase mb-1">Birthday</p><p className="text-sm font-light text-slate-800">{idol.birthday}</p></div>
-                    <div className="p-4 border border-slate-100 bg-slate-50/50 flex flex-col items-start"><p className="text-[9px] text-slate-400 font-medium tracking-widest uppercase mb-1">Hometown</p><p className="text-sm font-light text-slate-800">{idol.hometown}</p></div>
-                    <div className="p-4 border border-slate-100 bg-slate-50/50 flex flex-col items-start"><p className="text-[9px] text-slate-400 font-medium tracking-widest uppercase mb-1">Specialty</p><p className="text-sm font-light text-slate-800">{idol.specialSkill}</p></div>
-                  </div>
-                  <p className="text-slate-600 text-sm md:text-base leading-loose font-light whitespace-pre-wrap">{idol.story}</p>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                {/* 新機能: リアルタイム応援メッセージボード */}
-                <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
-                  <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3">
-                    <span className="w-8 h-px bg-slate-300"></span> Messages
-                  </h3>
-                  
-                  <form onSubmit={(e) => { e.preventDefault(); onPostComment(commentText); setCommentText(''); }} className="mb-6 flex gap-2">
-                    <input type="text" value={commentText} onChange={e=>setCommentText(e.target.value)} placeholder="応援メッセージを送ろう！" className="flex-1 border-b border-slate-300 py-2 text-xs focus:outline-none focus:border-pink-400 bg-transparent font-light" />
-                    <button type="submit" disabled={!commentText} className="bg-slate-900 text-white px-4 py-2 text-[10px] tracking-widest hover:bg-pink-600 disabled:bg-slate-300 transition-colors">SEND</button>
-                  </form>
-
-                  <div className="space-y-5 max-h-96 overflow-y-auto pr-2 hide-scrollbar">
-                    {commentsData.filter(c => c.idolId === String(idol.id)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(comment => (
-                      <div key={comment.id} className="flex gap-3 border-b border-slate-50 pb-4">
-                        <MediaDisplay src={comment.userIcon} fallbackSrc="./default_idol.png" className="w-8 h-8 rounded-full object-cover bg-slate-100 shrink-0" />
-                        <div>
-                          <div className="flex items-center flex-wrap gap-2 mb-1">
-                            <span className="text-[10px] font-medium text-slate-800">{comment.userName}</span>
-                            {top3Ids.includes(comment.userId) && <span className="bg-gradient-to-r from-amber-200 to-yellow-400 text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold tracking-widest shadow-sm">OFFICIAL P</span>}
-                          </div>
-                          <p className="text-xs text-slate-600 font-light mb-1">{comment.text}</p>
-                          <span className="text-[8px] text-slate-400">{new Date(comment.createdAt).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {commentsData.filter(c => c.idolId === String(idol.id)).length === 0 && <p className="text-[10px] text-slate-400 text-center">最初の応援メッセージを送りましょう！</p>}
-                  </div>
-                </div>
-
-                <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
-                  <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3">
-                    <span className="w-8 h-px bg-slate-300"></span> Official P
-                  </h3>
-                  <p className="text-[10px] text-slate-500 font-light mb-6 leading-relaxed">このアイドルに最も多く投票・支援をしているトッププロデューサーです。</p>
-                  <div className="space-y-4">
-                    {top3Producers.map((p, i) => (
-                      <div key={i} className="flex items-center gap-4 p-4 border border-slate-100 bg-slate-50/50 relative overflow-hidden group">
-                        <div className={`absolute top-0 left-0 w-1 h-full transition-all ${i===0?'bg-amber-400':i===1?'bg-slate-400':'bg-orange-400'}`}></div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-timer text-sm font-light shrink-0 ${i===0?'bg-amber-100 text-amber-600':i===1?'bg-slate-200 text-slate-600':'bg-orange-100 text-orange-600'}`}>
-                          {i+1}
-                        </div>
-                        <MediaDisplay src={p.profileImage} fallbackSrc="./default_idol.png" className="w-10 h-10 rounded-full object-cover bg-white border border-slate-200" />
-                        <div className="overflow-hidden">
-                          <p className="text-xs font-light text-slate-800 truncate mb-1">{p.name}</p>
-                          <p className="text-[9px] text-pink-500 font-medium tracking-widest">{(p.votes[idol.id] || 0).toLocaleString()} 票</p>
-                        </div>
-                      </div>
-                    ))}
-                    {top3Producers.length === 0 && <p className="text-[10px] text-slate-400 text-center">まだプロデューサーがいません。</p>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <CrossNavSection idolsData={idolsData} currentIdolId={idol.id} onIdolSelect={onIdolSelect} onNavigate={onNavigate} />
-        </div>
-      );
-    };
-
     const SuccessModal = ({ data, onClose, idol }) => {
       useEffect(() => {
         if (typeof confetti !== 'undefined') {
           confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f472b6', '#ec4899', '#fbcfe8', '#cbd5e1', '#f1f5f9'], disableForReducedMotion: true });
-          setTimeout(() => { confetti({ particleCount: 100, spread: 100, origin: { y: 0.7 }, colors: ['#fde68a', '#fbbf24', '#fffbeb'] }); }, 300);
         }
       }, []);
 
       const isOutfit = data.actionType.includes('衣装');
       const isGift = data.actionType.includes('ギフト') || data.actionType.includes('雑誌');
-      const tweetText = encodeURIComponent(`私がプロデュースしている【${data.idolName}】ちゃんに ${data.amount.toLocaleString()}票 支援しました！✨\n現在の順位をチェックして一緒に応援しよう！\n\n#もしアイ #アイドルオーディション #${data.idolName}\nhttps://moshi-ai.example.com`);
 
       return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[400] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white/95 rounded-none p-8 max-w-md w-full text-center shadow-[0_30px_60px_rgba(0,0,0,0.15)] relative overflow-hidden border border-white/50">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-rose-50 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float" style={{animationDelay: '1s'}}></div>
-            
             <div className="relative z-10">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border border-slate-100 animate-pulse-glow">
                 <i className={`fa-solid ${isOutfit ? 'fa-shirt' : isGift ? 'fa-gift' : 'fa-trophy'} text-3xl text-pink-400`}></i>
               </div>
-              
               <h2 className="text-xl font-light font-serif text-slate-800 mb-2 tracking-[0.2em]">CERTIFICATE</h2>
-              <p className="text-[10px] font-medium text-slate-400 tracking-[0.3em] mb-8 border-b border-slate-200 pb-3 inline-block">応援証明書</p>
-              
               <div className="flex items-center justify-center gap-5 mb-8">
                 <MediaDisplay src={idol?.profileImage} fallbackSrc={`./default_idol.png`} className="w-20 h-20 rounded-full object-cover border border-slate-100 shadow-sm" />
                 <div className="text-left">
@@ -1772,23 +638,46 @@
                   <p className="text-xl font-light text-slate-800 font-serif">{data.idolName}</p>
                 </div>
               </div>
-
               <div className="bg-slate-50/80 rounded-sm p-6 border border-slate-100 mb-8">
                 <p className="text-xs font-medium text-slate-500 tracking-wider mb-2">{data.actionType}による投票</p>
-                <p className="text-4xl font-timer font-light text-slate-800">
-                  +{data.amount.toLocaleString()} <span className="text-sm font-sans text-slate-400">票</span>
-                </p>
-                <p className="text-[10px] text-pink-500/80 font-medium mt-3 tracking-wide">あなたの応援が彼女の夢に直結しました。</p>
+                <p className="text-4xl font-timer font-light text-slate-800">+{data.amount.toLocaleString()} <span className="text-sm font-sans text-slate-400">票</span></p>
               </div>
+              <button onClick={onClose} className="w-full py-4 bg-transparent text-slate-500 font-medium text-xs tracking-widest hover:text-slate-800 transition-colors border-b border-transparent hover:border-slate-300">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
 
-              <div className="space-y-4">
-                <a href={`https://twitter.com/intent/tweet?text=${tweetText}`} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-3 bg-slate-900 text-white py-4 rounded-sm font-light tracking-widest text-xs hover:bg-slate-800 transition-colors group">
-                  <i className="fa-brands fa-x-twitter text-lg group-hover:scale-110 transition-transform"></i>
-                  この証明書をXでシェア
-                </a>
-                <button onClick={onClose} className="w-full py-4 bg-transparent text-slate-500 font-medium text-xs tracking-widest hover:text-slate-800 transition-colors border-b border-transparent hover:border-slate-300">
-                  CLOSE
-                </button>
+    const CrossNavSection = ({ idolsData, currentIdolId, onIdolSelect, onNavigate }) => {
+      const recommendIdols = useMemo(() => {
+        let list = idolsData;
+        if (currentIdolId) list = list.filter(i => String(i.id) !== String(currentIdolId));
+        return list.slice(0, 4); 
+      }, [idolsData, currentIdolId]);
+
+      if (recommendIdols.length === 0) return null;
+
+      return (
+        <div className="w-full bg-slate-50/50 border-t border-slate-200 mt-16 pt-20 pb-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <SectionTitle title="Discover More" subtitle="さらに広がる「もしアイ」の世界" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+              <div>
+                <div className="flex items-center gap-3 mb-8"><span className="w-8 h-px bg-pink-300"></span><h3 className="text-sm font-light text-slate-600 tracking-[0.2em] uppercase">Featured Muses</h3></div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+                  {recommendIdols.map((idol) => (
+                    <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
+                      <div className="aspect-[3/4] relative overflow-hidden bg-white mb-4 border border-slate-200/50 shadow-sm group-hover:shadow-md transition-all">
+                        <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                      </div>
+                      <div className="text-center px-2">
+                        <h4 className="font-light text-slate-800 tracking-wide text-sm group-hover:text-pink-600 transition-colors">{idol.name}</h4>
+                        <p className="text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -1816,15 +705,11 @@
       </div>
     );
 
-// --- 追加: タイムラインの1投稿カード ---
-    // --- 上書き: タイムラインの1投稿カード（シークレット対応版） ---
     const TimelinePostCard = ({ post, idol, user, comments, onLike, onComment, onLogin, producerVotes = 0, userRole = 'guest' }) => {
       const [showCommentInput, setShowCommentInput] = useState(false);
       const [commentText, setCommentText] = useState("");
       
       const postComments = comments.filter(c => c.postId === post.id).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-      // 🌟 シークレット判定（このアイドルへの累計投票数が100票以上、またはアイドル本人/管理者なら見れる）
       const isSecret = post.isSecret;
       const isUnlocked = !isSecret || producerVotes >= 100 || userRole === 'idol' || userRole === 'admin';
 
@@ -1851,7 +736,6 @@
             )}
           </div>
           
-          {/* 🌟 コンテンツ表示（ロック状態によって分岐） */}
           {isUnlocked ? (
             <>
               <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">{post.text}</p>
@@ -1863,16 +747,13 @@
             </>
           ) : (
             <div className="relative mb-5 border border-slate-100 bg-slate-50 overflow-hidden">
-              {/* ぼかしのかかったダミーコンテンツ */}
               <div className="filter blur-md select-none pointer-events-none opacity-50 p-4">
                 <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">親愛なるプロデューサー様へ。今日は本当に特別な一日でした。実はずっと悩んでいたことがあって...（続きはVIP限定）</p>
-                {post.img && <img src={post.img} className="w-full h-48 object-cover mix-blend-multiply" onError={handleImgError} />}
               </div>
-              {/* ロック画面のメッセージ */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-3 shadow-inner"><i className="fa-solid fa-lock text-lg"></i></div>
                 <h4 className="text-sm font-bold text-slate-800 mb-2">シークレット投稿</h4>
-                <p className="text-[10px] text-slate-600 font-light leading-relaxed">この投稿を見るには、<br/>{idol.name} への<span className="text-pink-500 font-medium">累計投票数が100票以上</span>必要です。<br/>（現在: {producerVotes} 票）</p>
+                <p className="text-[10px] text-slate-600 font-light leading-relaxed">この投稿を見るには、<br/>{idol.name} への<span className="text-pink-500 font-medium">累計投票数が100票以上</span>必要です。</p>
               </div>
             </div>
           )}
@@ -1885,41 +766,13 @@
               <i className="fa-regular fa-comment"></i> {postComments.length}
             </button>
           </div>
-
-          {/* コメントセクション展開 */}
-          {showCommentInput && isUnlocked && (
-            <div className="mt-6 pt-4 border-t border-slate-50 animate-fade-in">
-              <div className="space-y-4 mb-4 max-h-48 overflow-y-auto hide-scrollbar pr-2">
-                {postComments.map(comment => (
-                  <div key={comment.id} className="flex gap-3 bg-slate-50/50 p-3 border border-slate-50">
-                    <MediaDisplay src={comment.userIcon} fallbackSrc="./default_idol.png" className="w-6 h-6 rounded-full object-cover shrink-0" />
-                    <div>
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-[9px] font-medium text-slate-700">{comment.userName}</span>
-                        <span className="text-[8px] text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 font-light leading-relaxed">{comment.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <form onSubmit={handleCommentSubmit} className="flex gap-2">
-                <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="エールを送る..." className="flex-1 bg-slate-50 border border-slate-200 py-2 px-3 text-xs focus:outline-none focus:border-pink-300 transition-colors font-light text-slate-700" />
-                <button type="submit" disabled={!commentText.trim()} className="bg-slate-900 text-white px-4 py-2 text-[9px] tracking-widest hover:bg-pink-600 disabled:bg-slate-300 transition-colors uppercase">Send</button>
-              </form>
-            </div>
-          )}
         </div>
       );
     };
 
-     
-   
     const LiveTimelineSection = ({ posts, idols, user, comments, onLike, onComment, onLogin, producersData, userRole }) => {
       const latestPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
-      
-      // 🌟 現在のユーザーの投票データを取得
-      const currentUserProducerData = producersData.find(p => p.id === user?.uid) || { votes: {} };
+      const currentUserProducerData = producersData?.find(p => p.id === user?.uid) || { votes: {} };
 
       if (latestPosts.length === 0) return null;
 
@@ -1929,94 +782,54 @@
           <div className="max-w-3xl mx-auto space-y-8">
             {latestPosts.map(post => {
               const idol = idols.find(i => String(i.id) === String(post.idolId));
-              // 🌟 このアイドルへの投票数を計算
               const producerVotes = currentUserProducerData.votes[idol?.id] || 0;
-              
-              return (
-                <TimelinePostCard 
-                  key={post.id} post={post} idol={idol} user={user} comments={comments} 
-                  onLike={onLike} onComment={onComment} onLogin={onLogin}
-                  producerVotes={producerVotes} userRole={userRole} // 🌟 ここを追加
-                />
-              );
+              return <TimelinePostCard key={post.id} post={post} idol={idol} user={user} comments={comments} onLike={onLike} onComment={onComment} onLogin={onLogin} producerVotes={producerVotes} userRole={userRole} />;
             })}
-          </div>
-
-
-
-
-          <div className="text-center mt-12">
-             <p className="text-[10px] text-slate-400 tracking-[0.2em] font-light uppercase">End of recent updates</p>
           </div>
         </section>
       );
     };
 
-
-
-    // --- 追加: Off-Melty カタログセクション ---
     const OffMeltyCatalogSection = ({ catalog, idols }) => {
       return (
         <section id="off-melty-catalog" className="py-24 bg-white/40 backdrop-blur-md border-y border-white/60 mb-20 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16 pt-8">
-              <img src="./off_melty_logo.png" className="h-6 mx-auto mb-4 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }} />
-              <h2 style={{display: 'none'}} className="text-3xl font-serif text-slate-800 mb-4 tracking-widest">Off-Melty</h2>
-              <h2 className="text-3xl md:text-4xl font-serif text-slate-900 uppercase tracking-[0.2em] font-light mb-4 magazine-line">
-                New Arrivals
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-serif text-slate-900 uppercase tracking-[0.2em] font-light mb-4 magazine-line">New Arrivals</h2>
               <p className="text-slate-500 mt-6 text-xs md:text-sm font-light tracking-widest">アイドルたちが憧れる最新コレクション</p>
             </div>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {catalog.map(item => {
-                // このアイテムを欲しいものリストに入れているアイドルを取得
                 const wishingIdols = idols.filter(idol => idol.wishlist && idol.wishlist.includes(item.id));
-                const displayIdols = wishingIdols.slice(0, 5); // 最大5人までアイコンを表示
+                const displayIdols = wishingIdols.slice(0, 5);
                 const extraCount = wishingIdols.length - displayIdols.length;
 
                 return (
                   <div key={item.id} className="bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-all duration-300 group">
                     <div className="aspect-[3/4] overflow-hidden relative bg-slate-50 border-b border-slate-100">
                       <img src={item.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 mix-blend-multiply" onError={handleImgError} />
-                      
-                      {item.stock !== null && (
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[9px] font-medium tracking-widest px-3 py-1 shadow-sm uppercase border border-slate-100">
-                          残り {item.stock} 点
-                        </div>
-                      )}
                     </div>
-                    
                     <div className="p-6">
                       <h4 className="font-serif font-light text-sm text-slate-800 line-clamp-1 mb-2 group-hover:text-pink-600 transition-colors">{item.name}</h4>
                       <p className="text-xs text-slate-500 font-light mb-5">¥{item.price}</p>
-                      
-                      {/* 欲しいものリストに入れているアイドルの表示部分 */}
                       <div className="border-t border-slate-100 pt-4">
                         <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">Wished by</p>
                         {wishingIdols.length > 0 ? (
                           <div className="flex items-center">
                             <div className="flex -space-x-2">
                               {displayIdols.map(idol => (
-                                <div key={idol.id} className="w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-slate-100 shadow-sm" title={idol.name}>
-                                  <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-full h-full object-cover" />
-                                </div>
+                                <div key={idol.id} className="w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-slate-100 shadow-sm" title={idol.name}><MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-full h-full object-cover" /></div>
                               ))}
                             </div>
-                            {extraCount > 0 && (
-                              <span className="text-[10px] text-slate-400 ml-2 font-medium">+{extraCount}</span>
-                            )}
+                            {extraCount > 0 && <span className="text-[10px] text-slate-400 ml-2 font-medium">+{extraCount}</span>}
                           </div>
-                        ) : (
-                          <p className="text-[10px] text-slate-400 font-light">まだ登録されていません</p>
-                        )}
+                        ) : (<p className="text-[10px] text-slate-400 font-light">まだ登録されていません</p>)}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-
             <div className="text-center mt-16">
               <a href="https://off-melty.example.com" target="_blank" rel="noopener noreferrer" className="bg-slate-900 text-white px-10 py-4 text-[10px] tracking-[0.2em] font-light hover:bg-pink-600 transition-colors inline-flex items-center justify-center gap-3 rounded-none uppercase shadow-sm">
                 <i className="fa-solid fa-shirt"></i> Off-Melty 公式サイトへ
@@ -2026,24 +839,13 @@
         </section>
       );
     };
-    // 🌟🌟🌟 追加コードここまで 🌟🌟🌟
 
-
- 
-    // --- メイン App コンポーネント ---
-    // --- 追加: 記事詳細（WEBマガジン）画面 ---
     const ArticleDetailView = ({ article, onBack }) => {
       const [content, setContent] = useState("<div class='text-center py-20 text-slate-400'>記事を読み込み中...</div>");
 
       useEffect(() => {
         const fetchArticle = async () => {
           try {
-            // ▼ 実運用の際はここを有効化します ▼
-            // const response = await fetch(`./articles/${article.id}.md`);
-            // if (!response.ok) throw new Error('記事が見つかりません');
-            // const text = await response.text();
-            
-            // ▼ テスト用のダミーMarkdownデータ（本番では消してOK） ▼
             const text = `
 ## はじめに
 「もしアイ」のオーディションは、あなたの**「ありのままの魅力」**をプロデューサーに伝える場所です。
@@ -2051,25 +853,18 @@
 ### 1. 写真選びのポイント
 * **自然光の下で撮る**: 窓際など、柔らかい光が入る場所がベストです。
 * **加工は控えめに**: プロデューサーは「原石」を探しています。
-
-> 「最初は自信がなくても大丈夫。あなたの勇気ある一歩が、誰かの心を動かします。」
             `;
-
-            // markedを使ってMarkdownをHTMLに変換
             setContent(marked.parse(text));
-          } catch (error) {
-            setContent("<div class='text-center py-20 text-red-400'>記事の読み込みに失敗しました。</div>");
-          }
+          } catch (error) { setContent("<div class='text-center py-20 text-red-400'>記事の読み込みに失敗しました。</div>"); }
         };
         fetchArticle();
       }, [article.id]);
 
       return (
-        <div className="max-w-3xl mx-auto px-4 py-16 animate-fade-in-up pb-32">
+        <div className="max-w-3xl mx-auto px-4 py-16 animate-fade-in-up pb-32 pt-32">
           <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
             <i className="fa-solid fa-arrow-left-long"></i> BACK TO MAGAZINE
           </button>
-          
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-6">
               <span className="text-[10px] font-medium tracking-widest text-pink-500 uppercase border border-pink-200 bg-pink-50 px-3 py-1">{article.category}</span>
@@ -2077,25 +872,14 @@
             </div>
             <h1 className="text-2xl md:text-4xl font-serif text-slate-900 leading-relaxed mb-6">{article.title}</h1>
           </div>
-
           <div className="aspect-video w-full bg-slate-50 mb-12 border border-slate-100 overflow-hidden shadow-sm">
             <img src={article.thumb} alt={article.title} className="w-full h-full object-cover mix-blend-multiply" onError={handleImgError} />
           </div>
-
-          <div 
-            className="prose prose-slate prose-pink max-w-none font-light leading-loose tracking-wide
-                       prose-h2:font-serif prose-h2:text-2xl prose-h2:font-light prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h2:mt-12
-                       prose-h3:font-medium prose-h3:text-lg prose-h3:text-slate-800 prose-h3:mt-8 prose-h3:mb-4
-                       prose-p:text-slate-600 prose-p:mb-6
-                       prose-ul:list-disc prose-ul:ml-6 prose-ul:text-slate-600 prose-ul:mb-6
-                       prose-blockquote:border-l-4 prose-blockquote:border-pink-300 prose-blockquote:bg-pink-50/50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:text-slate-600 prose-blockquote:italic prose-blockquote:font-serif"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-slate prose-pink max-w-none font-light leading-loose tracking-wide" />
         </div>
       );
     };
 
-    // --- 追加: もしアイマガジン（ミクチャ風・スマホ対応一覧） ---
     const MoshiAiMagazineSection = ({ articles, categories, onArticleSelect }) => {
       const [activeCategory, setActiveCategory] = useState("ALL");
       const filteredArticles = activeCategory === "ALL" ? articles : articles.filter(a => a.category === activeCategory);
@@ -2106,103 +890,157 @@
       return (
         <section id="moshi-ai-magazine" className="py-16 md:py-24 max-w-7xl mx-auto px-4 md:px-6 mb-16 border-t border-slate-200 mt-20">
           <SectionTitle title="MAGAZINE" subtitle="Moshi-Ai Web Magazine" />
-          
           <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-            {/* 左カラム：メインコンテンツ */}
             <div className="lg:w-2/3 min-w-0">
               <div className="flex flex-nowrap overflow-x-auto hide-scrollbar gap-2 mb-6 md:mb-8 border-b border-slate-200 pb-3 -mx-4 px-4 md:mx-0 md:px-0">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 text-[10px] tracking-widest uppercase transition-colors shrink-0 border ${activeCategory === cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-transparent text-slate-500 hover:text-slate-800 border-slate-200'}`}>
-                    {cat}
-                  </button>
+                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-1.5 text-[10px] tracking-widest uppercase transition-colors shrink-0 border ${activeCategory === cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-transparent text-slate-500 hover:text-slate-800 border-slate-200'}`}>{cat}</button>
                 ))}
               </div>
-
               {pickupArticles.length > 0 && (
                 <div className="mb-10 md:mb-12">
                   <h3 className="text-xs md:text-sm font-medium tracking-widest text-slate-500 uppercase mb-4 md:mb-6 flex items-center gap-3"><span className="w-4 md:w-6 h-px bg-pink-400"></span> Pickup</h3>
                   <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-6">
                     <div onClick={() => onArticleSelect(pickupArticles[0])} className="md:col-span-2 group cursor-pointer border border-slate-100 bg-white p-2 md:p-3 shadow-[0_2px_10px_-5px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
-                      <div className="aspect-[16/9] overflow-hidden bg-slate-50 relative mb-3 md:mb-4">
-                        <img src={pickupArticles[0].thumb} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError}/>
-                        <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-pink-500 text-white text-[8px] md:text-[9px] font-bold tracking-widest px-2 py-0.5 md:px-3 md:py-1 shadow-sm uppercase">{pickupArticles[0].category}</div>
-                      </div>
+                      <div className="aspect-[16/9] overflow-hidden bg-slate-50 relative mb-3 md:mb-4"><img src={pickupArticles[0].thumb} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError}/></div>
                       <div className="px-1 md:px-2 pb-1 md:pb-2">
                         <span className="text-[9px] md:text-[10px] tracking-widest text-slate-400 mb-1.5 md:mb-2 block">{pickupArticles[0].date}</span>
                         <h4 className="font-serif font-light text-slate-800 text-base md:text-xl leading-relaxed group-hover:text-pink-600 transition-colors line-clamp-2">{pickupArticles[0].title}</h4>
-                        <p className="text-[11px] md:text-xs text-slate-500 font-light mt-2 md:mt-3 line-clamp-2 leading-relaxed md:leading-loose">{pickupArticles[0].desc}</p>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 md:gap-4 md:contents">
-                      {pickupArticles.slice(1).map(article => (
-                        <div key={article.id} onClick={() => onArticleSelect(article)} className="group cursor-pointer border border-slate-100 bg-white p-1.5 md:p-2 shadow-[0_2px_10px_-5px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow flex flex-col">
-                          <div className="aspect-video overflow-hidden bg-slate-50 relative mb-2 md:mb-3">
-                            <img src={article.thumb} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError}/>
-                            <div className="absolute top-1 left-1 bg-pink-500 text-white text-[8px] font-bold tracking-widest px-1.5 py-0.5 shadow-sm uppercase scale-90 origin-top-left">{article.category}</div>
-                          </div>
-                          <div className="px-1 pb-1 flex-1 flex flex-col">
-                            <span className="text-[8px] md:text-[9px] tracking-widest text-slate-400 mb-1 block">{article.date}</span>
-                            <h4 className="font-serif font-light text-slate-800 text-[11px] md:text-sm leading-relaxed group-hover:text-pink-600 transition-colors line-clamp-3">{article.title}</h4>
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>
               )}
-
-              <div className="mb-10">
-                 <h3 className="text-xs md:text-sm font-medium tracking-widest text-slate-500 uppercase mb-4 md:mb-6 flex items-center gap-3"><span className="w-4 md:w-6 h-px bg-slate-300"></span> Latest</h3>
-                 <div className="space-y-4 md:space-y-6">
-                   {normalArticles.map(article => (
-                     <div key={article.id} onClick={() => onArticleSelect(article)} className="flex gap-3 md:gap-4 group cursor-pointer border-b border-slate-100 pb-4 md:pb-6 last:border-0 last:pb-0">
-                       <div className="w-28 md:w-48 aspect-video shrink-0 overflow-hidden bg-slate-50 border border-slate-100 relative">
-                         <img src={article.thumb} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" onError={handleImgError}/>
-                       </div>
-                       <div className="flex flex-col justify-center py-0.5 md:py-1 min-w-0">
-                         <div className="flex items-center flex-wrap gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-                           <span className="text-[8px] border border-slate-200 text-slate-500 px-1.5 py-0.5 uppercase tracking-widest leading-none">{article.category}</span>
-                           <span className="text-[8px] md:text-[9px] tracking-widest text-slate-400">{article.date}</span>
-                         </div>
-                         <h4 className="font-serif font-light text-slate-800 text-[12px] md:text-base leading-snug md:leading-relaxed group-hover:text-pink-600 transition-colors line-clamp-2">{article.title}</h4>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-              </div>
-            </div>
-
-            {/* 右カラム：サイドバー（ランキング・タグ） */}
-            <div className="lg:w-1/3 mt-4 lg:mt-0">
-              <div className="bg-white border border-slate-100 p-4 md:p-6 shadow-sm mb-6 md:mb-8">
-                <h3 className="text-xs md:text-sm font-medium tracking-widest text-slate-500 uppercase mb-4 md:mb-6 flex items-center gap-3"><span className="w-4 h-px bg-slate-300"></span> Ranking</h3>
-                <div className="space-y-3 md:space-y-5">
-                  {rankingArticles.map((article, index) => (
-                    <div key={article.id} onClick={() => onArticleSelect(article)} className="flex items-center gap-3 md:gap-4 group cursor-pointer border-b border-slate-50 pb-3 md:pb-4 last:border-0 last:pb-0">
-                      <div className={`font-serif text-xl md:text-2xl font-light w-5 md:w-6 text-center shrink-0 ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-orange-400' : 'text-slate-300'}`}>{index + 1}</div>
-                      <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 bg-slate-50 border border-slate-100 overflow-hidden"><img src={article.thumb} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all mix-blend-multiply" onError={handleImgError}/></div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-light text-slate-800 text-[11px] md:text-xs leading-snug md:leading-relaxed group-hover:text-pink-600 transition-colors line-clamp-2 mb-1">{article.title}</h4>
-                        <span className="text-[8px] md:text-[9px] text-slate-400 tracking-widest"><i className="fa-regular fa-eye mr-1"></i>{article.views.toLocaleString()} views</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-slate-50/50 border border-slate-100 p-4 md:p-6">
-                <h3 className="text-xs md:text-sm font-medium tracking-widest text-slate-500 uppercase mb-4 md:mb-6 flex items-center gap-3"><span className="w-4 h-px bg-slate-300"></span> Popular Tags</h3>
-                <div className="flex flex-wrap gap-1.5 md:gap-2">
-                  {["#オーディション対策", "#自己PR", "#メイク", "#Off-Melty", "#インタビュー", "#中間発表", "#推し活"].map(tag => (
-                    <span key={tag} className="text-[9px] md:text-[10px] text-slate-500 bg-white border border-slate-200 px-2 md:px-3 py-1 md:py-1.5 cursor-pointer hover:border-pink-300 hover:text-pink-500 transition-colors">{tag}</span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </section>
       );
     };
+
+    const ProducerMyPage = ({ user, userData, idolsData, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
+      const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
+      const [profileImage, setProfileImage] = useState(userData.profileImage || "");
+      const [message, setMessage] = useState(userData.message || "");
+      const [oshiId, setOshiId] = useState(userData.oshiId || "");
+      const [uploading, setUploading] = useState(false);
+
+      useEffect(() => { setName(userData.name || "ゲスト プロデューサー"); setProfileImage(userData.profileImage || ""); setMessage(userData.message || ""); setOshiId(userData.oshiId || ""); }, [userData]);
+
+      const handleFileChange = async (e) => {
+        const file = e.target.files[0]; if (!file) return; setUploading(true);
+        try { const url = await uploadFile(file); setProfileImage(url); showToast("画像がアップロードされました"); } catch (err) { showToast("アップロードに失敗しました"); }
+        setUploading(false);
+      };
+
+      const handleSave = async (e) => {
+        e.preventDefault();
+        const result = await onUpdateProfile({ name, profileImage, message, oshiId });
+        if (result && !result.success) showToast(`保存エラー`); else showToast("プロフィールを保存しました。");
+      };
+
+      const oshiIdol = idolsData.find(i => String(i.id) === String(oshiId));
+
+      return (
+        <div className="animate-fade-in-up pb-0">
+          <div className="max-w-5xl mx-auto px-4 py-12 pb-24"><SectionTitle title="MY PAGE" subtitle="プロデューサー ダッシュボード" /></div>
+        </div>
+      );
+    };
+
+    const IdolMyPage = ({ idolData, onUpdateProfile, showToast, onPostTimeline }) => {
+      const [profileImage, setProfileImage] = useState(idolData?.profileImage || ""); 
+      const [catchphrase, setCatchphrase] = useState(idolData?.catchphrase || "");
+      const [story, setStory] = useState(idolData?.story || "");
+      const [isStreaming, setIsStreaming] = useState(idolData?.isStreaming || false);
+      const [wishlist, setWishlist] = useState(idolData?.wishlist || []);
+      const [birthday, setBirthday] = useState(idolData?.birthday || "");
+      const [hometown, setHometown] = useState(idolData?.hometown || "");
+      const [specialSkill, setSpecialSkill] = useState(idolData?.specialSkill || "");
+      const [uploading, setUploading] = useState(false);
+      const [timelineText, setTimelineText] = useState("");
+      const [timelineImg, setTimelineImg] = useState("");
+      const [isSecretPost, setIsSecretPost] = useState(false);
+      const [uploadingTimeline, setUploadingTimeline] = useState(false);
+
+      useEffect(() => { setProfileImage(idolData?.profileImage || ""); setCatchphrase(idolData?.catchphrase || ""); setStory(idolData?.story || ""); setIsStreaming(idolData?.isStreaming || false); setWishlist(idolData?.wishlist || []); setBirthday(idolData?.birthday || ""); setHometown(idolData?.hometown || ""); setSpecialSkill(idolData?.specialSkill || ""); }, [idolData]);
+
+      if (!idolData) return <div className="text-center py-20 text-slate-500 font-light">Loading or Idol not found...</div>;
+
+      const handleFileChange = async (e) => {
+        const file = e.target.files[0]; if (!file) return; setUploading(true);
+        try { const url = await uploadFile(file); setProfileImage(url); showToast("メディアがアップロードされました"); } catch (err) { showToast("アップロードに失敗しました"); }
+        setUploading(false);
+      };
+
+      const handleTimelineFileChange = async (e) => {
+        const file = e.target.files[0]; if (!file) return; setUploadingTimeline(true);
+        try { const url = await uploadFile(file); setTimelineImg(url); showToast("画像がアップロードされました"); } catch (err) { showToast("アップロードに失敗しました"); }
+        setUploadingTimeline(false);
+      };
+
+      const handleSaveProfile = async (e) => {
+        e.preventDefault();
+        const result = await onUpdateProfile({ profileImage, catchphrase, story, isStreaming, wishlist, birthday, hometown, specialSkill });
+        if (result && !result.success) showToast(`保存エラー`); else showToast("プロフィール設定を更新しました。");
+      };
+
+      const handlePostTimelineSubmit = async (e) => {
+        e.preventDefault();
+        if(!timelineText) return;
+        await onPostTimeline({ idolId: idolData.id, text: timelineText, img: timelineImg, isSecret: isSecretPost });
+        showToast("活動報告をタイムラインに投稿しました！");
+        setTimelineText(""); setTimelineImg(""); setIsSecretPost(false);
+      };
+
+      const toggleWishlist = (itemId) => { setWishlist(prev => prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]); };
+
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in-up pb-32">
+          <SectionTitle title="STUDIO" subtitle="アイドル専用ダッシュボード" />
+          <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+            <form onSubmit={handlePostTimelineSubmit} className="space-y-6">
+              <div><textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="今日はどんな一日でしたか？..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea></div>
+              <div className="flex items-center gap-2 bg-pink-50/50 p-3 border border-pink-100">
+                <input type="checkbox" id="secretPost" checked={isSecretPost} onChange={(e) => setIsSecretPost(e.target.checked)} className="accent-pink-500 w-4 h-4" />
+                <label htmlFor="secretPost" className="text-[10px] text-slate-600 font-medium cursor-pointer tracking-wider">シークレット投稿にする <span className="text-pink-500 font-light">（累計100票以上のプロデューサー限定公開）</span></label>
+              </div>
+              <div className="text-right pt-2"><button type="submit" disabled={!timelineText || uploadingTimeline} className="bg-pink-500 text-white text-[10px] tracking-widest font-light px-12 py-4 hover:bg-pink-600 transition-colors uppercase disabled:bg-slate-300">Post Now</button></div>
+            </form>
+          </div>
+        </div>
+      );
+    };
+
+    const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
+          <button onClick={onBack} className="mb-12 text-slate-500 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO TOP
+          </button>
+          <SectionTitle title="ALL IDOLS" subtitle="あいうえお順で見つける、あなたの推し" />
+          {idols.length === 0 ? <p className="text-center text-sm text-slate-500 font-light">該当するアイドルがいません。</p> : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 mb-16">
+              {idols.map((idol) => (
+                <div key={idol.id} onClick={() => onIdolSelect(idol)} className="group cursor-pointer">
+                  <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)]">
+                    <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                    {idol.isRookie && (
+                      <div className="absolute -top-1 -right-8 bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 text-white text-[8px] font-bold tracking-widest px-8 py-1.5 shadow-md transform rotate-45 z-10 animate-pulse">
+                        ✨NEW GEM
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-center px-2">
+                    <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-base group-hover:text-pink-600 transition-colors truncate">{idol.name}</h4>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
@@ -2226,13 +1064,13 @@
       const [successModalData, setSuccessModalData] = useState(null); 
       const [globalEvent, setGlobalEvent] = useState(null);
       const [toastMessage, setToastMessage] = useState("");
+      const [dailyYellTickets, setDailyYellTickets] = useState(null);
       
       const [firebaseLoaded, setFirebaseLoaded] = useState(false);
       const [user, setUser] = useState(null);
       const [userRole, setUserRole] = useState('guest'); 
       const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
       
-      // 新機能用ステート
       const [postsData, setPostsData] = useState([]);
       const [commentsData, setCommentsData] = useState([]);
       const [producersData, setProducersData] = useState([]);
@@ -2241,26 +1079,20 @@
       const dbRef = useRef(null);
 
       const ADMIN_EMAIL = 'admin@moshiai.com'; 
-
-
-      // STUDIOで作ったLPのURLをここに入れます
       const STUDIO_LP_URL = "https://gold216900.studio.site/";
 
       const showToast = (msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(""), 3500); };
 
-      useEffect(() => {
-        idolsDataRef.current = idolsData;
-      }, [idolsData]);
+      useEffect(() => { idolsDataRef.current = idolsData; }, [idolsData]);
 
       useEffect(() => {
         if (idolsData.length === 0) return;
         let latestGift = null;
         let latestIdolName = "";
         
-        // 全アイドルの履歴から「一番新しいギフト」を探し出す
         idolsData.forEach(idol => {
           if (idol.receivedGifts && idol.receivedGifts.length > 0) {
-            const gift = idol.receivedGifts[idol.receivedGifts.length - 1]; // 配列の最後が最新
+            const gift = idol.receivedGifts[idol.receivedGifts.length - 1];
             if (!latestGift || new Date(gift.timestamp) > new Date(latestGift.timestamp)) {
                latestGift = gift;
                latestIdolName = idol.name;
@@ -2268,21 +1100,12 @@
           }
         });
 
-        // 最新のギフトが「過去15秒以内」に行われたものならテロップを表示！
         if (latestGift) {
           const now = new Date();
-          const giftTime = new Date(latestGift.timestamp);
-          const diffSeconds = (now - giftTime) / 1000;
-          
+          const diffSeconds = (now - new Date(latestGift.timestamp)) / 1000;
           if (diffSeconds < 15) {
-            // カタログからアイテム名を探す
             const item = OFF_MELTY_CATALOG.find(c => c.id === latestGift.itemId);
-            setGlobalEvent({
-              producerName: latestGift.producerName,
-              idolName: latestIdolName,
-              itemName: item ? item.name : '素敵なギフト'
-            });
-            // 6秒後にテロップを消す
+            setGlobalEvent({ producerName: latestGift.producerName, idolName: latestIdolName, itemName: item ? item.name : '素敵なギフト' });
             const timer = setTimeout(() => setGlobalEvent(null), 6000);
             return () => clearTimeout(timer);
           }
@@ -2295,71 +1118,41 @@
           if (window.FirebaseHelper) {
             try {
               const { initializeApp, getAuth, getFirestore } = window.FirebaseHelper;
-              
-              const customFirebaseConfig = {
-                apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc",
-                authDomain: "moshiai-5735b.firebaseapp.com",
-                projectId: "moshiai-5735b",
-                storageBucket: "moshiai-5735b.firebasestorage.app",
-                messagingSenderId: "347806317602",
-                appId: "1:347806317602:web:d25481c7dd1376aa20de7b"
-              };
-
-              let firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : {};
-              
-              if (Object.keys(firebaseConfig).length === 0 || !firebaseConfig.apiKey) {
-                firebaseConfig = customFirebaseConfig;
-              }
-
-              if (firebaseConfig.apiKey === "YOUR_API_KEY" || !firebaseConfig.apiKey) {
-                console.warn("Firebase config is missing or invalid.");
-                return;
-              }
+              const customFirebaseConfig = { apiKey: "AIzaSyB0xE7nrbyOgLxpSWskTaT0G5FDyVWSDQc", authDomain: "moshiai-5735b.firebaseapp.com", projectId: "moshiai-5735b", storageBucket: "moshiai-5735b.firebasestorage.app", messagingSenderId: "347806317602", appId: "1:347806317602:web:d25481c7dd1376aa20de7b" };
+              let firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : customFirebaseConfig;
+              if (firebaseConfig.apiKey === "YOUR_API_KEY" || !firebaseConfig.apiKey) return;
 
               const app = initializeApp(firebaseConfig);
               authRef.current = getAuth(app);
               dbRef.current = getFirestore(app);
-              window.FirebaseDbRef = dbRef.current; // Globalに保存（Admin用）
+              window.FirebaseDbRef = dbRef.current;
               setFirebaseLoaded(true);
             } catch (e) { console.error(e); }
-          } else if (attempts < 100) { 
-             attempts++;
-             setTimeout(loadFirebase, 50); 
-          }
+          } else if (attempts < 100) { attempts++; setTimeout(loadFirebase, 50); }
         };
         loadFirebase();
       }, []);
 
       useEffect(() => {
         if (!firebaseLoaded || !authRef.current) return;
-        
         const { signInWithCustomToken, signInAnonymously, onAuthStateChanged } = window.FirebaseHelper;
         const auth = authRef.current;
         
         const initAuth = async () => {
           try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-              await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-              await signInAnonymously(auth);
-            }
-          } catch(e) {
-            console.error("Auth init error:", e);
-          }
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+            else await signInAnonymously(auth);
+          } catch(e) {}
         };
         initAuth();
 
         const unsubscribe = onAuthStateChanged(auth, (u) => {
            setUser(u);
-           if (!u || u.isAnonymous) {
-              setUserRole('guest');
-              setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
-           }
+           if (!u || u.isAnonymous) { setUserRole('guest'); setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 }); }
         });
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
-      // データ購読（全て）
       useEffect(() => {
         if (!user || !firebaseLoaded || !dbRef.current) return;
         const { collection, onSnapshot } = window.FirebaseHelper;
@@ -2370,37 +1163,21 @@
           const firestoreIdols = [];
           snapshot.forEach(doc => {
             const data = doc.data();
-            firestoreIdols.push({
-              id: doc.id, name: data.name || "名称未設定", type: data.type || "新規エントリー", issue: data.issue || "未掲載",
-              isOffMelty: data.isOffMelty || false, catchphrase: data.catchphrase || "よろしくお願いします！", color: data.color || "from-pink-300 to-rose-300",
-              pref: data.pref || "不明", style: data.style || "未設定", isRookie: data.isRookie !== undefined ? data.isRookie : true,
-              age: data.age || "?歳", height: data.height || "?cm", hobby: data.hobby || "秘密", story: data.story || "新しい物語がここから始まります。",
-              titleBadge: data.titleBadge || "", producerCount: data.producerCount || "0", birthday: data.birthday || "未設定",
-              hometown: data.hometown || "未設定", specialSkill: data.specialSkill || "未設定", topProducers: data.topProducers || [],
-              isStreaming: data.isStreaming || false, timeline: data.timeline || [], totalVotes: data.totalVotes || 0,
-              profileImage: data.profileImage || "", loginEmail: data.loginEmail || "", wishlist: data.wishlist || [], receivedGifts: data.receivedGifts || [],
-              ...data
-            });
+            firestoreIdols.push({ id: doc.id, name: data.name || "名称未設定", type: data.type || "新規エントリー", isRookie: data.isRookie !== undefined ? data.isRookie : true, totalVotes: data.totalVotes || 0, profileImage: data.profileImage || "", loginEmail: data.loginEmail || "", wishlist: data.wishlist || [], receivedGifts: data.receivedGifts || [], ...data });
           });
           setIdolsData(firestoreIdols);
         });
 
         const unsubPosts = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), (snapshot) => {
-          const posts = [];
-          snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
-          setPostsData(posts);
+          const posts = []; snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() })); setPostsData(posts);
         });
 
         const unsubComments = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), (snapshot) => {
-          const comments = [];
-          snapshot.forEach(doc => comments.push({ id: doc.id, ...doc.data() }));
-          setCommentsData(comments);
+          const comments = []; snapshot.forEach(doc => comments.push({ id: doc.id, ...doc.data() })); setCommentsData(comments);
         });
 
         const unsubProducers = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'producers'), (snapshot) => {
-          const prods = [];
-          snapshot.forEach(doc => prods.push({ id: doc.id, ...doc.data() }));
-          setProducersData(prods);
+          const prods = []; snapshot.forEach(doc => prods.push({ id: doc.id, ...doc.data() })); setProducersData(prods);
         });
 
         return () => { unsubIdols(); unsubPosts(); unsubComments(); unsubProducers(); };
@@ -2408,7 +1185,6 @@
 
       useEffect(() => {
         if (!user || user.isAnonymous || !firebaseLoaded || !dbRef.current) return;
-        
         const { doc, getDoc, setDoc, updateDoc } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -2435,67 +1211,53 @@
                      newFreeTickets += 3;
                      updates.lastLoginDate = today;
                      updates.freeTickets = newFreeTickets;
-                     setTimeout(() => showToast("ログインボーナス。無料投票券(3票)を追加しました。"), 800);
+                     setTimeout(() => setDailyYellTickets(3), 800);
                    }
-                   if (Object.keys(updates).length > 0) {
-                     await updateDoc(docRef, updates);
-                     setUserData({ ...data, ...updates });
-                   } else { setUserData(data); }
+                   if (Object.keys(updates).length > 0) { await updateDoc(docRef, updates); setUserData({ ...data, ...updates }); } else { setUserData(data); }
                  } else if (currentRole === 'idol') {
-                   if (!data.idolId && targetIdolId) {
-                       await updateDoc(docRef, { idolId: targetIdolId });
-                       data.idolId = targetIdolId;
-                   }
+                   if (!data.idolId && targetIdolId) { await updateDoc(docRef, { idolId: targetIdolId }); data.idolId = targetIdolId; }
                    setUserData(data);
-                 } else {
-                   setUserData(data); // admin
-                 }
+                 } else { setUserData(data); }
                } else {
-                 const initData = { 
-                   role: currentRole, email: user.email || 'anonymous', freeTickets: 3, paidTickets: 0, totalPts: 0, 
-                   lastLoginDate: today, createdAt: new Date().toISOString() 
-                 };
+                 const initData = { role: currentRole, email: user.email || 'anonymous', freeTickets: 3, paidTickets: 0, totalPts: 0, lastLoginDate: today, createdAt: new Date().toISOString() };
                  if (targetIdolId) initData.idolId = targetIdolId; 
                  await setDoc(docRef, initData);
                  setUserRole(currentRole);
                  setUserData(initData);
                }
-            } catch(e) { 
-               console.error("Firestore Error:", e); 
-            }
+            } catch(e) {}
         };
-        
         fetchUserProfile();
       }, [user, firebaseLoaded, activeTab]);
 
       const handleUpdateProfile = async (newProfile) => {
         const updatedData = { ...userData, ...newProfile };
         setUserData(updatedData);
-        
         if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, updateDoc, setDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-          try {
-            await updateDoc(docRef, newProfile);
-            return { success: true };
-          } catch (e) {
-            try {
-              await setDoc(docRef, updatedData);
-              return { success: true };
-            } catch(e2) {
-              return { success: false, error: e2 };
-            }
-          }
+          try { await updateDoc(docRef, newProfile); return { success: true }; } 
+          catch (e) { try { await setDoc(docRef, updatedData); return { success: true }; } catch(e2) { return { success: false, error: e2 }; } }
+        }
+        return { success: true };
+      };
+
+      const handleUpdateIdolProfile = async (newProfile) => {
+        if (!userData.idolId) return;
+        const updatedIdols = idolsData.map(idol => String(idol.id) === String(userData.idolId) ? { ...idol, ...newProfile } : idol);
+        setIdolsData(updatedIdols);
+        if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
+          const { doc, setDoc } = window.FirebaseHelper;
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+          const idolRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'idols', String(userData.idolId));
+          try { await setDoc(idolRef, newProfile, { merge: true }); return { success: true }; } catch (e) { return { success: false, error: e }; }
         }
         return { success: true };
       };
 
       const handleAuthSubmit = async (email, password, isLogin) => {
-        if (!firebaseLoaded || !authRef.current) {
-          showToast("【エラー】Firebaseの設定が行われていません。");
-          return;
-        }
+        if (!firebaseLoaded || !authRef.current) { showToast("【エラー】Firebaseの設定が行われていません。"); return; }
         const { signInWithEmailAndPassword, createUserWithEmailAndPassword, doc, setDoc, sendEmailVerification } = window.FirebaseHelper;
         const auth = authRef.current;
         const db = dbRef.current;
@@ -2504,121 +1266,53 @@
         try {
           if (isLogin) {
             await signInWithEmailAndPassword(auth, email, password);
-            setShowAuthModal(false);
-            setShowAdminModal(false);
-            
+            setShowAuthModal(false); setShowAdminModal(false);
             setTimeout(() => {
                 const isAdmin = email === ADMIN_EMAIL;
                 const isIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === email);
-                if(isAdmin) {
-                   setActiveTab('adminDashboard');
-                   showToast("管理者としてログインしました。");
-                } else if(isIdol) {
-                   setActiveTab('idolMyPage');
-                   showToast("アイドルアカウントでログインしました。");
-                } else {
-                   showToast("ログインしました。");
-                }
+                if(isAdmin) { setActiveTab('adminDashboard'); showToast("管理者としてログインしました。"); } 
+                else if(isIdol) { setActiveTab('idolMyPage'); showToast("アイドルアカウントでログインしました。"); } 
+                else { showToast("ログインしました。"); }
             }, 500);
-
           } else {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const newUser = userCredential.user;
-            
             try { await sendEmailVerification(newUser); } catch(e) {}
             
             const docRef = doc(db, 'artifacts', appId, 'users', newUser.uid, 'profile', 'data');
             const today = new Date().toISOString().split('T')[0];
-            
             const isAdmin = email === ADMIN_EMAIL;
             const matchedIdol = idolsDataRef.current.find(idol => idol.loginEmail && idol.loginEmail === email);
             const defaultRole = isAdmin ? 'admin' : (matchedIdol ? 'idol' : 'producer');
             const targetIdolId = matchedIdol ? matchedIdol.id : null;
 
-            const initData = { 
-              role: defaultRole, email: email, freeTickets: 3, paidTickets: 0, totalPts: 0, 
-              lastLoginDate: today, createdAt: new Date().toISOString() 
-            };
+            const initData = { role: defaultRole, email: email, freeTickets: 3, paidTickets: 0, totalPts: 0, lastLoginDate: today, createdAt: new Date().toISOString() };
             if (targetIdolId) initData.idolId = targetIdolId;
-
             try { await setDoc(docRef, initData); } catch(e) {}
             
-            setShowAuthModal(false);
-            setShowAdminModal(false);
-
-            if (defaultRole === 'admin') {
-                setActiveTab('adminDashboard');
-                showToast("管理者アカウントを作成・ログインしました。");
-            } else if (defaultRole === 'idol') {
-                setActiveTab('idolMyPage');
-                showToast("アイドル用アカウントとして登録されました。");
-            } else {
-                showToast("プロデューサー登録が完了しました！登録メールに確認メールを送信しました。");
-            }
+            setShowAuthModal(false); setShowAdminModal(false);
+            if (defaultRole === 'admin') { setActiveTab('adminDashboard'); showToast("管理者として登録されました。"); } 
+            else if (defaultRole === 'idol') { setActiveTab('idolMyPage'); showToast("アイドルとして登録されました。"); } 
+            else { showToast("プロデューサー登録完了！確認メールを送信しました。"); }
           }
-        } catch (error) {
-          console.error(error);
-          let msg = "エラーが発生しました。";
-          if (error.code === 'auth/email-already-in-use') msg = "このメールアドレスは既に登録されています。";
-          else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "メールアドレスまたはパスワードが間違っています。";
-          else if (error.code === 'auth/weak-password') msg = "パスワードは6文字以上で設定してください。";
-          showToast(msg);
-        }
+        } catch (error) { showToast("エラー: " + error.message); }
       };
 
       const handleLogout = async () => {
-        if (firebaseLoaded && authRef.current) {
-          const { signOut } = window.FirebaseHelper;
-          await signOut(authRef.current);
-        }
-        setUser(null);
-        setUserRole('guest');
-        setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
-        setActiveTab('home');
-        showToast("ログアウトしました。");
-      };
-
-      const handleUpdateIdolProfile = async (newProfile) => {
-        if (!userData.idolId) return;
-        const updatedIdols = idolsData.map(idol => 
-          String(idol.id) === String(userData.idolId) ? { ...idol, ...newProfile } : idol
-        );
-        setIdolsData(updatedIdols);
-
-        if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
-          const { doc, setDoc } = window.FirebaseHelper;
-          const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-          const idolRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'idols', String(userData.idolId));
-          try {
-            await setDoc(idolRef, newProfile, { merge: true });
-            return { success: true };
-          } catch (e) {
-            console.error("Idol profile update error:", e);
-            return { success: false, error: e };
-          }
-        }
-        return { success: true };
+        if (firebaseLoaded && authRef.current) await window.FirebaseHelper.signOut(authRef.current);
+        setUser(null); setUserRole('guest'); setUserData({ freeTickets: 0, paidTickets: 0, totalPts: 0 }); setActiveTab('home'); showToast("ログアウトしました。");
       };
 
       const updateTickets = async (freeDelta, paidDelta, ptsDelta = 0) => {
         const newFree = Math.max(0, userData.freeTickets + freeDelta);
         const newPaid = Math.max(0, userData.paidTickets + paidDelta);
         const newPts = (userData.totalPts || 0) + ptsDelta; 
-        
-        const updatedData = { ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts };
-        setUserData(updatedData);
-
+        setUserData({ ...userData, freeTickets: newFree, paidTickets: newPaid, totalPts: newPts });
         if (user && !user.isAnonymous && firebaseLoaded && dbRef.current) {
           const { doc, updateDoc } = window.FirebaseHelper;
           const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           const docRef = doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-          try {
-            await updateDoc(docRef, {
-              freeTickets: newFree, paidTickets: newPaid, totalPts: newPts
-            });
-          } catch (e) {
-            console.error("Ticket update error:", e);
-          }
+          try { await updateDoc(docRef, { freeTickets: newFree, paidTickets: newPaid, totalPts: newPts }); } catch (e) {}
         }
       };
 
@@ -2633,67 +1327,36 @@
         const iconColors = ["from-amber-200 to-amber-500", "from-slate-200 to-slate-400", "from-orange-200 to-orange-500", "from-pink-200 to-pink-500", "from-purple-200 to-purple-500"];
         const myColor = producerData.iconColor || iconColors[Math.floor(Math.random() * iconColors.length)];
 
-        await setDoc(producerRef, {
-          id: user.uid,
-          name: userData.name || "名無しプロデューサー",
-          iconColor: myColor,
-          profileImage: userData.profileImage || "",
-          votes: {
-            ...producerData.votes,
-            [idolId]: currentIdolVotes + amount
-          },
-          totalVotes: producerData.totalVotes + amount,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
+        await setDoc(producerRef, { id: user.uid, name: userData.name || "名無しプロデューサー", iconColor: myColor, profileImage: userData.profileImage || "", votes: { ...producerData.votes, [idolId]: currentIdolVotes + amount }, totalVotes: producerData.totalVotes + amount, updatedAt: new Date().toISOString() }, { merge: true });
 
         const idolRef = doc(db, 'artifacts', appId, 'public', 'data', 'idols', String(idolId));
         const idolUpdate = { totalVotes: increment(amount) };
-        if (itemId) {
-          idolUpdate.receivedGifts = arrayUnion({
-            itemId: itemId,
-            producerId: user.uid,
-            producerName: userData.name || "名無しP",
-            timestamp: new Date().toISOString()
-          });
-        }
+        if (itemId) { idolUpdate.receivedGifts = arrayUnion({ itemId: itemId, producerId: user.uid, producerName: userData.name || "名無しP", timestamp: new Date().toISOString() }); }
         await setDoc(idolRef, idolUpdate, { merge: true });
-
         return true;
       };
 
       const handleVoteForIdol = async (idolId, amount, actionType = '投票', itemId = null) => {
-        if (!user || user.isAnonymous) {
-          setShowAuthModal(true);
-          return;
-        }
+        if (!user || user.isAnonymous) return setShowAuthModal(true);
         await processVoteAndGift(idolId, amount, actionType, itemId);
       };
 
       const handleQuickVote = async (e, idol) => {
         e.stopPropagation(); 
         if (!user || user.isAnonymous) return setShowAuthModal(true);
-
         if (userData.freeTickets >= 1) {
           await updateTickets(-1, 0, 1);
           await handleVoteForIdol(idol.id, 1, '無料投票');
           showToast(`💝 ${idol.name} に1票投票しました！`);
-          
           if (typeof confetti !== 'undefined') {
             const rect = e.target.getBoundingClientRect();
-            const x = (rect.left + rect.width / 2) / window.innerWidth;
-            const y = (rect.top + rect.height / 2) / window.innerHeight;
-            confetti({ particleCount: 40, spread: 50, origin: { x, y }, colors: ['#f472b6', '#ec4899', '#fbcfe8', '#fb7185'], disableForReducedMotion: true, zIndex: 9999 });
+            confetti({ particleCount: 40, spread: 50, origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight }, colors: ['#f472b6', '#ec4899', '#fbcfe8', '#fb7185'], zIndex: 9999 });
           }
-        } else {
-          showToast("無料票が不足しています。詳細からギフトを贈って応援しましょう！");
-        }
+        } else { showToast("無料票が不足しています。"); }
       };
 
       const handleDirectGift = async (idol, itemId, votes, actionType) => {
-        if (!user || user.isAnonymous) {
-          setShowAuthModal(true);
-          return;
-        }
+        if (!user || user.isAnonymous) return setShowAuthModal(true);
         await updateTickets(0, 0, votes);
         await processVoteAndGift(idol.id, votes, actionType, itemId);
         setSuccessModalData({ idolName: idol.name, amount: votes, actionType });
@@ -2702,81 +1365,43 @@
       const handlePostComment = async (idolId, text) => {
         if (!user || user.isAnonymous) return setShowAuthModal(true);
         if (!text.trim()) return;
-
         const { collection, addDoc } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), {
-          idolId: String(idolId),
-          userId: user.uid,
-          userName: userData.name || "名無しP",
-          userIcon: userData.profileImage || "",
-          text: text,
-          createdAt: new Date().toISOString()
-        });
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), { idolId: String(idolId), userId: user.uid, userName: userData.name || "名無しP", userIcon: userData.profileImage || "", text: text, createdAt: new Date().toISOString() });
         showToast("メッセージを送信しました。");
+      };
+
+      const handlePostTimelineComment = async (postId, idolId, text) => {
+        if (!user || user.isAnonymous) return setShowAuthModal(true);
+        if (!text.trim()) return;
+        const { collection, addDoc } = window.FirebaseHelper;
+        const db = dbRef.current;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        try {
+          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), { postId: String(postId), idolId: String(idolId), userId: user.uid, userName: userData.name || "名無しP", userIcon: userData.profileImage || "", text: text, createdAt: new Date().toISOString() });
+          showToast("コメントを送信しました！");
+        } catch (e) { showToast("コメントの送信に失敗しました。"); }
       };
 
       const handlePostTimeline = async (postData) => {
         const { collection, addDoc } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
-          ...postData,
-          likes: 0,
-          likedBy: [],
-          createdAt: new Date().toISOString()
-        });
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), { ...postData, likes: 0, likedBy: [], createdAt: new Date().toISOString() });
       };
 
       const handleLikePost = async (postId) => {
         if (!user || user.isAnonymous) return setShowAuthModal(true);
         const post = postsData.find(p => p.id === postId);
         if (!post) return;
-        
         const isLiked = post.likedBy && post.likedBy.includes(user.uid);
         const { doc, setDoc } = window.FirebaseHelper;
         const db = dbRef.current;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
         let newLikedBy = post.likedBy || [];
-        if (isLiked) {
-          newLikedBy = newLikedBy.filter(id => id !== user.uid);
-        } else {
-          newLikedBy.push(user.uid);
-        }
-
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId), {
-          likes: newLikedBy.length,
-          likedBy: newLikedBy
-        }, { merge: true });
-      };
-
-// Appコンポーネント内に以下を追加
-      const handlePostTimelineComment = async (postId, idolId, text) => {
-        if (!user || user.isAnonymous) return setShowAuthModal(true);
-        if (!text.trim()) return;
-
-        const { collection, addDoc } = window.FirebaseHelper;
-        const db = dbRef.current;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-        try {
-          await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), {
-            postId: String(postId), // どの投稿へのコメントかを紐付け
-            idolId: String(idolId), // 誰の投稿へのコメントかを紐付け
-            userId: user.uid,
-            userName: userData.name || "名無しP",
-            userIcon: userData.profileImage || "",
-            text: text,
-            createdAt: new Date().toISOString()
-          });
-          showToast("コメントを送信しました！");
-        } catch (e) {
-          console.error("Comment error:", e);
-          showToast("コメントの送信に失敗しました。");
-        }
+        if (isLiked) newLikedBy = newLikedBy.filter(id => id !== user.uid); else newLikedBy.push(user.uid);
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId), { likes: newLikedBy.length, likedBy: newLikedBy }, { merge: true });
       };
 
       const filteredIdols = useMemo(() => {
@@ -2791,50 +1416,18 @@
 
       const scrollPosRef = useRef(0);
 
-      const openIdolDetail = (idol) => { 
-        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
-        setSelectedIdol(idol); 
-        setActiveTab('idolDetail'); 
-        window.scrollTo(0,0); 
-      };
-      const openArticleDetail = (article) => {
-        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY;
-        setSelectedArticle(article);
-        setActiveTab('articleDetail');
-        window.scrollTo(0,0);
-      };
-      const openEventDetail = (event) => {
-        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY;
-        setSelectedEvent(event);
-        setActiveTab('eventDetail');
-        window.scrollTo(0,0);
-      };
-      
-
-
-
-
-      const openProducerDetail = (producer) => { 
-        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
-        setSelectedProducer(producer); 
-        setActiveTab('producerDetail'); 
-        window.scrollTo(0,0); 
-      };
-
-      const handleBackToHome = () => {
-        setActiveTab('home');
-        setTimeout(() => {
-          window.scrollTo({ top: scrollPosRef.current, behavior: 'instant' });
-        }, 50);
-      };
-
+      const openIdolDetail = (idol) => { if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; setSelectedIdol(idol); setActiveTab('idolDetail'); window.scrollTo(0,0); };
+      const openArticleDetail = (article) => { if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; setSelectedArticle(article); setActiveTab('articleDetail'); window.scrollTo(0,0); };
+      const openEventDetail = (event) => { if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; setSelectedEvent(event); setActiveTab('eventDetail'); window.scrollTo(0,0); };
+      const openProducerDetail = (producer) => { if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; setSelectedProducer(producer); setActiveTab('producerDetail'); window.scrollTo(0,0); };
+      const handleBackToHome = () => { setActiveTab('home'); setTimeout(() => { window.scrollTo({ top: scrollPosRef.current, behavior: 'instant' }); }, 50); };
       const scrollToSection = (id) => { if(activeTab !== 'home') setActiveTab('home'); setTimeout(() => { const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100); };
 
       return (
         <div className="pb-24">
           <Toast message={toastMessage} />
-
           <GlobalTelop event={globalEvent} />          
+          {dailyYellTickets && <DailyYellModal tickets={dailyYellTickets} onClose={() => setDailyYellTickets(null)} />}
 
           {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} />}
           {showAdminModal && <AuthModal onClose={() => setShowAdminModal(false)} onAuthSubmit={handleAuthSubmit} isAdminOnly={true} />}
@@ -2874,11 +1467,15 @@
                 </div>
                 
                 <nav className="hidden md:flex items-center gap-10 text-[10px] tracking-[0.2em] font-medium text-slate-600">
-                  {['HOME', 'EVENT', 'IDOLS', 'MAGAZINE'].map((item) => (
+                  {['HOME', 'EVENT', 'IDOLS', 'MAGAZINE', 'AUDITION'].map((item) => (
                     <button key={item} onClick={() => {
-                      const id = item === 'EVENT' ? 'ranking' : item === 'IDOLS' ? 'idol-list' : item.toLowerCase();
-                      scrollToSection(id);
-                    }} className="hover:text-pink-500 transition-colors uppercase relative group">
+                      if (item === 'AUDITION') {
+                        window.open(STUDIO_LP_URL, '_blank');
+                      } else {
+                        const id = item === 'EVENT' ? 'ranking' : item === 'IDOLS' ? 'idol-list' : item.toLowerCase();
+                        scrollToSection(id);
+                      }
+                    }} className={`uppercase relative group transition-colors ${item === 'AUDITION' ? 'text-pink-500 font-bold' : 'hover:text-pink-500'}`}>
                       {item}
                       <span className="absolute -bottom-2 left-0 w-0 h-px bg-pink-300 transition-all duration-300 group-hover:w-full"></span>
                     </button>
@@ -2899,32 +1496,23 @@
               <IdolDetailView idol={selectedIdol} onBack={handleBackToHome} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} producersData={producersData} postsData={postsData} commentsData={commentsData} onPostComment={(text) => handlePostComment(selectedIdol.id, text)} onLikePost={handleLikePost} onDirectGift={(itemId, votes, actionType) => handleDirectGift(selectedIdol, itemId, votes, actionType)} user={user} />
             ) : activeTab === 'eventDetail' && selectedEvent ? (
               <EventDetailView event={selectedEvent} onBack={handleBackToHome} idolsData={idolsData} onIdolSelect={openIdolDetail} onQuickVote={handleQuickVote} />
-
-
-
             ) : activeTab === 'producerDetail' && selectedProducer ? (
               <ProducerDetailView producer={selectedProducer} onBack={handleBackToHome} />
             ) : activeTab === 'articleDetail' && selectedArticle ? (
               <ArticleDetailView article={selectedArticle} onBack={handleBackToHome} />
-
-
+            ) : activeTab === 'allIdolsList' ? (
+              <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
+            ) : (
+              <div className="animate-fade-in">
+                
                 {/* HERO SECTION */}
-
-
-
-   <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
+                <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center relative">
                     <div className="relative w-full max-w-4xl flex flex-col items-center mb-4">
                       <img src="./top.png" className="w-full object-contain relative z-10" onError={(e) => e.target.style.display='none'} />
-                     
-
-
                       <a href={STUDIO_LP_URL} target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block">
                         <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
                       </a>
-
-
-
                     </div>
                   </div>
                 </section>
@@ -2945,6 +1533,11 @@
                           <div key={idol.id} className="w-56 shrink-0 relative rounded-none overflow-hidden group bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
                             <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
                               <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                              {idol.isRookie && (
+                                <div className="absolute -top-1 -right-8 bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 text-white text-[8px] font-bold tracking-widest px-8 py-1.5 shadow-md transform rotate-45 z-10 animate-pulse">
+                                  ✨NEW GEM
+                                </div>
+                              )}
                               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                             </div>
                             <div className="absolute inset-x-0 bottom-0 p-6 text-white flex flex-col justify-end h-full pointer-events-none">
@@ -3018,7 +1611,7 @@
                                   }
 
                                   const topThree = currentRankingData.slice(0, 3);
-                                  const others = currentRankingData.slice(3, 6); // TOPページでは上位6名のみ表示
+                                  const others = currentRankingData.slice(3, 6); 
                                   const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
 
                                   if(currentRankingData.length === 0) {
@@ -3202,6 +1795,11 @@
                         <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
                           <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)]">
                             <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                            {idol.isRookie && (
+                              <div className="absolute -top-1 -right-8 bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 text-white text-[8px] font-bold tracking-widest px-8 py-1.5 shadow-md transform rotate-45 z-10 animate-pulse">
+                                ✨NEW GEM
+                              </div>
+                            )}
                             {idol.isStreaming && (
                               <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
                                 On Air
@@ -3223,8 +1821,6 @@
                   </div>
                 </section>
 
-
-
                 {/* LIVE TIMELINE */}
                 <LiveTimelineSection 
                   posts={postsData} 
@@ -3234,11 +1830,9 @@
                   onLike={handleLikePost} 
                   onComment={handlePostTimelineComment} 
                   onLogin={() => setShowAuthModal(true)} 
-                  producersData={producersData} // 🌟 ここを追加
-                  userRole={userRole}           // 🌟 ここを追加
+                  producersData={producersData}
+                  userRole={userRole}
                 />
-
-
 
                 {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-20 bg-slate-50 border-y border-slate-200 mb-20">
@@ -3272,7 +1866,6 @@
                   </div>
                 </section>
 
-             
                 {/* MAGAZINE ARCHIVE */}
                 <section id="magazine" className="py-24 relative overflow-hidden max-w-7xl mx-auto px-6 mb-20">
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full bg-slate-50/50 blur-3xl -z-10 rounded-full"></div>
@@ -3293,14 +1886,13 @@
                   </div>
                 </section>
 
-
                 {/* OFF-MELTY CATALOG */}
                 <OffMeltyCatalogSection 
                   catalog={OFF_MELTY_CATALOG} 
                   idols={idolsData} 
                 />
 
-{/* MOSHI-AI WEB MAGAZINE */}
+                {/* MOSHI-AI WEB MAGAZINE */}
                 <MoshiAiMagazineSection 
                   articles={WEB_MAGAZINE_ARTICLES}
                   categories={MAG_CATEGORIES}
@@ -3356,8 +1948,8 @@
             <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white/90 via-white/50 to-transparent z-[100] md:flex md:justify-end animate-fade-in-up pointer-events-none pb-8 pr-8">
               <div className="max-w-xs w-full ml-auto flex flex-col items-end gap-2 pointer-events-auto">
                 <div className="bg-slate-900 text-white text-[9px] tracking-widest py-1.5 px-4 uppercase shadow-lg">New Audition</div>
-                <a href="https://line.me" target="_blank" rel="noreferrer" className="block hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.15)] bg-white p-1">
-                  <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-16 object-contain" onError={(e) => e.target.style.display='none'} />
+                <a href={STUDIO_LP_URL} target="_blank" rel="noopener noreferrer" className="block hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.15)] bg-white p-1 border-none cursor-pointer">
+                  <img src="./line_btn.png" alt="アイドルエントリー詳細へ！" className="w-full max-h-16 object-contain" onError={(e) => e.target.style.display='none'} />
                 </a>
               </div>
             </div>
