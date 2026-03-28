@@ -1400,6 +1400,48 @@
       );
     };
 
+
+
+
+
+    const IdolRecruitLP = ({ onBack }) => {
+      return (
+        <div className="max-w-5xl mx-auto px-4 py-16 animate-fade-in-up pb-32 pt-32 text-center">
+          <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none mx-auto">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO HOME
+          </button>
+
+          <div className="bg-white border border-pink-200 shadow-2xl p-10 md:p-20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400"></div>
+            
+            <h1 className="text-3xl md:text-5xl font-serif text-slate-900 leading-tight mb-8 tracking-widest">
+              「もしも」が、<br className="md:hidden" />今日から「現実」に。
+            </h1>
+            <p className="text-sm md:text-lg text-pink-500 tracking-widest mb-12 font-medium">あなたの夢、ここから始まる。</p>
+            
+            {/* ここにLP用のメインのコンテンツを作り込んでいきます */}
+            <div className="aspect-video bg-pink-50 border border-pink-100 flex items-center justify-center mb-12">
+              <span className="text-pink-400 tracking-widest font-light text-xs">※ここに詳細なLPコンテンツを作ります</span>
+            </div>
+
+            <p className="text-slate-600 leading-loose font-light mb-12 max-w-2xl mx-auto text-sm md:text-base">
+              王道Kawaii ＆ Kawaii Laboスタイル！<br/>
+              未経験でも大丈夫。私たちと一緒に、新しい物語を作りませんか？
+            </p>
+
+            <a href="https://line.me" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-4 bg-[#06C755] hover:bg-[#05b34c] text-white px-12 py-5 rounded-full font-bold tracking-widest transition-all duration-300 shadow-[0_10px_20px_rgba(6,199,85,0.3)] hover:-translate-y-1 text-sm md:text-base">
+              <i className="fa-brands fa-line text-2xl"></i> LINEで無料エントリー
+            </a>
+          </div>
+        </div>
+      );
+    };
+
+
+
+
+
+
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
@@ -2707,6 +2749,15 @@
         window.scrollTo(0,0);
       };
       
+      const openIdolLP = () => {
+        if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY;
+        setActiveTab('idolLP');
+        window.scrollTo(0,0);
+      };
+
+
+
+
       const openProducerDetail = (producer) => { 
         if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
         setSelectedProducer(producer); 
@@ -2799,6 +2850,13 @@
               <ProducerDetailView producer={selectedProducer} onBack={handleBackToHome} />
             ) : activeTab === 'articleDetail' && selectedArticle ? (
               <ArticleDetailView article={selectedArticle} onBack={handleBackToHome} />
+
+
+            ) : activeTab === 'idolLP' ? (
+              <IdolRecruitLP onBack={handleBackToHome} />
+
+
+
             ) : activeTab === 'allIdolsList' ? (
               <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} /*...略...*/ />
             ) : (
@@ -2811,9 +2869,15 @@
                   <div className="flex flex-col items-center relative">
                     <div className="relative w-full max-w-4xl flex flex-col items-center mb-4">
                       <img src="./top.png" className="w-full object-contain relative z-10" onError={(e) => e.target.style.display='none'} />
-                      <a href="https://line.me" target="_blank" rel="noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)]">
-                        <img src="./line_entry_banner.png" alt="LINEで簡単！無料エントリー" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
-                      </a>
+                     
+
+
+<button onClick={openIdolLP} className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none">
+                        <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
+                      </button>
+
+
+
                     </div>
                   </div>
                 </section>
