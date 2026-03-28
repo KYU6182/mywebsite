@@ -19,6 +19,35 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
+
+
+    @keyframes slide-in-up {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes sparkle-move {
+      0% { background-position: 0 0, 5px 5px; }
+      100% { background-position: -10px -10px, -5px -5px; }
+    }
+
+    .animate-slide-in-up { animation: slide-in-up 0.5s ease-out forwards; }
+    .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+
+    /* キラキラしたエフェクト（CSS） */
+    .sparkle-effect {
+      background: radial-gradient(circle, #fff 0%, transparent 1%), radial-gradient(circle, #fff 0%, transparent 1%);
+      background-size: 10px 10px, 10px 10px;
+      background-position: 0 0, 5px 5px;
+      opacity: 0.3;
+      filter: blur(2px);
+      animation: sparkle-move 5s linear infinite;
+    }
+
+
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Oswald:wght@300;400;700&display=swap');
     
     body { 
@@ -1438,8 +1467,36 @@
     };
 
 
+    const IdolRecruitLPFirstView = ({ onLineEntry }) => {
+      // 生成画像のURL（ここに私が生成した画像のURLが入ります）
+      const mainImageUrl = 'uploaded:uploaded_id_recruitment_lp_top_v1.png';
 
+      return (
+        <section id="recruit-lp-top" class="w-full h-screen bg-cover bg-center bg-no-repeat relative flex flex-col justify-end items-center pb-20 px-4 md:px-10 overflow-hidden" style="background-image: url('${mainImageUrl}')">
+          {/* キラキラしたエフェクト（CSSで生成） */}
+          <div className="absolute inset-0 sparkle-effect"></div>
 
+          {/* キャッチコピー（HTMLテキストで再配置） */}
+          <div className="absolute top-1/4 left-10 md:left-20 max-w-lg z-20 text-left">
+            <h1 className="font-serif text-5xl md:text-7xl leading-tight mb-8">
+              <span className="block text-pink-100 opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.1s;">もしも</span>
+              <span className="block text-pink-100 opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.3s;">私が、</span>
+              <span className="block text-white font-bold opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.5s;">アイドルに</span>
+              <span className="block text-white font-bold opacity-0 transform translate-y-10 animate-slide-in-up" style="animation-delay: 0.7s;">なったら。</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-pink-300 tracking-widest opacity-0 animate-fade-in" style="animation-delay: 1s;">あなたの夢、ここから始まる。</p>
+          </div>
+
+          {/* ユーザー提供バナー（クリック可能なボタン） */}
+          <button onclick={onLineEntry} class="w-[85%] sm:w-[70%] max-w-lg relative z-30 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none">
+            <img src="./line_entry_banner.png" alt="アイドルオーディション開催中！" class="w-full h-auto object-contain" />
+          </button>
+
+          {/* 生成画像に含まれる、その他要素（吹き出し、カテゴリーアイコンなど）は、生成画像の内容と重ならないようにCSSで再配置可能（今回は不要と判断） */}
+        </section>
+      );
+    };
+ 
 
 
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
