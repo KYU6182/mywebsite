@@ -291,6 +291,18 @@
       </div>
     );
 
+    const GlobalTelop = ({ event }) => {
+      if (!event) return null;
+      return (
+        <div className="fixed top-28 left-1/2 transform -translate-x-1/2 z-[350] bg-gradient-to-r from-pink-500 to-rose-500 text-white px-6 py-3 rounded-full shadow-[0_10px_30px_rgba(244,114,182,0.4)] flex items-center gap-3 animate-fade-in-up border border-white/20 whitespace-nowrap">
+          <div className="text-xl animate-bounce">🎉</div>
+          <div className="text-[10px] sm:text-xs font-medium tracking-wide">
+            <span className="font-bold text-pink-100">{event.producerName}</span> P が <span className="font-bold">{event.idolName}</span> に <span className="text-yellow-200 font-bold">{event.itemName}</span> を贈りました！
+          </div>
+        </div>
+      );
+    };
+  
     const Toast = ({ message }) => {
       if (!message) return null;
       return (
@@ -1156,13 +1168,18 @@
         }
       };
 
+// ▼▼▼ 既存のコード（ここを書き換えます） ▼▼▼
       const handlePostTimelineSubmit = async (e) => {
         e.preventDefault();
         if(!timelineText) return;
-        await onPostTimeline({ idolId: idolData.id, text: timelineText, img: timelineImg });
+        
+        // 🌟🌟🌟 isSecret を追加して送るように書き換え 🌟🌟🌟
+        await onPostTimeline({ idolId: idolData.id, text: timelineText, img: timelineImg, isSecret: isSecretPost });
+        
         showToast("活動報告をタイムラインに投稿しました！");
         setTimelineText("");
         setTimelineImg("");
+        setIsSecretPost(false); // 送信後にリセット
       };
 
       const toggleWishlist = (itemId) => {
@@ -1358,6 +1375,17 @@
                 <form onSubmit={handlePostTimelineSubmit} className="space-y-6">
                   <div>
                     <textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="今日はどんな一日でしたか？..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
+                  </div>
+
+// ▼▼▼ 既存のコード ▼▼▼
+                  <div>
+                    <textarea value={timelineText} onChange={(e) => setTimelineText(e.target.value)} placeholder="今日はどんな一日でしたか？..." rows="4" className="w-full bg-slate-50 border border-slate-200 p-4 focus:outline-none focus:border-pink-300 transition-colors font-light text-sm resize-none"></textarea>
+                  </div>
+                  <div className="flex items-center gap-2 bg-pink-50/50 p-3 border border-pink-100">
+                    <input type="checkbox" id="secretPost" checked={isSecretPost} onChange={(e) => setIsSecretPost(e.target.checked)} className="accent-pink-500 w-4 h-4" />
+                    <label htmlFor="secretPost" className="text-[10px] text-slate-600 font-medium cursor-pointer tracking-wider">
+                      シークレット投稿にする <span className="text-pink-500 font-light">（累計100票以上のプロデューサー限定公開）</span>
+                    </label>
                   </div>
                   <div>
                     <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Image Upload (写真添付)</label>
@@ -1695,25 +1723,101 @@
     );
 
 // --- 追加: タイムラインの1投稿カード ---
-    const TimelinePostCard = ({ post, idol, user, comments, onLike, onComment, onLogin }) => {
+    // --- 上書き: タイムラインの1投稿カード（シークレット対応版） ---
+    const TimelinePostCard = ({ post, idol, user, comments, onLike, onComment, onLogin, producerVotes = 0, userRole = 'guest' }) => {
       const [showCommentInput, setShowCommentInput] = useState(false);
       const [commentText, setCommentText] = useState("");
       
-      // この投稿へのコメントを抽出
-      const postComments = comments
-        .filter(c => c.postId === post.id)
-        .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const postComments = comments.filter(c => c.postId === post.id).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      // 🌟 シークレット判定（このアイドルへの累計投票数が100票以上、またはアイドル本人/管理者なら見れる）
+      const isSecret = post.isSecret;
+      const isUnlocked = !isSecret || producerVotes >= 100 || userRole === 'idol' || userRole === 'admin';
 
       const handleCommentSubmit = (e) => {
         e.preventDefault();
-        if (!user || user.isAnonymous) {
-          onLogin();
-          return;
-        }
+        if (!user || user.isAnonymous) return onLogin();
         if (!commentText.trim()) return;
         onComment(post.id, idol.id, commentText);
         setCommentText("");
       };
+
+      if (!idol) return null;
+
+      return (
+        <div className="bg-white/80 backdrop-blur-md p-6 md:p-8 rounded-none border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-all duration-300 group">
+          <div className="flex items-center gap-4 mb-5">
+            <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm" />
+            <div>
+              <p className="text-sm font-medium text-slate-800">{idol.name}</p>
+              <p className="text-[9px] text-slate-400 tracking-widest">{new Date(post.createdAt).toLocaleString()}</p>
+            </div>
+            {isSecret && (
+              <span className="ml-auto text-[8px] bg-slate-800 text-white px-2 py-0.5 tracking-widest uppercase flex items-center gap-1 shadow-sm"><i className="fa-solid fa-lock text-[8px]"></i> VIP ONLY</span>
+            )}
+          </div>
+          
+          {/* 🌟 コンテンツ表示（ロック状態によって分岐） */}
+          {isUnlocked ? (
+            <>
+              <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">{post.text}</p>
+              {post.img && (
+                <div className="mb-5 overflow-hidden border border-slate-100 bg-slate-50">
+                  <img src={post.img} className="w-full max-h-96 object-cover hover:scale-105 transition-transform duration-700 mix-blend-multiply" onError={handleImgError} />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="relative mb-5 border border-slate-100 bg-slate-50 overflow-hidden">
+              {/* ぼかしのかかったダミーコンテンツ */}
+              <div className="filter blur-md select-none pointer-events-none opacity-50 p-4">
+                <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">親愛なるプロデューサー様へ。今日は本当に特別な一日でした。実はずっと悩んでいたことがあって...（続きはVIP限定）</p>
+                {post.img && <img src={post.img} className="w-full h-48 object-cover mix-blend-multiply" onError={handleImgError} />}
+              </div>
+              {/* ロック画面のメッセージ */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] p-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-3 shadow-inner"><i className="fa-solid fa-lock text-lg"></i></div>
+                <h4 className="text-sm font-bold text-slate-800 mb-2">シークレット投稿</h4>
+                <p className="text-[10px] text-slate-600 font-light leading-relaxed">この投稿を見るには、<br/>{idol.name} への<span className="text-pink-500 font-medium">累計投票数が100票以上</span>必要です。<br/>（現在: {producerVotes} 票）</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-6 border-t border-slate-100 pt-4 mt-2">
+            <button onClick={() => onLike(post.id)} className={`flex items-center gap-2 text-xs transition-colors tracking-widest font-light ${post.likedBy?.includes(user?.uid) ? 'text-pink-500' : 'text-slate-400 hover:text-pink-400'}`}>
+              <i className={`${post.likedBy?.includes(user?.uid) ? 'fa-solid' : 'fa-regular'} fa-heart`}></i> {post.likes || 0}
+            </button>
+            <button onClick={() => isUnlocked && setShowCommentInput(!showCommentInput)} className={`flex items-center gap-2 text-xs tracking-widest font-light transition-colors ${isUnlocked ? 'text-slate-400 hover:text-slate-600' : 'text-slate-300 cursor-not-allowed'}`}>
+              <i className="fa-regular fa-comment"></i> {postComments.length}
+            </button>
+          </div>
+
+          {/* コメントセクション展開 */}
+          {showCommentInput && isUnlocked && (
+            <div className="mt-6 pt-4 border-t border-slate-50 animate-fade-in">
+              <div className="space-y-4 mb-4 max-h-48 overflow-y-auto hide-scrollbar pr-2">
+                {postComments.map(comment => (
+                  <div key={comment.id} className="flex gap-3 bg-slate-50/50 p-3 border border-slate-50">
+                    <MediaDisplay src={comment.userIcon} fallbackSrc="./default_idol.png" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                    <div>
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-[9px] font-medium text-slate-700">{comment.userName}</span>
+                        <span className="text-[8px] text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-light leading-relaxed">{comment.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <form onSubmit={handleCommentSubmit} className="flex gap-2">
+                <input type="text" value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="エールを送る..." className="flex-1 bg-slate-50 border border-slate-200 py-2 px-3 text-xs focus:outline-none focus:border-pink-300 transition-colors font-light text-slate-700" />
+                <button type="submit" disabled={!commentText.trim()} className="bg-slate-900 text-white px-4 py-2 text-[9px] tracking-widest hover:bg-pink-600 disabled:bg-slate-300 transition-colors uppercase">Send</button>
+              </form>
+            </div>
+          )}
+        </div>
+      );
+    };
 
       if (!idol) return null;
 
@@ -1782,10 +1886,12 @@
       );
     };
 
-    // --- 追加: タイムラインセクション全体 ---
-    const LiveTimelineSection = ({ posts, idols, user, comments, onLike, onComment, onLogin }) => {
-      // 最新の投稿順にソートし、上位10件を表示
+   
+    const LiveTimelineSection = ({ posts, idols, user, comments, onLike, onComment, onLogin, producersData, userRole }) => {
       const latestPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+      
+      // 🌟 現在のユーザーの投票データを取得
+      const currentUserProducerData = producersData.find(p => p.id === user?.uid) || { votes: {} };
 
       if (latestPosts.length === 0) return null;
 
@@ -1795,20 +1901,22 @@
           <div className="max-w-3xl mx-auto space-y-8">
             {latestPosts.map(post => {
               const idol = idols.find(i => String(i.id) === String(post.idolId));
+              // 🌟 このアイドルへの投票数を計算
+              const producerVotes = currentUserProducerData.votes[idol?.id] || 0;
+              
               return (
                 <TimelinePostCard 
-                  key={post.id} 
-                  post={post} 
-                  idol={idol} 
-                  user={user} 
-                  comments={comments} 
-                  onLike={onLike} 
-                  onComment={onComment}
-                  onLogin={onLogin}
+                  key={post.id} post={post} idol={idol} user={user} comments={comments} 
+                  onLike={onLike} onComment={onComment} onLogin={onLogin}
+                  producerVotes={producerVotes} userRole={userRole} // 🌟 ここを追加
                 />
               );
             })}
           </div>
+
+
+
+
           <div className="text-center mt-12">
              <p className="text-[10px] text-slate-400 tracking-[0.2em] font-light uppercase">End of recent updates</p>
           </div>
@@ -2087,6 +2195,7 @@
       const [showOutfitModal, setShowOutfitModal] = useState(false);
       const [showGiftModal, setShowGiftModal] = useState(false);
       const [successModalData, setSuccessModalData] = useState(null); 
+      const [globalEvent, setGlobalEvent] = useState(null);
       const [toastMessage, setToastMessage] = useState("");
       
       const [firebaseLoaded, setFirebaseLoaded] = useState(false);
@@ -2108,6 +2217,43 @@
 
       useEffect(() => {
         idolsDataRef.current = idolsData;
+      }, [idolsData]);
+
+      useEffect(() => {
+        if (idolsData.length === 0) return;
+        let latestGift = null;
+        let latestIdolName = "";
+        
+        // 全アイドルの履歴から「一番新しいギフト」を探し出す
+        idolsData.forEach(idol => {
+          if (idol.receivedGifts && idol.receivedGifts.length > 0) {
+            const gift = idol.receivedGifts[idol.receivedGifts.length - 1]; // 配列の最後が最新
+            if (!latestGift || new Date(gift.timestamp) > new Date(latestGift.timestamp)) {
+               latestGift = gift;
+               latestIdolName = idol.name;
+            }
+          }
+        });
+
+        // 最新のギフトが「過去15秒以内」に行われたものならテロップを表示！
+        if (latestGift) {
+          const now = new Date();
+          const giftTime = new Date(latestGift.timestamp);
+          const diffSeconds = (now - giftTime) / 1000;
+          
+          if (diffSeconds < 15) {
+            // カタログからアイテム名を探す
+            const item = OFF_MELTY_CATALOG.find(c => c.id === latestGift.itemId);
+            setGlobalEvent({
+              producerName: latestGift.producerName,
+              idolName: latestIdolName,
+              itemName: item ? item.name : '素敵なギフト'
+            });
+            // 6秒後にテロップを消す
+            const timer = setTimeout(() => setGlobalEvent(null), 6000);
+            return () => clearTimeout(timer);
+          }
+        }
       }, [idolsData]);
 
       useEffect(() => {
@@ -2650,7 +2796,9 @@
       return (
         <div className="pb-24">
           <Toast message={toastMessage} />
-          
+
+          <GlobalTelop event={globalEvent} />          
+
           {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} />}
           {showAdminModal && <AuthModal onClose={() => setShowAdminModal(false)} onAuthSubmit={handleAuthSubmit} isAdminOnly={true} />}
           {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
@@ -3035,7 +3183,8 @@
                 </section>
 
 
-{/* LIVE TIMELINE */}
+
+                {/* LIVE TIMELINE */}
                 <LiveTimelineSection 
                   posts={postsData} 
                   idols={idolsData} 
@@ -3044,7 +3193,10 @@
                   onLike={handleLikePost} 
                   onComment={handlePostTimelineComment} 
                   onLogin={() => setShowAuthModal(true)} 
+                  producersData={producersData} // 🌟 ここを追加
+                  userRole={userRole}           // 🌟 ここを追加
                 />
+
 
 
                 {/* PRODUCER RANKING */}
