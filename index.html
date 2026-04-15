@@ -533,14 +533,23 @@
       );
     };
     
-    const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false }) => {
+
+const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) => {
       const [isLogin, setIsLogin] = useState(true);
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [loading, setLoading] = useState(false);
+      // ▼▼ 法務チェック用State ▼▼
+      const [agreeTerms, setAgreeTerms] = useState(false);
+      const [agreeAge, setAgreeAge] = useState(false);
 
       const handleSubmit = async (e) => {
         e.preventDefault();
+        // 新規登録時はチェックが必須
+        if (!isLogin && (!agreeTerms || !agreeAge)) {
+          alert("利用規約と年齢確認への同意が必要です。");
+          return;
+        }
         setLoading(true);
         await onAuthSubmit(email, password, isLogin);
         setLoading(false);
@@ -559,7 +568,8 @@
             <div className="p-8">
               <h3 className="text-2xl font-light font-serif text-slate-800 mb-6 text-center">{isAdminOnly ? 'Admin Access' : (isLogin ? 'Welcome Back' : 'Create Account')}</h3>
               {isAdminOnly && <p className="text-[10px] text-center text-slate-400 mb-4">管理者用メールアドレスでログインしてください</p>}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Email Address</label>
                   <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800" placeholder="your@email.com" />
@@ -568,7 +578,27 @@
                   <label className="block text-[9px] font-medium tracking-widest text-slate-400 uppercase mb-2">Password</label>
                   <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className="w-full bg-transparent border-b border-slate-300 py-2 focus:outline-none focus:border-slate-800 transition-colors font-light text-slate-800" placeholder="••••••••" />
                 </div>
-                <button type="submit" disabled={loading} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none hover:bg-slate-800 transition-colors mt-4 disabled:bg-slate-400 flex justify-center items-center gap-2">
+
+                {/* ▼▼ 新規登録時の同意チェックボックス ▼▼ */}
+                {!isLogin && (
+                  <div className="space-y-3 pt-2">
+                    <label className="flex items-start gap-2 cursor-pointer group">
+                      <input type="checkbox" required checked={agreeTerms} onChange={e=>setAgreeTerms(e.target.checked)} className="mt-0.5 accent-pink-500" />
+                      <span className="text-[9px] text-slate-500 font-light leading-relaxed">
+                        <button type="button" onClick={(e) => {e.preventDefault(); onClose(); openLegal('terms');}} className="text-pink-500 underline underline-offset-2">利用規約</button> および <button type="button" onClick={(e) => {e.preventDefault(); onClose(); openLegal('privacy');}} className="text-pink-500 underline underline-offset-2">プライバシーポリシー</button> に同意します。
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 cursor-pointer group">
+                      <input type="checkbox" required checked={agreeAge} onChange={e=>setAgreeAge(e.target.checked)} className="mt-0.5 accent-pink-500" />
+                      <span className="text-[9px] text-slate-500 font-light leading-relaxed">
+                        18歳以上です。（18歳未満の場合は、親権者等法定代理人の同意を得ています）
+                      </span>
+                    </label>
+                  </div>
+                )}
+                {/* ▲▲ ここまで ▲▲ */}
+
+                <button type="submit" disabled={loading || (!isLogin && (!agreeTerms || !agreeAge))} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none hover:bg-slate-800 transition-colors mt-4 disabled:bg-slate-300 flex justify-center items-center gap-2">
                   {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : (isLogin ? 'LOGIN' : 'REGISTER')}
                 </button>
               </form>
@@ -577,6 +607,7 @@
         </div>
       );
     };
+
 
     const AdminDashboard = ({ idolsData, showToast }) => {
       const [newIdol, setNewIdol] = useState({ name: '', loginEmail: '', profileImage: '', catchphrase: '', pref: '', style: '', birthday: '' });
@@ -1506,6 +1537,114 @@
       );
     };
 
+
+// ▼▼▼ 法的表記用コンポーネント ▼▼▼
+    const LegalView = ({ type, onBack, onChangeType }) => {
+      const tabs = [
+        { id: 'terms', label: '利用規約' },
+        { id: 'privacy', label: 'プライバシーポリシー' },
+        { id: 'law', label: '特定商取引法に基づく表記' },
+        { id: 'fund', label: '資金決済法に基づく表記' }
+      ];
+
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-16 animate-fade-in-up pb-32 pt-32">
+          <button onClick={onBack} className="mb-10 text-slate-400 font-medium tracking-widest text-xs flex items-center gap-3 hover:text-pink-500 transition-colors bg-transparent border-none">
+            <i className="fa-solid fa-arrow-left-long"></i> BACK TO HOME
+          </button>
+          
+          <SectionTitle title="LEGAL INFORMATION" subtitle="法的表記とポリシー" />
+
+          <div className="flex flex-wrap gap-2 justify-center mb-12 border-b border-slate-200 pb-4">
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => onChangeType(tab.id)} className={`px-4 py-2 text-[10px] tracking-widest uppercase transition-all ${type === tab.id ? 'bg-slate-900 text-white font-medium shadow-md' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-white border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] p-8 md:p-12 prose prose-slate max-w-none prose-h3:font-serif prose-h3:font-light prose-h3:text-xl prose-h3:border-b prose-h3:border-slate-100 prose-h3:pb-2 prose-h4:text-sm prose-h4:font-bold prose-p:text-xs prose-p:leading-loose prose-p:text-slate-600 prose-li:text-xs prose-li:text-slate-600">
+            
+            {type === 'terms' && (
+              <div>
+                <h3>利用規約</h3>
+                <p>本規約は、当社が提供する「もしも私が、アイドルになったら。」（以下「本サービス」）の利用条件を定めるものです。</p>
+                <h4>第1条（適用）</h4>
+                <p>本規約は、本サービスを利用するすべてのユーザー（キャストとして登録するアイドル、およびプロデューサーとして登録する一般ユーザーの双方を含みます）に適用されます。</p>
+                <h4>第2条（未成年者の利用）</h4>
+                <p>未成年者が本サービスを利用する場合、法定代理人（親権者等）の同意を得た上で利用するものとします。特に、アイテムの購入（課金）や、キャストとしての収益分配の受領を行う場合は、別途当社が定める方法により親権者の同意を証明していただく場合があります。</p>
+                <h4>第3条（禁止事項）</h4>
+                <p>ユーザーは、本サービスの利用にあたり、以下の行為をしてはなりません。<br/>
+                  ・法令または公序良俗に違反する行為<br/>
+                  ・他のユーザー、キャスト、または当社のプライバシー、名誉、肖像権を侵害する行為<br/>
+                  ・キャストの個人情報（住所、本名、連絡先等）を聞き出す、または特定しようとする行為（ストーカー行為等）
+                </p>
+                <h4>第4条（免責事項）</h4>
+                <p>当社は、本サービスに事実上または法律上の瑕疵（安全性、信頼性、正確性、完全性、有効性、特定の目的への適合性、セキュリティなどに関する欠陥、エラーやバグ、権利侵害などを含みます）がないことを明示的にも黙示的にも保証しておりません。</p>
+              </div>
+            )}
+
+            {type === 'privacy' && (
+              <div>
+                <h3>プライバシーポリシー</h3>
+                <p>当社は、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。</p>
+                <h4>第1条（収集する個人情報）</h4>
+                <p>当社は、以下の情報を収集します。<br/>
+                  【プロデューサー】メールアドレス、決済情報、利用履歴<br/>
+                  【キャスト（アイドル）】氏名、住所、電話番号、生年月日、顔写真等の画像・動画データ、口座情報
+                </p>
+                <h4>第2条（個人情報の利用目的）</h4>
+                <p>・本サービスの提供、運営、および本人確認のため<br/>
+                  ・キャストへの報酬の支払い、および運営に必要な連絡（住所等の非公開情報は、運営からの郵送物や事務手続きのみに使用し、一般公開は決して行いません）<br/>
+                  ・不正利用の防止および対応のため
+                </p>
+                <h4>第3条（キャストの画像・動画の取り扱い）</h4>
+                <p>キャストが本サービス上にアップロードした画像・動画は、本サービス内および公式SNS等でのプロモーション目的で利用されます。キャストは本サービスを退会することで掲載の取り下げを要求できますが、既に販売された雑誌等の物理的・電磁的商品の回収は行えません。</p>
+              </div>
+            )}
+
+            {type === 'law' && (
+              <div>
+                <h3>特定商取引法に基づく表記</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
+                  <div className="font-bold text-slate-700">販売事業者</div><div className="md:col-span-3 text-slate-600">株式会社○○○（※実際の法人名を入力）</div>
+                  <div className="font-bold text-slate-700">運営責任者</div><div className="md:col-span-3 text-slate-600">山田 太郎</div>
+                  <div className="font-bold text-slate-700">所在地</div><div className="md:col-span-3 text-slate-600">〒150-0000 東京都渋谷区○○ 1-2-3</div>
+                  <div className="font-bold text-slate-700">お問い合わせ</div><div className="md:col-span-3 text-slate-600">info@example.com （電話番号はご請求に基づき遅滞なく開示いたします）</div>
+                  <div className="font-bold text-slate-700">販売価格</div><div className="md:col-span-3 text-slate-600">各商品・アイテムの購入ページに表示されます。</div>
+                  <div className="font-bold text-slate-700">お支払方法</div><div className="md:col-span-3 text-slate-600">クレジットカード決済（Stripe）</div>
+                  <div className="font-bold text-slate-700">商品の引き渡し時期</div><div className="md:col-span-3 text-slate-600">決済完了後、即時（デジタルアイテムの場合）。物理的な雑誌の場合は、指定の発売日または発送日によります。</div>
+                  <div className="font-bold text-slate-700">返品・キャンセル</div><div className="md:col-span-3 text-slate-600">デジタルコンテンツという性質上、決済完了後のキャンセル・返品・返金はお受けできません。</div>
+                </div>
+              </div>
+            )}
+
+            {type === 'fund' && (
+              <div>
+                <h3>資金決済法に基づく表記</h3>
+                <p className="mb-6">資金決済に関する法律第13条に基づく表示は以下の通りです。</p>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs border-t border-slate-100 pt-6">
+                  <div className="font-bold text-slate-700">発行事業者</div><div className="md:col-span-3 text-slate-600">株式会社○○○</div>
+                  <div className="font-bold text-slate-700">支払可能金額等</div><div className="md:col-span-3 text-slate-600">上限はございません。</div>
+                  <div className="font-bold text-slate-700">有効期間</div><div className="md:col-span-3 text-slate-600 text-pink-600 font-medium">有償で購入した票（ポイント）の有効期限は、購入日から起算して150日（約5ヶ月）とします。期限を過ぎた場合、未使用の票は無効となります。</div>
+                  <div className="font-bold text-slate-700">お問い合わせ先</div><div className="md:col-span-3 text-slate-600">info@example.com</div>
+                  <div className="font-bold text-slate-700">利用できる場所</div><div className="md:col-span-3 text-slate-600">本サービス「もしも私が、アイドルになったら。」のウェブサイト内においてのみ利用可能です。</div>
+                  <div className="font-bold text-slate-700">利用上の注意</div><div className="md:col-span-3 text-slate-600">原則として、払戻しはいたしません。詳細については利用規約をご確認ください。</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+    // ▲▲▲ 法的表記用コンポーネント ここまで ▲▲▲
+
+
+
+
+
+
+
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
         <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
@@ -2179,6 +2318,12 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
+      const [legalType, setLegalType] = useState('terms');
+      const openLegal = (type) => {
+        setLegalType(type);
+        setActiveTab('legal');
+        window.scrollTo(0, 0);
+      };
       const [selectedIdol, setSelectedIdol] = useState(null);
       const [selectedEvent, setSelectedEvent] = useState(null);
       const [idolsData, setIdolsData] = useState(INITIAL_IDOLS); 
@@ -2801,8 +2946,11 @@
 
           <GlobalTelop event={globalEvent} />          
 
-          {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} />}
+{showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onAuthSubmit={handleAuthSubmit} isAdminOnly={false} openLegal={openLegal} />}
           {showAdminModal && <AuthModal onClose={() => setShowAdminModal(false)} onAuthSubmit={handleAuthSubmit} isAdminOnly={true} />}
+
+
+
           {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
           {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(amount, type, itemId) => { handleVoteForIdol(selectedIdol.id, amount, type, itemId); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
           {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
@@ -2870,10 +3018,13 @@
               <ArticleDetailView article={selectedArticle} onBack={handleBackToHome} />
             ) : activeTab === 'idolLP' ? (
               <IdolRecruitLP onBack={handleBackToHome} />
-            ) : activeTab === 'allIdolsList' ? (
-              <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
-            ) : (
-              <div className="animate-fade-in">
+           
+) : activeTab === 'allIdolsList' ? (
+  <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
+) : activeTab === 'legal' ? (
+  <LegalView type={legalType} onBack={handleBackToHome} onChangeType={setLegalType} />
+) : (
+  <div className="animate-fade-in">
                 
                 {/* HERO SECTION */}
                 <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
@@ -3292,11 +3443,14 @@
             <div className="bg-slate-900 text-white/50 pt-8 pb-4">
               <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left mb-6">
                 <p className="text-[9px] tracking-[0.2em] uppercase">&copy; 2026 Moshi-Ai Project. All Rights Reserved.</p>
-                <div className="flex justify-center gap-8 text-[9px] tracking-widest uppercase">
-                  <a href="#" className="hover:text-white transition-colors">Terms</a>
-                  <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                  <a href="#" className="hover:text-white transition-colors">Contact</a>
-                </div>
+               
+<div className="flex justify-center gap-6 md:gap-8 text-[8px] md:text-[9px] tracking-widest uppercase flex-wrap">
+  <button onClick={() => openLegal('terms')} className="hover:text-white transition-colors">Terms (利用規約)</button>
+  <button onClick={() => openLegal('privacy')} className="hover:text-white transition-colors">Privacy Policy</button>
+  <button onClick={() => openLegal('law')} className="hover:text-white transition-colors">特定商取引法</button>
+  <button onClick={() => openLegal('fund')} className="hover:text-white transition-colors">資金決済法</button>
+</div>
+
               </div>
               <div className="text-center pb-2">
                 <button onClick={() => setShowAdminModal(true)} className="text-[9px] text-slate-600 hover:text-slate-400 tracking-[0.3em] uppercase transition-colors">Admin Login</button>
