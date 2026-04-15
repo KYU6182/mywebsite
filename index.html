@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -199,7 +197,6 @@
       { id: 'item4', name: "キラキラ・ビジューヘアアクセ", price: "3,200", votes: 3500, img: "./off_melty_item4.png", stock: null, deadline: null },
     ];
 
-
     const MAG_CATEGORIES = ["ALL", "INTERVIEW", "GUIDE", "TREND", "NEWS", "REPORT"];
 
     const WEB_MAGAZINE_ARTICLES = [
@@ -281,6 +278,33 @@
         }
       }
     ];
+
+    // ▼▼▼ 称号判定用の共通関数 ▼▼▼
+    const getProducerBadges = (producerId, producersData, idolsData, userData = null) => {
+      if (!producerId) return [];
+      const pData = producersData.find(p => p.id === producerId) || userData || {};
+      const totalPts = pData.totalVotes || pData.totalPts || 0;
+      const badges = [];
+
+      // 【トップギバー】(累計10,000票以上)
+      if (totalPts >= 10000) badges.push({ name: 'トップギバー', bg: 'bg-gradient-to-r from-purple-500 to-indigo-500', icon: 'fa-gem' });
+      // 【レジェンド古参】(累計5,000票以上)
+      if (totalPts >= 5000 && totalPts < 10000) badges.push({ name: 'レジェンド古参', bg: 'bg-gradient-to-r from-amber-400 to-orange-500', icon: 'fa-crown' });
+      // 【サポーター】(累計1票以上)
+      if (totalPts > 0 && totalPts < 5000) badges.push({ name: 'サポーター', bg: 'bg-slate-700', icon: 'fa-star' });
+
+      // 【公式プロデューサー】 (各アイドルのTOP3支援者)
+      idolsData.forEach(idol => {
+        const idolProducers = producersData.filter(p => p.votes && p.votes[idol.id]).sort((a,b) => b.votes[idol.id] - a.votes[idol.id]);
+        const top3Ids = idolProducers.slice(0, 3).map(p => p.id);
+        if (top3Ids.includes(producerId)) {
+          badges.push({ name: `${idol.name} 公式P`, bg: 'bg-gradient-to-r from-pink-400 to-rose-400', icon: 'fa-heart' });
+        }
+      });
+
+      return badges;
+    };
+    // ▲▲▲ ここまで ▲▲▲
 
     const SectionTitle = ({ title, subtitle }) => (
       <div className="text-center mb-16 pt-8">
@@ -952,7 +976,8 @@
       );
     };
 
-    const ProducerMyPage = ({ user, userData, idolsData, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
+    // 🌟 プロデューサーのマイページ（称号対応版）
+    const ProducerMyPage = ({ user, userData, idolsData, producersData, onUpdateProfile, showToast, onIdolSelect, onNavigate }) => {
       const [name, setName] = useState(userData.name || "ゲスト プロデューサー");
       const [profileImage, setProfileImage] = useState(userData.profileImage || "");
       const [message, setMessage] = useState(userData.message || "");
@@ -991,6 +1016,9 @@
       };
 
       const oshiIdol = idolsData.find(i => String(i.id) === String(oshiId));
+      
+      // 🌟 バッジの取得
+      const myBadges = getProducerBadges(user.uid, producersData, idolsData, userData);
 
       return (
         <div className="animate-fade-in-up pb-0">
@@ -1010,6 +1038,18 @@
                   </div>
                   <h3 className="font-serif text-lg font-light text-slate-800 mb-2">{name}</h3>
                   <p className="text-[9px] text-slate-400 tracking-widest mb-4 truncate px-2">{user?.email || 'demo@example.com'}</p>
+                  
+                  {/* 🌟 バッジ表示エリア */}
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {myBadges.length > 0 ? myBadges.map((badge, i) => (
+                      <span key={i} className={`${badge.bg} text-white text-[9px] px-2 py-1 shadow-sm flex items-center gap-1.5 rounded-sm tracking-widest font-medium`}>
+                        <i className={`fa-solid ${badge.icon}`}></i> {badge.name}
+                      </span>
+                    )) : (
+                      <span className="text-[9px] text-slate-400 border border-slate-200 px-2 py-1 tracking-widest">称号未獲得</span>
+                    )}
+                  </div>
+
                   {message && (
                     <p className="text-xs text-slate-500 font-light italic mb-6 leading-relaxed">"{message}"</p>
                   )}
@@ -1040,6 +1080,45 @@
                     <div className="bg-pink-50/50 p-6 text-center border border-pink-100">
                       <p className="text-[9px] font-medium tracking-widest text-pink-400 uppercase mb-3">Total Votes</p>
                       <p className="text-4xl font-timer font-light text-pink-600">{userData.totalPts?.toLocaleString() || 0} <span className="text-sm font-sans font-light text-pink-400/70">票</span></p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 🌟 称号システムの説明エリアを追加 */}
+                <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
+                  <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Status & Badge Guide</h4>
+                  <p className="text-xs text-slate-500 font-light leading-relaxed mb-6">推し活の貢献度に応じて、特別な称号（バッジ）が付与されます。上位バッジを獲得すると、特別な権利が解放されます。</p>
+                  
+                  <div className="space-y-6 border-t border-slate-100 pt-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center text-white shrink-0 shadow-sm"><i className="fa-solid fa-heart text-sm"></i></div>
+                      <div>
+                        <h5 className="text-sm font-medium text-slate-800 mb-1 flex items-center gap-2">公式プロデューサー</h5>
+                        <p className="text-xs text-slate-500 font-light leading-relaxed">
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1">条件</span>特定のアイドルの「累計投票数ランキング」で<span className="font-medium text-pink-500">TOP 3</span>に入ること。<br/>
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1 mt-1 inline-block">特典</span>プロフィールやコメント欄に専用バッジが表示され、推しの「シークレット投稿」が閲覧可能になります。
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-sm"><i className="fa-solid fa-gem text-sm"></i></div>
+                      <div>
+                        <h5 className="text-sm font-medium text-slate-800 mb-1">トップギバー</h5>
+                        <p className="text-xs text-slate-500 font-light leading-relaxed">
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1">条件</span>全アイドルへの累計投票数が<span className="font-medium text-purple-500">10,000票</span>を突破すること。<br/>
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1 mt-1 inline-block">特典</span>VIPバッジが付与され、すべてのアイドルのシークレット投稿が無条件で閲覧可能になります。
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-sm"><i className="fa-solid fa-crown text-sm"></i></div>
+                      <div>
+                        <h5 className="text-sm font-medium text-slate-800 mb-1">レジェンド古参</h5>
+                        <p className="text-xs text-slate-500 font-light leading-relaxed">
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1">条件</span>累計投票数が<span className="font-medium text-amber-500">5,000票</span>を突破すること。<br/>
+                          <span className="bg-slate-100 px-1 py-0.5 rounded-sm mr-1 mt-1 inline-block">特典</span>深く長く支援している証として、古参バッジが付与されます。
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1105,6 +1184,7 @@
       const [timelineText, setTimelineText] = useState("");
       const [timelineImg, setTimelineImg] = useState("");
       const [uploadingTimeline, setUploadingTimeline] = useState(false);
+      const [isSecretPost, setIsSecretPost] = useState(false);
 
       useEffect(() => {
         setProfileImage(idolData?.profileImage || "");
@@ -1168,18 +1248,16 @@
         }
       };
 
-// ▼▼▼ 既存のコード（ここを書き換えます） ▼▼▼
       const handlePostTimelineSubmit = async (e) => {
         e.preventDefault();
         if(!timelineText) return;
         
-        // 🌟🌟🌟 isSecret を追加して送るように書き換え 🌟🌟🌟
         await onPostTimeline({ idolId: idolData.id, text: timelineText, img: timelineImg, isSecret: isSecretPost });
         
         showToast("活動報告をタイムラインに投稿しました！");
         setTimelineText("");
         setTimelineImg("");
-        setIsSecretPost(false); // 送信後にリセット
+        setIsSecretPost(false);
       };
 
       const toggleWishlist = (itemId) => {
@@ -1218,7 +1296,6 @@
                 </div>
               </div>
 
-              {/* 届いたプレゼント一覧 */}
               <div className="bg-white p-6 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <div className="mb-6">
                   <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-2 flex items-center gap-3"><span className="w-4 h-px bg-slate-300"></span> Received Gifts</h4>
@@ -1243,7 +1320,6 @@
 
             <div className="lg:col-span-3 space-y-10">
               
-              {/* ▼▼▼ 新機能：Financial Insights（報酬管理UI）ここから ▼▼▼ */}
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3">
                   <span className="w-6 h-px bg-slate-300"></span> Financial Insights <span className="text-[9px] text-pink-400 normal-case">活動支援金レポート</span>
@@ -1252,7 +1328,6 @@
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="p-6 bg-slate-50 border border-slate-100">
                     <p className="text-[10px] text-slate-400 font-medium tracking-widest mb-2 uppercase">現在のプロデュース予算</p>
-                    {/* ※モックアップ計算：1票＝12円と仮定した表示です。実際はFirebase Functionsで計算した値を参照します */}
                     <p className="text-3xl font-timer font-light text-slate-800">¥{((idolData.totalVotes || 0) * 12).toLocaleString()}</p>
                     <p className="text-[9px] text-slate-400 mt-2">※源泉徴収税（10.21%）控除前の目安</p>
                   </div>
@@ -1276,7 +1351,6 @@
                   </div>
                 </div>
               </div>
-              {/* ▲▲▲ 新機能：Financial Insights（報酬管理UI）ここまで ▲▲▲ */}
 
               <div className="bg-white p-8 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)]">
                 <h4 className="text-xs font-medium tracking-widest text-slate-500 uppercase mb-8 flex items-center gap-3"><span className="w-6 h-px bg-slate-300"></span> Profile Settings</h4>
@@ -1379,7 +1453,7 @@
                   <div className="flex items-center gap-2 bg-pink-50/50 p-3 border border-pink-100">
                     <input type="checkbox" id="secretPost" checked={isSecretPost} onChange={(e) => setIsSecretPost(e.target.checked)} className="accent-pink-500 w-4 h-4" />
                     <label htmlFor="secretPost" className="text-[10px] text-slate-600 font-medium cursor-pointer tracking-wider">
-                      シークレット投稿にする <span className="text-pink-500 font-light">（累計100票以上のプロデューサー限定公開）</span>
+                      シークレット投稿にする <span className="text-pink-500 font-light">（累計100票以上のプロデューサー＆トップギバー限定公開）</span>
                     </label>
                   </div>
                   <div>
@@ -1400,10 +1474,6 @@
       );
     };
 
-
-
-
-
     const IdolRecruitLP = ({ onBack }) => {
       return (
         <div className="max-w-5xl mx-auto px-4 py-16 animate-fade-in-up pb-32 pt-32 text-center">
@@ -1419,7 +1489,6 @@
             </h1>
             <p className="text-sm md:text-lg text-pink-500 tracking-widest mb-12 font-medium">あなたの夢、ここから始まる。</p>
             
-            {/* ここにLP用のメインのコンテンツを作り込んでいきます */}
             <div className="aspect-video bg-pink-50 border border-pink-100 flex items-center justify-center mb-12">
               <span className="text-pink-400 tracking-widest font-light text-xs">※ここに詳細なLPコンテンツを作ります</span>
             </div>
@@ -1436,11 +1505,6 @@
         </div>
       );
     };
-
-
-
-
-
 
     const AllIdolsView = ({ onBack, onIdolSelect, idols, idolSearchText, setIdolSearchText, idolFilterType, setIdolFilterType }) => {
       return (
@@ -1500,7 +1564,6 @@
       const currentRank = sortedIdols.findIndex(i => String(i.id) === String(idol.id)) + 1;
       const currentVotes = (idol.totalVotes || 0).toLocaleString();
 
-      // このアイドルのTop3プロデューサーを算出
       const idolProducers = producersData.filter(p => p.votes && p.votes[idol.id]).sort((a,b) => b.votes[idol.id] - a.votes[idol.id]);
       const top3Producers = idolProducers.slice(0, 3);
       const top3Ids = top3Producers.map(p => p.id);
@@ -1545,7 +1608,6 @@
               </div>
             </div>
 
-            {/* 新機能: 欲しいものリスト(Wishlist) */}
             <div className="bg-white/80 backdrop-blur-xl p-8 mb-12 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
               <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Her Wishlist</h3>
               {idol.wishlist && idol.wishlist.length > 0 ? (
@@ -1584,7 +1646,6 @@
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
               <div className="lg:col-span-2 space-y-8">
                 
-                {/* 新機能: 活動タイムライン (Posts) */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
                   <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Timeline</h3>
                   <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4 hide-scrollbar">
@@ -1610,7 +1671,6 @@
                   </div>
                 </div>
 
-                {/* Profile & Story */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
                   <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3"><span className="w-8 h-px bg-slate-300"></span> Profile & Story</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
@@ -1623,7 +1683,6 @@
               </div>
 
               <div className="space-y-8">
-                {/* 新機能: リアルタイム応援メッセージボード */}
                 <div className="bg-white/80 backdrop-blur-xl rounded-none p-8 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-slate-100">
                   <h3 className="text-sm font-medium tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-3">
                     <span className="w-8 h-px bg-slate-300"></span> Messages
@@ -1759,17 +1818,20 @@
       </div>
     );
 
-// --- 追加: タイムラインの1投稿カード ---
-    // --- 上書き: タイムラインの1投稿カード（シークレット対応版） ---
-    const TimelinePostCard = ({ post, idol, user, comments, onLike, onComment, onLogin, producerVotes = 0, userRole = 'guest' }) => {
+    // 🌟 タイムラインの1投稿カード（シークレット対応＆バッジ判定追加）
+    const TimelinePostCard = ({ post, idol, user, comments, onLike, onComment, onLogin, producerVotes = 0, userRole = 'guest', producersData, idolsData }) => {
       const [showCommentInput, setShowCommentInput] = useState(false);
       const [commentText, setCommentText] = useState("");
       
       const postComments = comments.filter(c => c.postId === post.id).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-      // 🌟 シークレット判定（このアイドルへの累計投票数が100票以上、またはアイドル本人/管理者なら見れる）
+      // 🌟 バッジを取得してVIP特権を確認
+      const myBadges = getProducerBadges(user?.uid, producersData || [], idolsData || []);
+      const isTopGiver = myBadges.some(b => b.name === 'トップギバー');
+
+      // 🌟 シークレット判定（このアイドルへの累計投票数が100票以上、VIP、またはアイドル本人/管理者なら見れる）
       const isSecret = post.isSecret;
-      const isUnlocked = !isSecret || producerVotes >= 100 || userRole === 'idol' || userRole === 'admin';
+      const isUnlocked = !isSecret || producerVotes >= 100 || isTopGiver || userRole === 'idol' || userRole === 'admin';
 
       const handleCommentSubmit = (e) => {
         e.preventDefault();
@@ -1794,7 +1856,6 @@
             )}
           </div>
           
-          {/* 🌟 コンテンツ表示（ロック状態によって分岐） */}
           {isUnlocked ? (
             <>
               <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">{post.text}</p>
@@ -1806,16 +1867,14 @@
             </>
           ) : (
             <div className="relative mb-5 border border-slate-100 bg-slate-50 overflow-hidden">
-              {/* ぼかしのかかったダミーコンテンツ */}
               <div className="filter blur-md select-none pointer-events-none opacity-50 p-4">
                 <p className="text-sm text-slate-600 mb-5 whitespace-pre-wrap leading-loose font-light">親愛なるプロデューサー様へ。今日は本当に特別な一日でした。実はずっと悩んでいたことがあって...（続きはVIP限定）</p>
                 {post.img && <img src={post.img} className="w-full h-48 object-cover mix-blend-multiply" onError={handleImgError} />}
               </div>
-              {/* ロック画面のメッセージ */}
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-3 shadow-inner"><i className="fa-solid fa-lock text-lg"></i></div>
                 <h4 className="text-sm font-bold text-slate-800 mb-2">シークレット投稿</h4>
-                <p className="text-[10px] text-slate-600 font-light leading-relaxed">この投稿を見るには、<br/>{idol.name} への<span className="text-pink-500 font-medium">累計投票数が100票以上</span>必要です。<br/>（現在: {producerVotes} 票）</p>
+                <p className="text-[10px] text-slate-600 font-light leading-relaxed">この投稿を見るには、<br/>{idol.name} への<span className="text-pink-500 font-medium">累計投票数が100票以上</span>、<br/>または「トップギバー」の称号が必要です。<br/>（現在: {producerVotes} 票）</p>
               </div>
             </div>
           )}
@@ -1829,7 +1888,6 @@
             </button>
           </div>
 
-          {/* コメントセクション展開 */}
           {showCommentInput && isUnlocked && (
             <div className="mt-6 pt-4 border-t border-slate-50 animate-fade-in">
               <div className="space-y-4 mb-4 max-h-48 overflow-y-auto hide-scrollbar pr-2">
@@ -1856,12 +1914,9 @@
       );
     };
 
-     
-   
     const LiveTimelineSection = ({ posts, idols, user, comments, onLike, onComment, onLogin, producersData, userRole }) => {
       const latestPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
       
-      // 🌟 現在のユーザーの投票データを取得
       const currentUserProducerData = producersData.find(p => p.id === user?.uid) || { votes: {} };
 
       if (latestPosts.length === 0) return null;
@@ -1872,22 +1927,18 @@
           <div className="max-w-3xl mx-auto space-y-8">
             {latestPosts.map(post => {
               const idol = idols.find(i => String(i.id) === String(post.idolId));
-              // 🌟 このアイドルへの投票数を計算
               const producerVotes = currentUserProducerData.votes[idol?.id] || 0;
               
               return (
                 <TimelinePostCard 
                   key={post.id} post={post} idol={idol} user={user} comments={comments} 
                   onLike={onLike} onComment={onComment} onLogin={onLogin}
-                  producerVotes={producerVotes} userRole={userRole} // 🌟 ここを追加
+                  producerVotes={producerVotes} userRole={userRole}
+                  producersData={producersData} idolsData={idols}
                 />
               );
             })}
           </div>
-
-
-
-
           <div className="text-center mt-12">
              <p className="text-[10px] text-slate-400 tracking-[0.2em] font-light uppercase">End of recent updates</p>
           </div>
@@ -1895,9 +1946,6 @@
       );
     };
 
-
-
-    // --- 追加: Off-Melty カタログセクション ---
     const OffMeltyCatalogSection = ({ catalog, idols }) => {
       return (
         <section id="off-melty-catalog" className="py-24 bg-white/40 backdrop-blur-md border-y border-white/60 mb-20 relative">
@@ -1913,9 +1961,8 @@
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {catalog.map(item => {
-                // このアイテムを欲しいものリストに入れているアイドルを取得
                 const wishingIdols = idols.filter(idol => idol.wishlist && idol.wishlist.includes(item.id));
-                const displayIdols = wishingIdols.slice(0, 5); // 最大5人までアイコンを表示
+                const displayIdols = wishingIdols.slice(0, 5); 
                 const extraCount = wishingIdols.length - displayIdols.length;
 
                 return (
@@ -1934,7 +1981,6 @@
                       <h4 className="font-serif font-light text-sm text-slate-800 line-clamp-1 mb-2 group-hover:text-pink-600 transition-colors">{item.name}</h4>
                       <p className="text-xs text-slate-500 font-light mb-5">¥{item.price}</p>
                       
-                      {/* 欲しいものリストに入れているアイドルの表示部分 */}
                       <div className="border-t border-slate-100 pt-4">
                         <p className="text-[9px] font-medium tracking-widest text-slate-400 mb-3 uppercase">Wished by</p>
                         {wishingIdols.length > 0 ? (
@@ -1969,24 +2015,13 @@
         </section>
       );
     };
-    // 🌟🌟🌟 追加コードここまで 🌟🌟🌟
 
-
- 
-    // --- メイン App コンポーネント ---
-    // --- 追加: 記事詳細（WEBマガジン）画面 ---
     const ArticleDetailView = ({ article, onBack }) => {
       const [content, setContent] = useState("<div class='text-center py-20 text-slate-400'>記事を読み込み中...</div>");
 
       useEffect(() => {
         const fetchArticle = async () => {
           try {
-            // ▼ 実運用の際はここを有効化します ▼
-            // const response = await fetch(`./articles/${article.id}.md`);
-            // if (!response.ok) throw new Error('記事が見つかりません');
-            // const text = await response.text();
-            
-            // ▼ テスト用のダミーMarkdownデータ（本番では消してOK） ▼
             const text = `
 ## はじめに
 「もしアイ」のオーディションは、あなたの**「ありのままの魅力」**をプロデューサーに伝える場所です。
@@ -1997,8 +2032,6 @@
 
 > 「最初は自信がなくても大丈夫。あなたの勇気ある一歩が、誰かの心を動かします。」
             `;
-
-            // markedを使ってMarkdownをHTMLに変換
             setContent(marked.parse(text));
           } catch (error) {
             setContent("<div class='text-center py-20 text-red-400'>記事の読み込みに失敗しました。</div>");
@@ -2038,7 +2071,6 @@
       );
     };
 
-    // --- 追加: もしアイマガジン（ミクチャ風・スマホ対応一覧） ---
     const MoshiAiMagazineSection = ({ articles, categories, onArticleSelect }) => {
       const [activeCategory, setActiveCategory] = useState("ALL");
       const filteredArticles = activeCategory === "ALL" ? articles : articles.filter(a => a.category === activeCategory);
@@ -2051,7 +2083,6 @@
           <SectionTitle title="MAGAZINE" subtitle="Moshi-Ai Web Magazine" />
           
           <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-            {/* 左カラム：メインコンテンツ */}
             <div className="lg:w-2/3 min-w-0">
               <div className="flex flex-nowrap overflow-x-auto hide-scrollbar gap-2 mb-6 md:mb-8 border-b border-slate-200 pb-3 -mx-4 px-4 md:mx-0 md:px-0">
                 {categories.map(cat => (
@@ -2115,7 +2146,6 @@
               </div>
             </div>
 
-            {/* 右カラム：サイドバー（ランキング・タグ） */}
             <div className="lg:w-1/3 mt-4 lg:mt-0">
               <div className="bg-white border border-slate-100 p-4 md:p-6 shadow-sm mb-6 md:mb-8">
                 <h3 className="text-xs md:text-sm font-medium tracking-widest text-slate-500 uppercase mb-4 md:mb-6 flex items-center gap-3"><span className="w-4 h-px bg-slate-300"></span> Ranking</h3>
@@ -2146,6 +2176,7 @@
         </section>
       );
     };
+
     function App() {
       const [activeTab, setActiveTab] = useState('home'); 
       const [selectedIdol, setSelectedIdol] = useState(null);
@@ -2175,7 +2206,6 @@
       const [userRole, setUserRole] = useState('guest'); 
       const [userData, setUserData] = useState({ freeTickets: 0, paidTickets: 0, totalPts: 0 });
       
-      // 新機能用ステート
       const [postsData, setPostsData] = useState([]);
       const [commentsData, setCommentsData] = useState([]);
       const [producersData, setProducersData] = useState([]);
@@ -2196,10 +2226,9 @@
         let latestGift = null;
         let latestIdolName = "";
         
-        // 全アイドルの履歴から「一番新しいギフト」を探し出す
         idolsData.forEach(idol => {
           if (idol.receivedGifts && idol.receivedGifts.length > 0) {
-            const gift = idol.receivedGifts[idol.receivedGifts.length - 1]; // 配列の最後が最新
+            const gift = idol.receivedGifts[idol.receivedGifts.length - 1];
             if (!latestGift || new Date(gift.timestamp) > new Date(latestGift.timestamp)) {
                latestGift = gift;
                latestIdolName = idol.name;
@@ -2207,21 +2236,18 @@
           }
         });
 
-        // 最新のギフトが「過去15秒以内」に行われたものならテロップを表示！
         if (latestGift) {
           const now = new Date();
           const giftTime = new Date(latestGift.timestamp);
           const diffSeconds = (now - giftTime) / 1000;
           
           if (diffSeconds < 15) {
-            // カタログからアイテム名を探す
             const item = OFF_MELTY_CATALOG.find(c => c.id === latestGift.itemId);
             setGlobalEvent({
               producerName: latestGift.producerName,
               idolName: latestIdolName,
               itemName: item ? item.name : '素敵なギフト'
             });
-            // 6秒後にテロップを消す
             const timer = setTimeout(() => setGlobalEvent(null), 6000);
             return () => clearTimeout(timer);
           }
@@ -2258,7 +2284,7 @@
               const app = initializeApp(firebaseConfig);
               authRef.current = getAuth(app);
               dbRef.current = getFirestore(app);
-              window.FirebaseDbRef = dbRef.current; // Globalに保存（Admin用）
+              window.FirebaseDbRef = dbRef.current;
               setFirebaseLoaded(true);
             } catch (e) { console.error(e); }
           } else if (attempts < 100) { 
@@ -2298,7 +2324,6 @@
         return () => unsubscribe();
       }, [firebaseLoaded]);
 
-      // データ購読（全て）
       useEffect(() => {
         if (!user || !firebaseLoaded || !dbRef.current) return;
         const { collection, onSnapshot } = window.FirebaseHelper;
@@ -2387,7 +2412,7 @@
                    }
                    setUserData(data);
                  } else {
-                   setUserData(data); // admin
+                   setUserData(data); 
                  }
                } else {
                  const initData = { 
@@ -2692,7 +2717,6 @@
         }, { merge: true });
       };
 
-// Appコンポーネント内に以下を追加
       const handlePostTimelineComment = async (postId, idolId, text) => {
         if (!user || user.isAnonymous) return setShowAuthModal(true);
         if (!text.trim()) return;
@@ -2703,8 +2727,8 @@
         
         try {
           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'comments'), {
-            postId: String(postId), // どの投稿へのコメントかを紐付け
-            idolId: String(idolId), // 誰の投稿へのコメントかを紐付け
+            postId: String(postId),
+            idolId: String(idolId),
             userId: user.uid,
             userName: userData.name || "名無しP",
             userIcon: userData.profileImage || "",
@@ -2754,9 +2778,6 @@
         setActiveTab('idolLP');
         window.scrollTo(0,0);
       };
-
-
-
 
       const openProducerDetail = (producer) => { 
         if (activeTab === 'home' || activeTab === 'allIdolsList') scrollPosRef.current = window.scrollY; 
@@ -2836,47 +2857,32 @@
             {activeTab === 'adminDashboard' && userRole === 'admin' ? (
               <AdminDashboard idolsData={idolsData} showToast={showToast} />
             ) : activeTab === 'producerMyPage' && userRole !== 'admin' && user && !user.isAnonymous ? (
-              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} onUpdateProfile={handleUpdateProfile} showToast={showToast} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
+              <ProducerMyPage user={user} userData={userData} idolsData={idolsData} producersData={producersData} onUpdateProfile={handleUpdateProfile} showToast={showToast} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} />
             ) : activeTab === 'idolMyPage' && userRole !== 'admin' && user && !user.isAnonymous ? (
               <IdolMyPage idolData={idolsData.find(i => String(i.id) === String(userData.idolId))} onUpdateProfile={handleUpdateIdolProfile} showToast={showToast} onPostTimeline={handlePostTimeline} />
             ) : activeTab === 'idolDetail' && selectedIdol ? (
               <IdolDetailView idol={selectedIdol} onBack={handleBackToHome} onVoteClick={() => setShowVoteModal(true)} onOutfitClick={() => setShowOutfitModal(true)} onGiftClick={() => setShowGiftModal(true)} idolsData={idolsData} onIdolSelect={openIdolDetail} onNavigate={scrollToSection} producersData={producersData} postsData={postsData} commentsData={commentsData} onPostComment={(text) => handlePostComment(selectedIdol.id, text)} onLikePost={handleLikePost} onDirectGift={(itemId, votes, actionType) => handleDirectGift(selectedIdol, itemId, votes, actionType)} user={user} />
             ) : activeTab === 'eventDetail' && selectedEvent ? (
               <EventDetailView event={selectedEvent} onBack={handleBackToHome} idolsData={idolsData} onIdolSelect={openIdolDetail} onQuickVote={handleQuickVote} />
-
-
-
             ) : activeTab === 'producerDetail' && selectedProducer ? (
               <ProducerDetailView producer={selectedProducer} onBack={handleBackToHome} />
             ) : activeTab === 'articleDetail' && selectedArticle ? (
               <ArticleDetailView article={selectedArticle} onBack={handleBackToHome} />
-
-
             ) : activeTab === 'idolLP' ? (
               <IdolRecruitLP onBack={handleBackToHome} />
-
-
-
             ) : activeTab === 'allIdolsList' ? (
-              <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} /*...略...*/ />
+              <AllIdolsView onBack={handleBackToHome} onIdolSelect={openIdolDetail} idols={filteredIdols} idolSearchText={idolSearchText} setIdolSearchText={setIdolSearchText} idolFilterType={idolFilterType} setIdolFilterType={setIdolFilterType} />
             ) : (
               <div className="animate-fade-in">
+                
                 {/* HERO SECTION */}
-
-
-
-   <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
+                <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center relative">
                     <div className="relative w-full max-w-4xl flex flex-col items-center mb-4">
                       <img src="./top.png" className="w-full object-contain relative z-10" onError={(e) => e.target.style.display='none'} />
-                     
-
-<a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block">
-  <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
-</a>
-
-
-
+                      <a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block">
+                        <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
+                      </a>
                     </div>
                   </div>
                 </section>
@@ -2970,7 +2976,7 @@
                                   }
 
                                   const topThree = currentRankingData.slice(0, 3);
-                                  const others = currentRankingData.slice(3, 6); // TOPページでは上位6名のみ表示
+                                  const others = currentRankingData.slice(3, 6);
                                   const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
 
                                   if(currentRankingData.length === 0) {
@@ -3175,8 +3181,6 @@
                   </div>
                 </section>
 
-
-
                 {/* LIVE TIMELINE */}
                 <LiveTimelineSection 
                   posts={postsData} 
@@ -3186,11 +3190,9 @@
                   onLike={handleLikePost} 
                   onComment={handlePostTimelineComment} 
                   onLogin={() => setShowAuthModal(true)} 
-                  producersData={producersData} // 🌟 ここを追加
-                  userRole={userRole}           // 🌟 ここを追加
+                  producersData={producersData}
+                  userRole={userRole}
                 />
-
-
 
                 {/* PRODUCER RANKING */}
                 <section id="producer-ranking" className="py-20 bg-slate-50 border-y border-slate-200 mb-20">
@@ -3224,7 +3226,6 @@
                   </div>
                 </section>
 
-             
                 {/* MAGAZINE ARCHIVE */}
                 <section id="magazine" className="py-24 relative overflow-hidden max-w-7xl mx-auto px-6 mb-20">
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full bg-slate-50/50 blur-3xl -z-10 rounded-full"></div>
@@ -3245,14 +3246,13 @@
                   </div>
                 </section>
 
-
                 {/* OFF-MELTY CATALOG */}
                 <OffMeltyCatalogSection 
                   catalog={OFF_MELTY_CATALOG} 
                   idols={idolsData} 
                 />
 
-{/* MOSHI-AI WEB MAGAZINE */}
+                {/* MOSHI-AI WEB MAGAZINE */}
                 <MoshiAiMagazineSection 
                   articles={WEB_MAGAZINE_ARTICLES}
                   categories={MAG_CATEGORIES}
@@ -3308,13 +3308,9 @@
             <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white/90 via-white/50 to-transparent z-[100] md:flex md:justify-end animate-fade-in-up pointer-events-none pb-8 pr-8">
               <div className="max-w-xs w-full ml-auto flex flex-col items-end gap-2 pointer-events-auto">
                 <div className="bg-slate-900 text-white text-[9px] tracking-widest py-1.5 px-4 uppercase shadow-lg">New Audition</div>
-
-
-<a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="block hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.15)] bg-white p-1">
-  <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-16 object-contain" onError={(e) => e.target.style.display='none'} />
-</a>
-
-
+                <a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="block hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.15)] bg-white p-1">
+                  <img src="./line_btn.png" alt="LINEで無料エントリー！" className="w-full max-h-16 object-contain" onError={(e) => e.target.style.display='none'} />
+                </a>
               </div>
             </div>
           )}
