@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
-
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>もしも私が, アイドルになったら。 | 公式ポータルサイト</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Oswald:wght@300;400;700&display=swap');
@@ -809,8 +809,7 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
       );
     };
 
-
-const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+    const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
         return (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
@@ -844,46 +843,7 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
               <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">
                 ささやかなギフトから、公式プロデューサーの称号まで。<br/>あなたの特別な想いを大量の「票」に変えて届けます。
               </p>
-             
-              {/* ▼▼▼ 新規追加：無料投票セクション ▼▼▼ */}
-              <div className="bg-white border-2 border-pink-100 rounded-none p-5 flex items-center justify-between mb-8 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-pink-400"></div>
-                <div className="flex items-center gap-4 pl-2">
-                  <div className="text-2xl">🎫</div>
-                  <div>
-                    <h4 className="font-bold text-sm text-slate-800 mb-1">デイリー無料投票</h4>
-                    <p className="text-[10px] text-slate-500 tracking-wider">
-                      所持: <span className="text-pink-500 font-bold text-sm">{userData?.freeTickets || 0}</span> 票
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    if (userData?.freeTickets >= 1) {
-                      updateTickets(-1, 0); // チケットを1枚消費
-                      onSuccess(1, '無料投票');
-                      onClose();
-                    } else {
-                      showToast("本日の無料チケットは使い切りました！");
-                    }
-                  }} 
-                  disabled={(userData?.freeTickets || 0) < 1}
-                  className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-pink-500 transition-colors disabled:bg-slate-300"
-                >
-                  1票 投票する
-                </button>
-              </div>
               
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <span className="w-12 h-px bg-slate-200"></span>
-                <span className="text-[9px] text-slate-400 tracking-widest uppercase">Special Gifts</span>
-                <span className="w-12 h-px bg-slate-200"></span>
-              </div>
-              {/* ▲▲▲ ここまで ▲▲▲ */}
-
-
-
-
               <div className="space-y-4">
                 <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
                   <div className="flex items-center gap-5">
@@ -1578,10 +1538,6 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
     };
 
 
-
-
-
-
 // ▼▼▼ 法的表記用コンポーネント ▼▼▼
     const LegalView = ({ type, onBack, onChangeType }) => {
       const tabs = [
@@ -1647,22 +1603,23 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
               </div>
             )}
 
-            {type === 'law' && (
-              <div>
-                <h3>特定商取引法に基づく表記</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
-                  {/* 実データに書き換え済み */}
-                  <div className="font-bold text-slate-700">販売事業者</div>
-                  <div className="md:col-span-3 text-slate-600">OFF MELTY</div>
-                  
-                  <div className="font-bold text-slate-700">運営責任者</div>
-                  <div className="md:col-span-3 text-slate-600">谷口悠</div>
-                  
-                  <div className="font-bold text-slate-700">所在地</div>
-                  <div className="md:col-span-3 text-slate-600">〒812-0881 福岡県福岡市博多区井相田1-2-20-905</div>
-                  
-                  <div className="font-bold text-slate-700">お問い合わせ</div>
-                  <div className="md:col-span-3 text-slate-600">support@moshi-ai.com</div>
+   {type === 'law' && (
+  <div>
+    <h3>特定商取引法に基づく表記</h3>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
+      {/* 以下の○○○やダミー情報を、あなたの実際のものに書き換えます */}
+      <div className="font-bold text-slate-700">販売事業者</div>
+      <div className="md:col-span-3 text-slate-600">OFF MELTY</div>
+      
+      <div className="font-bold text-slate-700">運営責任者</div>
+      <div className="md:col-span-3 text-slate-600">谷口悠</div>
+      
+      <div className="font-bold text-slate-700">所在地</div>
+      <div className="md:col-span-3 text-slate-600">〒812-0881 福岡県福岡市博多区井相田1-2-20-905</div>
+      
+      <div className="font-bold text-slate-700">お問い合わせ</div>
+      <div className="md:col-span-3 text-slate-600">support@moshi-ai.com 
+</div>
 
                   <div className="font-bold text-slate-700">販売価格</div><div className="md:col-span-3 text-slate-600">各商品・アイテムの購入ページに表示されます。</div>
                   <div className="font-bold text-slate-700">お支払方法</div><div className="md:col-span-3 text-slate-600">クレジットカード決済（Stripe）</div>
@@ -1677,10 +1634,10 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
                 <h3>資金決済法に基づく表記</h3>
                 <p className="mb-6">資金決済に関する法律第13条に基づく表示は以下の通りです。</p>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs border-t border-slate-100 pt-6">
-                  <div className="font-bold text-slate-700">発行事業者</div><div className="md:col-span-3 text-slate-600">OFF MELTY</div>
+                  <div className="font-bold text-slate-700">発行事業者</div><div className="md:col-span-3 text-slate-600">株式会社○○○</div>
                   <div className="font-bold text-slate-700">支払可能金額等</div><div className="md:col-span-3 text-slate-600">上限はございません。</div>
                   <div className="font-bold text-slate-700">有効期間</div><div className="md:col-span-3 text-slate-600 text-pink-600 font-medium">有償で購入した票（ポイント）の有効期限は、購入日から起算して150日（約5ヶ月）とします。期限を過ぎた場合、未使用の票は無効となります。</div>
-                  <div className="font-bold text-slate-700">お問い合わせ先</div><div className="md:col-span-3 text-slate-600">support@moshi-ai.com</div>
+                  <div className="font-bold text-slate-700">お問い合わせ先</div><div className="md:col-span-3 text-slate-600">info@example.com</div>
                   <div className="font-bold text-slate-700">利用できる場所</div><div className="md:col-span-3 text-slate-600">本サービス「もしも私が、アイドルになったら。」のウェブサイト内においてのみ利用可能です。</div>
                   <div className="font-bold text-slate-700">利用上の注意</div><div className="md:col-span-3 text-slate-600">原則として、払戻しはいたしません。詳細については利用規約をご確認ください。</div>
                 </div>
@@ -1690,7 +1647,7 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
         </div>
       );
     };
-// ▲▲▲ 法的表記用コンポーネント ここまで ▲▲▲
+    // ▲▲▲ 法的表記用コンポーネント ここまで ▲▲▲
 
 
 
@@ -1790,22 +1747,12 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
                   <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Votes</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentVotes}</p></div>
                   <div className="text-center"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Producers</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{idolProducers.length}</p></div>
                 </div>
-   
-{/* 修正後：GIFT & MAG に統一して目立たせる */}
-                <div className="space-y-4 mt-4">
-                  <p className="text-[10px] text-pink-500 font-bold tracking-widest text-center mb-2 animate-pulse">＼ 毎日3票の無料投票もこちらから！ ／</p>
-                  
-                  <button onClick={onGiftClick} className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-5 rounded-none shadow-[0_10px_20px_-10px_rgba(244,114,182,0.5)] flex items-center justify-center gap-3 hover:opacity-90 transition-opacity group">
-                    <i className="fa-solid fa-gift text-white group-hover:scale-110 transition-transform text-lg"></i>
-                    <span className="text-sm md:text-base tracking-[0.2em] font-medium">GIFT & MAG で応援する</span>
-                  </button>
-                  
-                  <button onClick={onOutfitClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors group">
-                    <i className="fa-solid fa-shirt text-slate-300 group-hover:text-slate-500 transition-colors"></i>
-                    <span className="text-xs tracking-widest font-light">OUTFIT CATALOG (衣装提供)</span>
-                  </button>
-                </div>
-
+                <div className="space-y-4">
+                  <button onClick={onVoteClick} className="w-full bg-slate-900 text-white py-4 md:py-5 rounded-none shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center gap-3 hover:bg-slate-800 transition-colors group"><i className="fa-regular fa-heart text-pink-400 group-hover:scale-110 transition-transform"></i><span className="text-xs tracking-[0.2em] font-light">VOTE FOR HER</span></button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button onClick={onGiftClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-gift text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">GIFT & MAG</span></button>
+                    <button onClick={onOutfitClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-shirt text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">OUTFIT CATALOG</span></button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3016,11 +2963,7 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
 
           {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
           {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(amount, type, itemId) => { handleVoteForIdol(selectedIdol.id, amount, type, itemId); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
-
-
-
-{showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
-
+          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
           {successModalData && <SuccessModal data={successModalData} onClose={() => setSuccessModalData(null)} idol={idolsData.find(i => i.name === successModalData.idolName)} />}
 
           <header className="absolute top-0 w-full z-50 py-8 pointer-events-none">
