@@ -1603,14 +1603,24 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
               </div>
             )}
 
-            {type === 'law' && (
-              <div>
-                <h3>特定商取引法に基づく表記</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
-                  <div className="font-bold text-slate-700">販売事業者</div><div className="md:col-span-3 text-slate-600">株式会社○○○（※実際の法人名を入力）</div>
-                  <div className="font-bold text-slate-700">運営責任者</div><div className="md:col-span-3 text-slate-600">山田 太郎</div>
-                  <div className="font-bold text-slate-700">所在地</div><div className="md:col-span-3 text-slate-600">〒150-0000 東京都渋谷区○○ 1-2-3</div>
-                  <div className="font-bold text-slate-700">お問い合わせ</div><div className="md:col-span-3 text-slate-600">info@example.com （電話番号はご請求に基づき遅滞なく開示いたします）</div>
+   {type === 'law' && (
+  <div>
+    <h3>特定商取引法に基づく表記</h3>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
+      {/* 以下の○○○やダミー情報を、あなたの実際のものに書き換えます */}
+      <div className="font-bold text-slate-700">販売事業者</div>
+      <div className="md:col-span-3 text-slate-600">OFF MELTY</div>
+      
+      <div className="font-bold text-slate-700">運営責任者</div>
+      <div className="md:col-span-3 text-slate-600">谷口悠（※ご自身のお名前）</div>
+      
+      <div className="font-bold text-slate-700">所在地</div>
+      <div className="md:col-span-3 text-slate-600">〒812-0881 福岡県福岡市博多区井相田1-2-20-905</div>
+      
+      <div className="font-bold text-slate-700">お問い合わせ</div>
+      <div className="md:col-span-3 text-slate-600">support@moshi-ai.com 
+</div>
+
                   <div className="font-bold text-slate-700">販売価格</div><div className="md:col-span-3 text-slate-600">各商品・アイテムの購入ページに表示されます。</div>
                   <div className="font-bold text-slate-700">お支払方法</div><div className="md:col-span-3 text-slate-600">クレジットカード決済（Stripe）</div>
                   <div className="font-bold text-slate-700">商品の引き渡し時期</div><div className="md:col-span-3 text-slate-600">決済完了後、即時（デジタルアイテムの場合）。物理的な雑誌の場合は、指定の発売日または発送日によります。</div>
