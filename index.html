@@ -3026,17 +3026,69 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
 ) : (
   <div className="animate-fade-in">
                 
-                {/* HERO SECTION */}
+
+
+{/* HERO SECTION */}
                 <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
                   <div className="flex flex-col items-center relative">
-                    <div className="relative w-full max-w-4xl flex flex-col items-center mb-4">
+                    <div className="relative w-full max-w-4xl flex flex-col items-center mb-8">
                       <img src="./top.png" className="w-full object-contain relative z-10" onError={(e) => e.target.style.display='none'} />
-                      <a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block">
+                      
+                      {/* ▼ 既存のアイドルエントリー用バナー ▼ */}
+                      <a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block mb-8">
                         <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
                       </a>
+
+                      {/* ▼▼▼ 新規追加：プロデューサー登録誘導ブロック ▼▼▼ */}
+                      {(!user || user.isAnonymous) && (
+                        <div className="w-[90%] sm:w-[80%] max-w-2xl bg-white/95 backdrop-blur-md border-2 border-pink-200 rounded-none p-8 md:p-10 shadow-[0_15px_40px_rgba(244,114,182,0.15)] relative z-20 animate-fade-in-up mt-4">
+                          {/* 上部のリボン風バッジ */}
+                          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] px-8 py-2 shadow-md whitespace-nowrap">
+                            ＼ プロデューサー大募集 ／
+                          </div>
+                          
+                          <h2 className="text-xl md:text-3xl font-serif text-slate-800 mb-4 mt-2 leading-tight">
+                            無料登録で<span className="text-pink-500 font-bold text-3xl md:text-4xl mx-2">毎日3票</span>GET！
+                          </h2>
+                          <p className="text-xs md:text-sm text-slate-500 font-light mb-8 leading-relaxed">
+                            あなたの1票が、原石をトップアイドルに押し上げる。<br className="hidden md:block"/>
+                            今すぐ登録して、推しに愛を届けましょう！
+                          </p>
+                          
+                          <button 
+                            onClick={() => setShowAuthModal(true)} 
+                            className="w-full md:w-auto bg-slate-900 text-white hover:bg-pink-500 px-12 py-5 text-xs md:text-sm tracking-[0.2em] font-light transition-all duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_30px_rgba(244,114,182,0.4)] hover:-translate-y-1 flex items-center justify-center gap-3 mx-auto group"
+                          >
+                            <i className="fa-solid fa-envelope group-hover:scale-110 transition-transform"></i>
+                            無料プロデューサー登録
+                          </button>
+                          <p className="text-[9px] text-slate-400 mt-4 tracking-widest">※登録は無料です。1分で完了します。</p>
+                        </div>
+                      )}
+                      {/* ▲▲▲ ここまで ▲▲▲ */}
+
+                      {/* ▼▼▼ おまけ：既にログインしているプロデューサー向けのメッセージ ▼▼▼ */}
+                      {(user && !user.isAnonymous && userRole === 'producer') && (
+                        <div className="w-[90%] sm:w-[80%] max-w-2xl bg-white/80 backdrop-blur-sm border border-slate-200 p-6 shadow-sm relative z-20 mt-4 animate-fade-in">
+                           <p className="text-sm text-slate-600 font-light leading-relaxed">
+                             いつもプロデュースありがとうございます！<br/>
+                             本日分の<span className="text-pink-500 font-bold mx-1">無料投票券（3票）</span>を使って、推しを応援しましょう！
+                           </p>
+                           <button 
+                             onClick={() => { setActiveTab('producerMyPage'); window.scrollTo(0,0); }}
+                             className="mt-4 bg-slate-50 border border-slate-300 text-slate-600 hover:bg-slate-900 hover:text-white px-8 py-3 text-[10px] tracking-[0.2em] transition-colors"
+                           >
+                             マイページへ行く <i className="fa-solid fa-arrow-right-long ml-2"></i>
+                           </button>
+                        </div>
+                      )}
+                      {/* ▲▲▲ ここまで ▲▲▲ */}
+
                     </div>
                   </div>
                 </section>
+
+
 
                 {/* PICK UP IDOLS */}
                 <section id="idol-slider" className="py-16 bg-white/40 backdrop-blur-md border-y border-white/60 mb-20 relative">
