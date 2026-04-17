@@ -1578,6 +1578,10 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
     };
 
 
+
+
+
+
 // ▼▼▼ 法的表記用コンポーネント ▼▼▼
     const LegalView = ({ type, onBack, onChangeType }) => {
       const tabs = [
@@ -1643,23 +1647,22 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
               </div>
             )}
 
-   {type === 'law' && (
-  <div>
-    <h3>特定商取引法に基づく表記</h3>
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
-      {/* 以下の○○○やダミー情報を、あなたの実際のものに書き換えます */}
-      <div className="font-bold text-slate-700">販売事業者</div>
-      <div className="md:col-span-3 text-slate-600">OFF MELTY</div>
-      
-      <div className="font-bold text-slate-700">運営責任者</div>
-      <div className="md:col-span-3 text-slate-600">谷口悠</div>
-      
-      <div className="font-bold text-slate-700">所在地</div>
-      <div className="md:col-span-3 text-slate-600">〒812-0881 福岡県福岡市博多区井相田1-2-20-905</div>
-      
-      <div className="font-bold text-slate-700">お問い合わせ</div>
-      <div className="md:col-span-3 text-slate-600">support@moshi-ai.com 
-</div>
+            {type === 'law' && (
+              <div>
+                <h3>特定商取引法に基づく表記</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-6 border-t border-slate-100 pt-6">
+                  {/* 実データに書き換え済み */}
+                  <div className="font-bold text-slate-700">販売事業者</div>
+                  <div className="md:col-span-3 text-slate-600">OFF MELTY</div>
+                  
+                  <div className="font-bold text-slate-700">運営責任者</div>
+                  <div className="md:col-span-3 text-slate-600">谷口悠</div>
+                  
+                  <div className="font-bold text-slate-700">所在地</div>
+                  <div className="md:col-span-3 text-slate-600">〒812-0881 福岡県福岡市博多区井相田1-2-20-905</div>
+                  
+                  <div className="font-bold text-slate-700">お問い合わせ</div>
+                  <div className="md:col-span-3 text-slate-600">support@moshi-ai.com</div>
 
                   <div className="font-bold text-slate-700">販売価格</div><div className="md:col-span-3 text-slate-600">各商品・アイテムの購入ページに表示されます。</div>
                   <div className="font-bold text-slate-700">お支払方法</div><div className="md:col-span-3 text-slate-600">クレジットカード決済（Stripe）</div>
@@ -1674,10 +1677,10 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
                 <h3>資金決済法に基づく表記</h3>
                 <p className="mb-6">資金決済に関する法律第13条に基づく表示は以下の通りです。</p>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs border-t border-slate-100 pt-6">
-                  <div className="font-bold text-slate-700">発行事業者</div><div className="md:col-span-3 text-slate-600">株式会社○○○</div>
+                  <div className="font-bold text-slate-700">発行事業者</div><div className="md:col-span-3 text-slate-600">OFF MELTY</div>
                   <div className="font-bold text-slate-700">支払可能金額等</div><div className="md:col-span-3 text-slate-600">上限はございません。</div>
                   <div className="font-bold text-slate-700">有効期間</div><div className="md:col-span-3 text-slate-600 text-pink-600 font-medium">有償で購入した票（ポイント）の有効期限は、購入日から起算して150日（約5ヶ月）とします。期限を過ぎた場合、未使用の票は無効となります。</div>
-                  <div className="font-bold text-slate-700">お問い合わせ先</div><div className="md:col-span-3 text-slate-600">info@example.com</div>
+                  <div className="font-bold text-slate-700">お問い合わせ先</div><div className="md:col-span-3 text-slate-600">support@moshi-ai.com</div>
                   <div className="font-bold text-slate-700">利用できる場所</div><div className="md:col-span-3 text-slate-600">本サービス「もしも私が、アイドルになったら。」のウェブサイト内においてのみ利用可能です。</div>
                   <div className="font-bold text-slate-700">利用上の注意</div><div className="md:col-span-3 text-slate-600">原則として、払戻しはいたしません。詳細については利用規約をご確認ください。</div>
                 </div>
@@ -1687,7 +1690,7 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
         </div>
       );
     };
-    // ▲▲▲ 法的表記用コンポーネント ここまで ▲▲▲
+// ▲▲▲ 法的表記用コンポーネント ここまで ▲▲▲
 
 
 
