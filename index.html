@@ -809,117 +809,150 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
       );
     };
 
-    const GiftModal = ({ onClose, idol, user, updateTickets, showToast, onLogin, onSuccess }) => {
-      if (!user || user.isAnonymous) {
-        return (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-            <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
-              <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
-              <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
-              <p className="text-xs text-slate-500 mb-8 leading-loose font-light">ギフト・雑誌を購入して応援するには、<br/>プロデューサー登録（無料）が必要です。</p>
-              <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
-                REGISTER
+
+
+
+
+const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
+  if (!user || user.isAnonymous) {
+    return (
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="bg-white rounded-none p-10 max-w-sm w-full text-center shadow-2xl animate-fade-in-up border border-slate-100">
+          <i className="fa-regular fa-user text-3xl text-slate-300 mb-6"></i>
+          <h3 className="text-lg font-light tracking-widest font-serif mb-4 text-slate-800">MEMBERS ONLY</h3>
+          <p className="text-xs text-slate-500 mb-8 leading-loose font-light">ギフト・雑誌の購入、または無料チケットで投票するには、<br/>プロデューサー登録（無料）が必要です。</p>
+          <button onClick={onLogin} className="w-full py-4 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none mb-4 shadow-md hover:bg-slate-800 transition-colors">
+            REGISTER
+          </button>
+          <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleBuyGift = (name, price, votes) => {
+    onSuccess(votes, `ギフト購入(${name})`);
+    onClose();
+  };
+
+  // 無料投票の処理を追加
+  const handleFreeVote = (amount) => {
+    if (userData && userData.freeTickets >= amount) {
+      updateTickets(-amount, 0); 
+      onSuccess(amount, '無料投票');
+      onClose();
+    } else {
+      showToast("無料票が不足しています。");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
+        <div className="bg-white border-b border-slate-100 p-6 text-center relative z-10">
+          <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Support Menu</h3>
+          <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        
+        <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
+          <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">
+            毎日の無料投票や、ささやかなギフトから公式プロデューサーの称号まで。<br/>あなたの特別な想いを大量の「票」に変えて届けます。
+          </p>
+          
+          {/* ▼ 無料投票エリアを追加 ▼ */}
+          <div className="bg-white border-2 border-pink-100 rounded-none p-6 text-center shadow-sm mb-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-pink-400"></div>
+            <p className="text-[10px] text-pink-500 font-medium tracking-widest mb-2 uppercase">Daily Free Votes</p>
+            <p className="text-xs text-slate-500 mb-6 font-light">所持している無料チケットで投票</p>
+            <div className="flex items-center justify-center gap-6">
+              <div className="text-4xl font-light font-timer text-slate-800">{userData?.freeTickets || 0}</div>
+              <button onClick={() => handleFreeVote(1)} disabled={(userData?.freeTickets || 0) < 1} className="py-3 px-8 bg-slate-900 text-white text-xs tracking-widest font-light rounded-none disabled:bg-slate-200 disabled:text-slate-400 transition-colors hover:bg-pink-600 flex items-center gap-2">
+                <i className="fa-solid fa-heart text-pink-400"></i> 無料投票 (1票)
               </button>
-              <button onClick={onClose} className="text-[10px] text-slate-400 font-medium tracking-widest hover:text-slate-600 border-b border-transparent hover:border-slate-300 transition-all pb-1">CANCEL</button>
             </div>
           </div>
-        );
-      }
+          {/* ▲ 無料投票エリアを追加 ▲ */}
 
-      const handleBuyGift = (name, price, votes) => {
-        onSuccess(votes, `ギフト購入(${name})`);
-        onClose();
-      };
-
-      return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-none overflow-hidden max-w-md w-full shadow-2xl border border-slate-100">
-            <div className="bg-white border-b border-slate-100 p-6 text-center relative z-10">
-              <h3 className="font-light tracking-[0.3em] text-xs text-slate-800 uppercase">Gift & Magazine</h3>
-              <button onClick={onClose} className="absolute right-6 top-6 text-slate-400 hover:text-slate-800 transition-colors"><i className="fa-solid fa-xmark text-lg"></i></button>
+          <div className="space-y-4">
+            {/* 既存のギフト・雑誌のJSXはそのまま維持 */}
+            <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+              <div className="flex items-center gap-5">
+                <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
+                <div>
+                  <h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4>
+                  <p className="text-[10px] text-slate-400 font-medium tracking-wider">+120 票</p>
+                </div>
+              </div>
+              <button onClick={() => handleBuyGift('応援メガホン', 100, 120)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
             </div>
+
+            <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
+              <div className="flex items-center gap-5">
+                <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
+                <div>
+                  <h4 className="font-light text-sm text-slate-800 mb-1">フラワースタンド</h4>
+                  <p className="text-[10px] text-pink-400 font-medium tracking-wider">+500 票</p>
+                </div>
+              </div>
+              <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
+            </div>
+
+            <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
+              <div className="flex items-center gap-5 pl-3">
+                <div className="text-2xl opacity-90 grayscale group-hover:grayscale-0 transition-all">🎂</div>
+                <div>
+                  <h4 className="font-light text-sm text-slate-800 mb-1">特大バースデーケーキ</h4>
+                  <p className="text-[10px] text-slate-500 font-medium tracking-wider">+3,000 票</p>
+                </div>
+              </div>
+              <button onClick={() => handleBuyGift('特大バースデーケーキ', 2000, 3000)} className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-slate-700 transition-colors">¥2,000</button>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 pt-8 mt-8">
+            <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Official Magazine</h5>
+            <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を購入して大量の票と公式プロデューサーの称号を獲得しましょう。</p>
             
-            <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto hide-scrollbar bg-slate-50/30">
-              <p className="text-[10px] text-slate-500 text-center mb-8 font-light tracking-wide leading-relaxed">
-                ささやかなギフトから、公式プロデューサーの称号まで。<br/>あなたの特別な想いを大量の「票」に変えて届けます。
-              </p>
-              
-              <div className="space-y-4">
-                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
-                  <div className="flex items-center gap-5">
-                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">📣</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">応援メガホン</h4>
-                      <p className="text-[10px] text-slate-400 font-medium tracking-wider">+120 票</p>
-                    </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 1冊', 980, 1800)}>
+                <div className="flex gap-4 items-center">
+                  <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E"; }}/></div>
+                  <div>
+                    <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
+                    <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +1,800 票</p>
+                    <p className="text-[8px] text-slate-500 mt-1">特典: 公式プロデューサーとしてWEB掲載</p>
                   </div>
-                  <button onClick={() => handleBuyGift('応援メガホン', 100, 120)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors border-b border-transparent group-hover:border-slate-900 pb-0.5">¥100</button>
                 </div>
-
-                <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center justify-between hover:border-slate-400 transition-colors shadow-sm group">
-                  <div className="flex items-center gap-5">
-                    <div className="text-2xl opacity-80 grayscale group-hover:grayscale-0 transition-all">💐</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">フラワースタンド</h4>
-                      <p className="text-[10px] text-pink-400 font-medium tracking-wider">+500 票</p>
-                    </div>
-                  </div>
-                  <button onClick={() => handleBuyGift('フラワースタンド', 300, 500)} className="text-xs font-light tracking-wider text-slate-500 group-hover:text-pink-500 transition-colors border-b border-transparent group-hover:border-pink-500 pb-0.5">¥300</button>
-                </div>
-
-                <div className="bg-white border border-slate-300 rounded-none p-5 flex items-center justify-between hover:border-slate-500 transition-colors shadow-md relative group">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
-                  <div className="flex items-center gap-5 pl-3">
-                    <div className="text-2xl opacity-90 grayscale group-hover:grayscale-0 transition-all">🎂</div>
-                    <div>
-                      <h4 className="font-light text-sm text-slate-800 mb-1">特大バースデーケーキ</h4>
-                      <p className="text-[10px] text-slate-500 font-medium tracking-wider">+3,000 票</p>
-                    </div>
-                  </div>
-                  <button onClick={() => handleBuyGift('特大バースデーケーキ', 2000, 3000)} className="bg-slate-900 text-white text-[10px] font-light tracking-widest px-6 py-3 rounded-none hover:bg-slate-700 transition-colors">¥2,000</button>
-                </div>
+                <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥980</button>
               </div>
 
-              <div className="border-t border-slate-200 pt-8 mt-8">
-                <h5 className="font-medium text-xs tracking-widest text-slate-500 mb-2 uppercase">Official Magazine</h5>
-                <p className="text-[10px] text-slate-400 mb-6 font-light leading-relaxed">雑誌を購入して大量の票と公式プロデューサーの称号を獲得しましょう。</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 1冊', 980, 1800)}>
-                    <div className="flex gap-4 items-center">
-                      <div className="w-10 h-14 bg-slate-100 border border-slate-200 p-0.5"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
-                      <div>
-                        <p className="font-light text-sm text-slate-800 mb-1">第3号 1冊</p>
-                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +1,800 票</p>
-                        <p className="text-[8px] text-slate-500 mt-1">特典: 公式プロデューサーとしてWEB掲載</p>
-                      </div>
-                    </div>
-                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥980</button>
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors relative cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 5冊セット', 2490, 4000)}>
+                <div className="flex gap-4 items-center pl-1">
+                  <div className="relative w-12 h-14">
+                    <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
+                    <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
+                    <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' fill='%2394a3b8'%3ENO IMAGE%3C/text%3E%3C/svg%3E"; }}/></div>
                   </div>
-
-                  <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-none shadow-sm hover:border-slate-400 transition-colors relative cursor-pointer group" onClick={() => handleBuyGift('雑誌第3号 5冊セット', 2490, 4000)}>
-                    <div className="flex gap-4 items-center pl-1">
-                      <div className="relative w-12 h-14">
-                        <div className="absolute top-0 left-0 w-8 h-12 bg-slate-100 border border-slate-200"></div>
-                        <div className="absolute top-1 left-2 w-8 h-12 bg-slate-200 border border-slate-300"></div>
-                        <div className="absolute top-2 left-4 w-8 h-12 bg-white border border-slate-200 p-0.5 shadow-sm"><img src="./mag3.png" className="w-full h-full object-cover" onError={handleImgError}/></div>
-                      </div>
-                      <div>
-                        <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
-                        <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +4,000 票</p>
-                        <p className="text-[8px] text-slate-500 mt-1">特典: WEB＆雑誌の誌面に名前掲載</p>
-                      </div>
-                    </div>
-                    <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥2,490</button>
+                  <div>
+                    <p className="font-light text-sm text-slate-800 mb-1">第3号 5冊セット</p>
+                    <p className="text-[9px] text-pink-500 font-medium tracking-wider"><i className="fa-solid fa-ticket mr-1"></i> +4,000 票</p>
+                    <p className="text-[8px] text-slate-500 mt-1">特典: WEB＆雑誌の誌面に名前掲載</p>
                   </div>
                 </div>
+                <button className="text-xs font-light tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 border border-slate-200 group-hover:border-slate-400">¥2,490</button>
               </div>
-
             </div>
           </div>
         </div>
-      );
-    };
+      </div>
+    </div>
+  );
+};
+
+
+
+
 
     const OutfitModal = ({ onClose, idol, user, userData, updateTickets, showToast, onLogin, onSuccess }) => {
       if (!user || user.isAnonymous) {
@@ -1747,13 +1780,27 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
                   <div className="text-center border-r border-slate-200"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Votes</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{currentVotes}</p></div>
                   <div className="text-center"><p className="text-[9px] text-slate-400 font-medium tracking-widest mb-2 uppercase">Producers</p><p className="text-2xl md:text-3xl font-light text-slate-800 font-timer">{idolProducers.length}</p></div>
                 </div>
-                <div className="space-y-4">
-                  <button onClick={onVoteClick} className="w-full bg-slate-900 text-white py-4 md:py-5 rounded-none shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center gap-3 hover:bg-slate-800 transition-colors group"><i className="fa-regular fa-heart text-pink-400 group-hover:scale-110 transition-transform"></i><span className="text-xs tracking-[0.2em] font-light">VOTE FOR HER</span></button>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={onGiftClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-gift text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">GIFT & MAG</span></button>
-                    <button onClick={onOutfitClick} className="w-full bg-white border border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 transition-colors group"><i className="fa-solid fa-shirt text-slate-300 group-hover:text-slate-500 transition-colors"></i><span className="text-[10px] tracking-widest font-medium">OUTFIT CATALOG</span></button>
-                  </div>
-                </div>
+
+
+<div className="space-y-4">
+  {/* メインの応援ボタン（無料票＆GIFT＆MAG 統合） */}
+  <button onClick={onGiftClick} className="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-5 rounded-none shadow-[0_10px_20px_-10px_rgba(244,114,182,0.5)] flex items-center justify-center gap-3 hover:shadow-[0_15px_30px_-10px_rgba(244,114,182,0.6)] hover:scale-[1.02] transition-all duration-300 group">
+    <i className="fa-solid fa-gift text-xl group-hover:rotate-12 transition-transform"></i>
+    <span className="text-sm tracking-[0.2em] font-medium">
+      GIFT & MAG <span className="font-light text-[10px] ml-2 opacity-90">(無料投票・応援)</span>
+    </span>
+  </button>
+
+  {/* OUTFIT カタログはサブアクションとして下に配置 */}
+  <button onClick={onOutfitClick} className="w-full bg-white border-2 border-slate-200 text-slate-700 py-4 rounded-none shadow-sm flex items-center justify-center gap-2 hover:border-slate-400 hover:bg-slate-50 transition-colors group">
+    <i className="fa-solid fa-shirt text-slate-400 group-hover:text-slate-600 transition-colors"></i>
+    <span className="text-[10px] tracking-widest font-medium uppercase">
+      Outfit Catalog <span className="font-light ml-1">(衣装提供)</span>
+    </span>
+  </button>
+</div>
+
+
               </div>
             </div>
 
@@ -2963,7 +3010,16 @@ const AuthModal = ({ onClose, onAuthSubmit, isAdminOnly = false, openLegal }) =>
 
           {showVoteModal && selectedIdol && <VoteModal onClose={() => setShowVoteModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowVoteModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
           {showOutfitModal && selectedIdol && <OutfitModal onClose={() => setShowOutfitModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowOutfitModal(false); setShowAuthModal(true);}} onSuccess={(amount, type, itemId) => { handleVoteForIdol(selectedIdol.id, amount, type, itemId); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
-          {showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
+
+
+
+
+{/* 修正箇所 */}
+{showGiftModal && selectedIdol && <GiftModal onClose={() => setShowGiftModal(false)} idol={selectedIdol} user={user} userData={userData} updateTickets={updateTickets} showToast={showToast} onLogin={() => {setShowGiftModal(false); setShowAuthModal(true);}} onSuccess={(amount, type) => { handleVoteForIdol(selectedIdol.id, amount, type); setSuccessModalData({ idolName: selectedIdol.name, amount, actionType: type }); }} />}
+
+
+
+
           {successModalData && <SuccessModal data={successModalData} onClose={() => setSuccessModalData(null)} idol={idolsData.find(i => i.name === successModalData.idolName)} />}
 
           <header className="absolute top-0 w-full z-50 py-8 pointer-events-none">
