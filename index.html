@@ -118,14 +118,12 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-// 【重要】悠がStripeで発行したIDをここに貼り付ける
-const STRIPE_PRICE_IDS = {
-  MEGAPHONE: 'prod_UMShJKDwJDBCXM', // ←ここに、さっきの「応援メガホン」のIDを貼って！
+
+
+// さっきStripeで作った「支払いリンク」のURLをここに貼り付ける
+const STRIPE_LINKS = {
+  MEGAPHONE: 'https://buy.stripe.com/dRm4gr0Jl21p0VA9oSfUQ00', // ←ここにコピーしたURLを貼る！
 };
-
-// Stripeを初期化（悠の「公開可能キー pk_test_...」を入れてね）
-const stripe = Stripe('pk_live_51TMXV80cPxT2OPjpZF7iYF8kJ2x3XdLQnJ9Dy7wxN654fu3NM9o2YEhMe1htm3PgFHlYUHq6FYZQl3z4Jg94uKE600ppJKfW4l');
-
 
 
 
@@ -841,31 +839,24 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
     );
   }
 
-  // ★ Stripe決済画面へ飛ばす処理
-  const handleBuyGift = async (priceKey) => {
-    const priceId = STRIPE_PRICE_IDS[priceKey]; // さっき登録したIDを呼び出す
+ 
+// ★ Stripe決済画面へ飛ばす処理（Payment Links版）
+  const handleBuyGift = (itemKey) => {
+    const linkUrl = STRIPE_LINKS[itemKey];
 
-    if (!priceId) {
+    if (!linkUrl) {
       alert("この商品はまだレジの準備ができていません。");
       return;
     }
 
     showToast("決済画面へ移動中...");
 
-    // Stripeの決済画面に「ワープ」させる
-    const { error } = await stripe.redirectToCheckout({
-      lineItems: [{ price: priceId, quantity: 1 }],
-      mode: 'payment',
-      // ★ 成功した時に戻ってくるURL。ここで "?status=success" をつけておく
-      successUrl: window.location.origin + '?status=success',
-      cancelUrl: window.location.origin + '?status=cancel',
-    });
+    // Stripeの決済画面（支払いリンク）へ直接ワープ！
+    window.location.href = linkUrl;
+  };
 
-    if (error) {
-      console.error("Stripe Error:", error);
-      showToast("決済画面への移動に失敗しました。");
-    }
-  }; 
+
+
 
   // 無料投票の処理
   const handleFreeVote = (amount) => {
