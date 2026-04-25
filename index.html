@@ -94,14 +94,6 @@
         -webkit-text-fill-color: #334155 !important;
         transition: background-color 5000s ease-in-out 0s;
     }
-
-
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
   </style>
 </head>
 <body class="antialiased selection:bg-pink-100 selection:text-pink-900 text-slate-800 tracking-wide font-light">
@@ -3129,180 +3121,366 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
   <LegalView type={legalType} onBack={handleBackToHome} onChangeType={setLegalType} />
 ) : (
   <div className="animate-fade-in">
+                
 
-                {/* ===== REDESIGNED HOME / keeps Firebase, voting, mypage logic untouched ===== */}
-                <section id="home" className="relative -mt-10 md:-mt-16 px-4 md:px-8 pb-10">
-                  <div className="max-w-7xl mx-auto overflow-hidden rounded-[2rem] border border-pink-100 bg-white/80 shadow-[0_30px_80px_rgba(244,114,182,0.18)] relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-pink-50/70 to-transparent z-10 pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(244,114,182,.18),transparent_30%),radial-gradient(circle_at_75%_30%,rgba(165,180,252,.18),transparent_35%)] z-0"></div>
-                    <img src="./hero.jpg" onError={(e)=>{e.currentTarget.src='./top.png';}} className="absolute right-0 top-0 w-full md:w-[62%] h-full object-cover object-center opacity-80 md:opacity-95" />
 
-                    <div className="relative z-20 min-h-[640px] md:min-h-[620px] flex items-center px-6 md:px-14 py-12">
-                      <div className="w-full md:w-[48%]">
-                        <img src="./logo.png" onError={(e)=>e.currentTarget.style.display='none'} className="w-44 md:w-56 object-contain mb-10 opacity-90" />
-                        <p className="text-[10px] tracking-[0.35em] text-pink-400 uppercase mb-5">Moshi Ai Project</p>
-                        <h1 className="font-serif text-[2.6rem] md:text-[4.8rem] leading-[1.25] text-slate-800 font-light mb-6">
-                          もしも私が、<br/>
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-300 font-medium">アイドル</span><br className="md:hidden"/>
-                          になったら。
-                        </h1>
-                        <p className="text-sm md:text-base text-slate-600 leading-loose font-light mb-8">
-                          あなたの1票で、彼女の物語が動き出す。<br/>
-                          原石たちがトップアイドルを目指すオーディションプロジェクト。
-                        </p>
+{/* HERO SECTION */}
+                <section id="home" className="pb-16 md:pb-24 max-w-7xl mx-auto px-4 text-center">
+                  <div className="flex flex-col items-center relative">
+                    <div className="relative w-full max-w-4xl flex flex-col items-center mb-8">
+                      <img src="./top.png" className="w-full object-contain relative z-10" onError={(e) => e.target.style.display='none'} />
+                      
+                      {/* ▼ 既存のアイドルエントリー用バナー ▼ */}
+                      <a href="https://moshiailp.pages.dev/" target="_blank" rel="noopener noreferrer" className="w-[85%] sm:w-[70%] max-w-lg -mt-12 sm:-mt-20 md:-mt-24 relative z-20 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] bg-transparent border-none p-0 cursor-pointer outline-none block mb-8">
+                        <img src="./line_entry_banner.png" alt="アイドルエントリー詳細へ" className="w-full h-auto object-contain" onError={(e) => e.target.style.display='none'} />
+                      </a>
 
-                        <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[1.5rem] p-4 md:p-5 shadow-[0_20px_50px_rgba(244,114,182,.14)] max-w-md">
-                          <p className="text-center text-[11px] text-pink-500 tracking-[0.18em] mb-3">＼ 無料登録で毎日3票 GET！ ／</p>
-                          <button onClick={() => setShowAuthModal(true)} className="w-full rounded-full py-4 bg-gradient-to-r from-pink-400 to-indigo-300 text-white text-sm tracking-widest shadow-[0_12px_30px_rgba(244,114,182,.25)] hover:-translate-y-0.5 transition-all">
-                            無料プロデューサー登録 <i className="fa-solid fa-arrow-right ml-2"></i>
+                      {/* ▼▼▼ 新規追加：プロデューサー登録誘導ブロック ▼▼▼ */}
+                      {(!user || user.isAnonymous) && (
+                        <div className="w-[90%] sm:w-[80%] max-w-2xl bg-white/95 backdrop-blur-md border-2 border-pink-200 rounded-none p-8 md:p-10 shadow-[0_15px_40px_rgba(244,114,182,0.15)] relative z-20 animate-fade-in-up mt-4">
+                          {/* 上部のリボン風バッジ */}
+                          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] px-8 py-2 shadow-md whitespace-nowrap">
+                            ＼ プロデューサー大募集 ／
+                          </div>
+                          
+                          <h2 className="text-xl md:text-3xl font-serif text-slate-800 mb-4 mt-2 leading-tight">
+                            無料登録で<span className="text-pink-500 font-bold text-3xl md:text-4xl mx-2">毎日3票</span>GET！
+                          </h2>
+                          <p className="text-xs md:text-sm text-slate-500 font-light mb-8 leading-relaxed">
+                            あなたの1票が、原石をトップアイドルに押し上げる。<br className="hidden md:block"/>
+                            今すぐ登録して、推しに愛を届けましょう！
+                          </p>
+                          
+                          <button 
+                            onClick={() => setShowAuthModal(true)} 
+                            className="w-full md:w-auto bg-slate-900 text-white hover:bg-pink-500 px-12 py-5 text-xs md:text-sm tracking-[0.2em] font-light transition-all duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_30px_rgba(244,114,182,0.4)] hover:-translate-y-1 flex items-center justify-center gap-3 mx-auto group"
+                          >
+                            <i className="fa-solid fa-envelope group-hover:scale-110 transition-transform"></i>
+                            無料プロデューサー登録
                           </button>
-                          <button onClick={() => scrollToSection('idol-list')} className="w-full mt-3 rounded-full py-4 bg-white text-slate-600 border border-pink-100 text-sm tracking-widest hover:bg-pink-50 transition-all">
-                            参加者を見てみる
-                          </button>
+                          <p className="text-[9px] text-slate-400 mt-4 tracking-widest">※登録は無料です。1分で完了します。</p>
                         </div>
-                      </div>
+                      )}
+                      {/* ▲▲▲ ここまで ▲▲▲ */}
+
+                      {/* ▼▼▼ おまけ：既にログインしているプロデューサー向けのメッセージ ▼▼▼ */}
+                      {(user && !user.isAnonymous && userRole === 'producer') && (
+                        <div className="w-[90%] sm:w-[80%] max-w-2xl bg-white/80 backdrop-blur-sm border border-slate-200 p-6 shadow-sm relative z-20 mt-4 animate-fade-in">
+                           <p className="text-sm text-slate-600 font-light leading-relaxed">
+                             いつもプロデュースありがとうございます！<br/>
+                             本日分の<span className="text-pink-500 font-bold mx-1">無料投票券（3票）</span>を使って、推しを応援しましょう！
+                           </p>
+                           <button 
+                             onClick={() => { setActiveTab('producerMyPage'); window.scrollTo(0,0); }}
+                             className="mt-4 bg-slate-50 border border-slate-300 text-slate-600 hover:bg-slate-900 hover:text-white px-8 py-3 text-[10px] tracking-[0.2em] transition-colors"
+                           >
+                             マイページへ行く <i className="fa-solid fa-arrow-right-long ml-2"></i>
+                           </button>
+                        </div>
+                      )}
+                      {/* ▲▲▲ ここまで ▲▲▲ */}
+
                     </div>
                   </div>
                 </section>
 
-                {/* TODAY'S MUSE */}
-                <section className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto bg-white/75 backdrop-blur-xl rounded-[1.5rem] border border-pink-100/80 shadow-[0_18px_45px_rgba(244,114,182,.10)] p-5 md:p-6">
-                    <div className="flex items-center justify-between mb-5">
-                      <div>
-                        <h2 className="font-serif text-xl md:text-2xl tracking-[0.12em] text-slate-800">TODAY'S MUSE</h2>
-                        <p className="text-[10px] text-slate-400 tracking-widest mt-1">今日の注目ミューズ</p>
-                      </div>
-                      <button onClick={() => scrollToSection('idol-list')} className="text-[10px] tracking-widest text-pink-400 hover:text-pink-500">もっと見る <i className="fa-solid fa-arrow-right ml-1"></i></button>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[...idolsData].sort((a,b)=>(b.totalVotes||0)-(a.totalVotes||0)).slice(0,3).map((idol, index) => (
-                        <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer rounded-[1.25rem] bg-white border border-pink-100 p-3 flex items-center gap-4 hover:-translate-y-1 hover:shadow-[0_18px_35px_rgba(244,114,182,.16)] transition-all">
-                          <div className="w-28 h-24 rounded-[1rem] overflow-hidden bg-pink-50 shrink-0">
-                            <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] tracking-widest text-pink-300">No. 0{index+1}</p>
-                            <h3 className="font-serif text-lg text-slate-800 truncate">{idol.name}</h3>
-                            <p className="text-[10px] text-slate-400 mt-1">{idol.style || 'MUSE'}</p>
-                            <p className="text-xs text-pink-500 mt-3"><i className="fa-solid fa-heart mr-1"></i>{(idol.totalVotes || 0).toLocaleString()}票</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
 
-                {/* FIND YOUR MUSE */}
-                <section className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="rounded-[1.5rem] p-8 md:p-10 bg-gradient-to-br from-pink-400 to-pink-200 text-white shadow-[0_20px_55px_rgba(244,114,182,.22)] relative overflow-hidden">
-                      <div className="absolute right-8 top-8 text-4xl opacity-25">✦</div>
-                      <p className="text-[10px] tracking-[0.3em] uppercase mb-4">Find Your Muse</p>
-                      <h2 className="font-serif text-2xl md:text-3xl leading-relaxed mb-4">あなたにぴったりの<br/>ミューズを見つけよう</h2>
-                      <p className="text-xs leading-loose opacity-90 mb-7">雰囲気・スタイル・推したいタイプから、運命の推しを探せます。</p>
-                      <button onClick={() => scrollToSection('idol-list')} className="bg-white text-pink-500 rounded-full px-8 py-3 text-xs tracking-widest shadow-lg">
-                        診断をはじめる <i className="fa-solid fa-arrow-right ml-2"></i>
-                      </button>
+                {/* PICK UP IDOLS */}
+                <section id="idol-slider" className="py-16 bg-white/40 backdrop-blur-md border-y border-white/60 mb-20 relative">
+                  <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+                  <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center gap-3 px-8 mb-8">
+                      <span className="w-10 h-px bg-slate-400"></span>
+                      <h2 className="text-sm font-light text-slate-500 tracking-[0.3em] uppercase">Featured</h2>
                     </div>
-
-                    <div className="rounded-[1.5rem] bg-white/80 border border-pink-100 p-6 md:p-8 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                      {[
-                        ['Q1','好きな雰囲気は？',['王道','ガーリー','KPOP','清楚']],
-                        ['Q2','応援したいタイプは？',['努力家','癒し系','クール','妹系']],
-                        ['Q3','どんな瞬間で推す？',['笑顔','歌声','配信','成長']]
-                      ].map((q) => (
-                        <div key={q[0]} className="flex items-start gap-4 py-4 border-b border-pink-50 last:border-0">
-                          <span className="font-serif text-pink-400">{q[0]}</span>
-                          <div className="flex-1">
-                            <p className="text-xs text-slate-500 mb-3">{q[1]}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {q[2].map(tag => <span key={tag} className="px-3 py-1.5 rounded-full bg-pink-50 border border-pink-100 text-[10px] text-slate-500">{tag}</span>)}
+                    {idolsData.length === 0 ? (
+                      <p className="px-8 text-sm text-slate-500 font-light">現在エントリー中のアイドルはいません。</p>
+                    ) : (
+                      <div className="flex gap-6 overflow-x-auto hide-scrollbar px-8 pb-8">
+                        {idolsData.map((idol, i) => (
+                          <div key={idol.id} className="w-56 shrink-0 relative rounded-none overflow-hidden group bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
+                            <div className="aspect-[3/4] overflow-hidden relative bg-slate-50">
+                              <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                             </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-
-                {/* RANKING DRAMA */}
-                <section id="ranking" className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto rounded-[1.5rem] bg-white/80 border border-pink-100 p-5 md:p-7 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="font-serif text-xl md:text-2xl tracking-[0.12em] text-slate-800">RANKING DRAMA</h2>
-                        <p className="text-[10px] text-slate-400 tracking-widest mt-1">ランキングで見る、彼女たちの今</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-                      <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[...idolsData].sort((a,b)=>(b.totalVotes||0)-(a.totalVotes||0)).slice(0,3).map((idol,index)=>(
-                          <div key={idol.id} onClick={() => openIdolDetail(idol)} className={`group cursor-pointer rounded-[1.25rem] bg-gradient-to-b ${index===0?'from-pink-50 to-white':'from-white to-pink-50/30'} border border-pink-100 p-4 text-center hover:-translate-y-1 transition-all`}>
-                            <div className="text-pink-300 text-xl mb-2">{index===0?'👑':'♡'}</div>
-                            <div className="w-full aspect-[4/5] rounded-[1rem] overflow-hidden bg-pink-50 mb-4">
-                              <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute inset-x-0 bottom-0 p-6 text-white flex flex-col justify-end h-full pointer-events-none">
+                              <p className="text-[9px] font-medium tracking-[0.2em] text-pink-300 mb-1 uppercase opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">{idol.style}</p>
+                              <h3 className="font-serif font-light text-xl mb-2 tracking-wide">{idol.name}</h3>
+                              <button onClick={() => openIdolDetail(idol)} className="w-full py-3 mt-2 bg-white/10 backdrop-blur-md border border-white/30 text-white text-[9px] tracking-widest uppercase hover:bg-white hover:text-slate-900 transition-colors pointer-events-auto">
+                                Discover
+                              </button>
                             </div>
-                            <p className="font-serif text-slate-800">{idol.name}</p>
-                            <p className="text-[10px] text-slate-400">{idol.style}</p>
-                            <p className="font-timer text-pink-500 mt-2">{(idol.totalVotes||0).toLocaleString()}票</p>
-                            <button onClick={(e)=>{e.stopPropagation(); handleQuickVote(e, idol);}} className="mt-3 rounded-full bg-pink-50 text-pink-500 border border-pink-100 px-5 py-2 text-[10px] tracking-widest hover:bg-pink-400 hover:text-white transition-all">
-                              投票する
-                            </button>
                           </div>
                         ))}
                       </div>
-
-                      <div className="rounded-[1.25rem] border border-pink-100 bg-white p-5">
-                        <p className="text-center text-[10px] tracking-widest text-slate-400 mb-2">中間発表まで</p>
-                        <p className="text-center font-serif text-3xl text-pink-500 mb-4">あと12日</p>
-                        <div className="border-t border-pink-50 pt-4 text-center">
-                          <p className="text-[10px] text-slate-400">あなたの残り票</p>
-                          <p className="font-timer text-2xl text-slate-800 mt-1">{userData?.freeTickets ?? 3}/3</p>
-                          <button onClick={() => setShowAuthModal(true)} className="w-full mt-4 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 text-white py-3 text-xs tracking-widest">投票する</button>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </section>
 
-                {/* MUSES */}
-                <section id="idol-list" className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto rounded-[1.5rem] bg-white/80 border border-pink-100 p-5 md:p-7 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                    <div className="flex items-center justify-between mb-5">
-                      <div>
-                        <h2 className="font-serif text-xl md:text-2xl tracking-[0.12em] text-slate-800">MUSES</h2>
-                        <p className="text-[10px] text-slate-400 tracking-widest mt-1">参加者一覧</p>
-                      </div>
-                      <button onClick={() => setActiveTab('allIdolsList')} className="text-[10px] tracking-widest text-pink-400">もっと見る <i className="fa-solid fa-arrow-right ml-1"></i></button>
-                    </div>
+                {/* EVENT DASHBOARD & RANKING */}
+                <section id="ranking" className="py-24 bg-white/50 backdrop-blur-xl border-y border-white mb-20">
+                  <div className="max-w-6xl mx-auto px-4 md:px-8">
+                    <SectionTitle title="Campaigns" subtitle="開催中のイベントとランキング" />
 
-                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 mb-5">
-                      {['ALL','王道','ガーリー','KPOP','清楚','クール'].map(tag => <span key={tag} className="shrink-0 px-5 py-2 rounded-full bg-pink-50 border border-pink-100 text-[10px] text-slate-500">{tag}</span>)}
-                    </div>
+                    {EVENTS_DATA.map((ev) => {
+                      const isMain = ev.id === 'main';
+                      const themeBg = isMain ? 'bg-slate-800' : 'bg-slate-800'; 
+                      const themeText = isMain ? 'text-slate-900' : 'text-slate-900';
+                      const currentEventTab = eventTabs[ev.id];
+                      const currentRankingTab = rankingTabs[ev.id];
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                      {idolsData.slice(0,12).map(idol => (
-                        <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer rounded-[1rem] overflow-hidden bg-white border border-pink-100 hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(244,114,182,.14)] transition-all">
-                          <div className="aspect-[4/5] overflow-hidden bg-pink-50">
-                            <MediaDisplay src={idol.profileImage} fallbackSrc="./default_idol.png" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                          </div>
-                          <div className="p-3 flex items-center justify-between">
-                            <div className="min-w-0">
-                              <p className="font-serif text-sm text-slate-800 truncate">{idol.name}</p>
-                              <p className="text-[9px] text-slate-400 truncate">{idol.style || 'MUSE'}</p>
+                      return (
+                        <div key={ev.id} className="mb-24 last:mb-0 bg-transparent">
+                          <div className="relative rounded-none overflow-hidden border border-slate-200 bg-white p-2 shadow-sm mb-16 group">
+                            <div className="aspect-[21/9] overflow-hidden relative bg-slate-50">
+                              <img src={ev.bannerImg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 mix-blend-multiply" onError={handleImgError} />
                             </div>
-                            <i className="fa-regular fa-heart text-pink-300"></i>
+                          </div>
+
+                          <CountdownTimer endDate={ev.endDate} themeColor={ev.themeColor} />
+
+                          <div className="flex justify-center gap-8 md:gap-16 border-b border-slate-200 mt-16 mb-12 px-4">
+                            {[{id: 'ranking', label: 'RANKING'}, {id: 'about', label: 'DETAILS'}, {id: 'benefits', label: 'BENEFITS'}].map(t => (
+                              <button key={t.id} onClick={() => setEventTabs(prev => ({...prev, [ev.id]: t.id}))} className={`pb-4 text-[10px] md:text-xs tracking-[0.2em] transition-colors relative uppercase ${currentEventTab === t.id ? `${themeText} font-medium` : 'text-slate-400 hover:text-slate-600 font-light'}`}>
+                                {t.label}
+                                {currentEventTab === t.id && <div className={`absolute bottom-[-1px] left-0 w-full h-px ${themeBg}`}></div>}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="px-0 min-h-[400px]">
+                            {currentEventTab === 'ranking' && (
+                              <div className="animate-fade-in-up">
+                                <div className="flex gap-4 overflow-x-auto pb-8 hide-scrollbar justify-center">
+                                  {RANKING_TABS.map(tab => (
+                                    <button key={tab.id} onClick={() => setRankingTabs(prev => ({...prev, [ev.id]: tab.id}))} className={`px-5 py-2 rounded-none text-[10px] tracking-widest uppercase transition-all border ${currentRankingTab === tab.id ? `${themeBg} text-white border-transparent` : `bg-transparent text-slate-500 border-slate-200 hover:border-slate-400`}`}>{tab.label}</button>
+                                  ))}
+                                </div>
+
+                                {(() => {
+                                  let currentRankingData = ev.rankingData[currentRankingTab] || [];
+                                  
+                                  if (currentRankingTab === 'overall') {
+                                    currentRankingData = [...idolsData].sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0)).map((idol, index, array) => {
+                                      const diff = index === 0 ? "-" : `1ランク上まで ${((array[index-1].totalVotes || 0) - (idol.totalVotes || 0)).toLocaleString()}票`;
+                                      return {
+                                        rank: index + 1,
+                                        idolId: idol.id,
+                                        name: idol.name,
+                                        value: `${(idol.totalVotes || 0).toLocaleString()} 票`,
+                                        diff: diff
+                                      };
+                                    });
+                                  }
+
+                                  const topThree = currentRankingData.slice(0, 3);
+                                  const others = currentRankingData.slice(3, 6);
+                                  const maxPt = currentRankingData.length > 0 ? parseVote(currentRankingData[0].value) : 1;
+
+                                  if(currentRankingData.length === 0) {
+                                    return <p className="text-center text-sm text-slate-500 font-light py-10">集計データがありません。</p>
+                                  }
+
+                                  return (
+                                    <div>
+                                      {topThree.length > 0 && (
+                                        <div className="flex justify-center items-end gap-4 md:gap-10 mb-20 mt-10">
+                                          {topThree.map((item, index) => {
+                                            let orderClass = index === 0 ? "order-2" : index === 1 ? "order-1" : "order-3";
+                                            let sizeClass = index === 0 ? "w-36 md:w-56" : "w-28 md:w-44 mb-0 md:mb-6";
+                                            let badgeColors = index === 0 ? "text-amber-500" : index === 1 ? "text-slate-400" : "text-orange-400";
+                                            let rankNum = index === 0 ? "01" : index === 1 ? "02" : "03";
+                                            const idolData = idolsData.find(i => String(i.id) === String(item.idolId));
+
+                                            return (
+                                              <div key={index} onClick={() => { if(idolData) openIdolDetail(idolData) }} className={`flex flex-col items-center cursor-pointer group animate-podium ${orderClass} ${sizeClass}`} style={{animationDelay: `${index * 0.15}s`}}>
+                                                <div className={`font-serif text-3xl md:text-4xl font-light mb-4 ${badgeColors} tracking-wider`}>{rankNum}</div>
+                                                <div className={`w-full aspect-[3/4] bg-white p-2 border border-slate-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-transform duration-500 group-hover:-translate-y-2 relative overflow-hidden`}>
+                                                  <div className="w-full h-full relative overflow-hidden bg-slate-50">
+                                                    {idolData && <MediaDisplay src={idolData.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 mix-blend-multiply" />}
+                                                  </div>
+                                                </div>
+                                                
+                                                <div className="text-center mt-5 w-full relative">
+                                                  <h4 className="font-light tracking-wide text-slate-800 text-sm md:text-base truncate px-1">{item.name}</h4>
+                                                  <div className="flex items-center justify-center gap-2 mt-1">
+                                                    <p className={`text-xs md:text-sm font-timer font-light ${index===0 ? 'text-slate-800' : 'text-slate-500'}`}>{item.value}</p>
+                                                  </div>
+                                                  {item.diff && item.diff !== "-" && <p className="text-[9px] text-pink-400 font-medium tracking-widest mt-1.5 uppercase">{item.diff}</p>}
+                                                  
+                                                  {currentRankingTab !== 'producers' && (
+                                                    <div className="mt-3 flex justify-center h-8">
+                                                      <button 
+                                                        onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }}
+                                                        className="bg-pink-50 border border-pink-100 text-pink-500 hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white hover:border-transparent px-4 py-1.5 rounded-full text-[9px] tracking-widest font-medium transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.3)] hover:scale-105 active:scale-95 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+                                                      >
+                                                        <i className="fa-solid fa-heart"></i> VOTE
+                                                      </button>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+
+                                      {others.length > 0 && (
+                                        <div className="max-w-3xl mx-auto">
+                                          {others.map((item, i) => {
+                                            const idolData = idolsData.find(idl => String(idl.id) === String(item.idolId));
+                                            const itemPt = parseVote(item.value);
+                                            const percentage = Math.min(100, Math.max(0, (itemPt / maxPt) * 100));
+
+                                            return (
+                                              <div key={item.rank} onClick={() => { if(idolData) openIdolDetail(idolData) }} className="flex items-center py-5 border-b border-slate-200 group cursor-pointer hover:bg-white/50 transition-colors px-4">
+                                                <div className="w-12 font-serif text-xl font-light text-slate-400 group-hover:text-slate-800 transition-colors">0{item.rank}</div>
+                                                <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 mr-5 shrink-0 bg-slate-50">
+                                                   <MediaDisplay src={idolData?.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex justify-between items-baseline mb-1">
+                                                    <h4 className="font-light text-slate-800 tracking-wide text-xs md:text-sm truncate pr-2">{item.name}</h4>
+                                                    <p className={`font-timer font-light text-xs md:text-sm ${themeText} shrink-0`}>{item.value}</p>
+                                                  </div>
+                                                  <div className="w-full bg-slate-100 h-px relative">
+                                                    <div className={`absolute top-0 left-0 h-full transition-all duration-1000 bg-slate-400`} style={{ width: `${percentage}%` }}></div>
+                                                  </div>
+                                                </div>
+                                                
+                                                <div className="ml-4 sm:ml-6 flex items-center gap-3 w-24 sm:w-32 justify-end shrink-0">
+                                                  {currentRankingTab !== 'producers' ? (
+                                                    <div className="flex items-center gap-3">
+                                                      {item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}
+                                                      <button 
+                                                        onClick={(e) => { e.stopPropagation(); if(idolData) handleQuickVote(e, idolData); }}
+                                                        className="w-9 h-9 shrink-0 rounded-full bg-white border border-pink-100 text-pink-400 flex items-center justify-center hover:bg-gradient-to-tr hover:from-pink-400 hover:to-pink-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-[0_5px_15px_rgba(244,114,182,0.4)] hover:scale-110 active:scale-95 group/vote relative overflow-hidden"
+                                                        title="1票投票する"
+                                                      >
+                                                        <span className="absolute inset-0 bg-white/30 rounded-full scale-0 group-hover/vote:scale-150 transition-transform duration-500 ease-out opacity-0 group-hover/vote:opacity-100"></span>
+                                                        <i className="fa-solid fa-heart text-xs relative z-10 group-hover/vote:scale-110 transition-transform"></i>
+                                                      </button>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="flex items-center gap-4 w-full justify-end">
+                                                      {item.diff && <span className="hidden sm:inline-block text-[9px] font-medium tracking-widest text-slate-400 uppercase w-28 text-right pr-2">{item.diff}</span>}
+                                                      <i className="fa-solid fa-arrow-right-long text-slate-300 group-hover:text-slate-800 transition-colors font-light"></i>
+                                                    </div>
+                                                  )}
+                                                </div>
+
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+
+                                      <div className="text-center mt-12 pt-8 border-t border-slate-200">
+                                        <button onClick={() => openEventDetail(ev)} className="bg-slate-900 text-white px-8 py-4 text-[10px] tracking-[0.2em] font-light hover:bg-slate-800 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:-translate-y-1">
+                                          VIEW FULL RANKING & DETAILS <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                        </button>
+                                      </div>
+
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            )}
+
+                            {currentEventTab === 'about' && (
+                              <div className="max-w-3xl mx-auto space-y-12 animate-fade-in-up pt-8">
+                                <div className="text-center mb-12">
+                                  <h3 className="text-2xl md:text-3xl font-light text-slate-800 font-serif mb-12 tracking-wide">{ev.aboutTitle}</h3>
+                                  <div className="space-y-8">
+                                    {ev.aboutImages.map((imgSrc, idx) => (
+                                      <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
+                                        <img src={imgSrc} alt={`イベント詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="p-8 border-t border-slate-200 text-center">
+                                  <p className="text-slate-600 leading-loose font-light whitespace-pre-wrap">{ev.aboutText}</p>
+                                  <button onClick={() => openEventDetail(ev)} className="mt-12 bg-transparent border border-slate-300 text-slate-600 px-8 py-3 text-[10px] tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-sm hover:shadow-md">
+                                    READ MORE DETAILS <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {currentEventTab === 'benefits' && (
+                              <div className="max-w-3xl mx-auto space-y-12 animate-fade-in-up pt-8">
+                                <div className="space-y-8">
+                                  {ev.benefitImages.map((imgSrc, idx) => (
+                                    <div key={idx} className="bg-white p-2 border border-slate-100 shadow-[0_10px_20px_rgba(0,0,0,0.05)]">
+                                      <img src={imgSrc} alt={`特典詳細 ${idx + 1}`} className="w-full h-auto mix-blend-multiply" onError={handleImgError} />
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="space-y-8 mt-16 border-t border-slate-200 pt-16">
+                                  {ev.benefits.map((benefit, idx) => (
+                                    <div key={idx} className={`p-8 md:p-10 border shadow-sm ${benefit.type === 'producer' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200'}`}>
+                                      <h3 className={`text-lg md:text-xl font-light font-serif mb-6 tracking-wide ${benefit.type === 'producer' ? 'text-white' : 'text-slate-800'}`}>{benefit.title}</h3>
+                                      <ul className="space-y-4">
+                                        {benefit.items.map((item, i) => (
+                                          <li key={i} className="flex items-start gap-4">
+                                            <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${benefit.type === 'producer' ? 'bg-pink-400' : 'bg-slate-300'}`}></span>
+                                            <p className={`text-sm md:text-base leading-loose font-light ${benefit.type === 'producer' ? 'text-slate-300' : 'text-slate-600'}`}>
+                                              {item.includes('Supported by') || item.includes('Outfit Provided by') ? (<span dangerouslySetInnerHTML={{__html: item.replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-white">$1</strong>')}} />) : item}
+                                            </p>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="text-center pt-8">
+                                  <button onClick={() => openEventDetail(ev)} className="bg-transparent border border-slate-300 text-slate-600 px-8 py-3 text-[10px] tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-3 rounded-none shadow-sm hover:shadow-md">
+                                    SEE ALL EVENTS DATA <i className="fa-solid fa-arrow-right-long font-light"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* IDOL LIST */}
+                <section id="idol-list" className="py-20 max-w-7xl mx-auto px-6 mb-16">
+                  <SectionTitle title="The Muses" subtitle="あなただけのミューズを見つける" />
+                  {filteredIdols.length === 0 ? <p className="text-center text-sm text-slate-500 font-light">現在エントリー中のアイドルはいません。</p> : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 mb-16">
+                      {filteredIdols.slice(0, 8).map((idol) => (
+                        <div key={idol.id} onClick={() => openIdolDetail(idol)} className="group cursor-pointer">
+                          <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 mb-4 border border-slate-200/50 shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)]">
+                            <MediaDisplay src={idol.profileImage} fallbackSrc={`./default_idol.png`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 mix-blend-multiply" />
+                            {idol.isStreaming && (
+                              <div className="absolute top-3 right-3 bg-red-500/90 text-white text-[8px] font-medium tracking-widest px-2 py-1 uppercase shadow-sm animate-pulse">
+                                On Air
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-center px-2">
+                            <h4 className="font-light text-slate-800 tracking-wide text-sm md:text-base group-hover:text-pink-600 transition-colors truncate">{idol.name}</h4>
+                            <p className="text-[9px] text-slate-400 tracking-widest mt-1 uppercase">{idol.style}</p>
                           </div>
                         </div>
                       ))}
                     </div>
+                  )}
+                  <div className="text-center mt-10">
+                    <button onClick={() => { if(activeTab === 'home') scrollPosRef.current = window.scrollY; setActiveTab('allIdolsList'); window.scrollTo(0,0); }} className="bg-transparent border border-slate-300 text-slate-600 px-12 py-4 text-xs tracking-[0.2em] font-light hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-300 inline-flex items-center justify-center gap-4">
+                      VIEW ALL MUSES <i className="fa-solid fa-arrow-right-long font-light"></i>
+                    </button>
                   </div>
                 </section>
 
-                {/* MUSES' DAILY */}
+                {/* LIVE TIMELINE */}
                 <LiveTimelineSection 
                   posts={postsData} 
                   idols={idolsData} 
@@ -3315,116 +3493,70 @@ const GiftModal = ({ onClose, idol, user, userData, updateTickets, showToast, on
                   userRole={userRole}
                 />
 
-                {/* MAGAZINE */}
-                <section id="magazine" className="px-4 md:px-8 my-8">
-                  <div className="max-w-7xl mx-auto rounded-[1.5rem] bg-white/80 border border-pink-100 p-5 md:p-7 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="font-serif text-xl md:text-2xl tracking-[0.12em] text-slate-800">MAGAZINE</h2>
-                        <p className="text-[10px] text-slate-400 tracking-widest mt-1">彼女たちの物語をもっと深く知る</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                      {WEB_MAGAZINE_ARTICLES.slice(0,1).map(article => (
-                        <div key={article.id} onClick={()=>openArticleDetail(article)} className="lg:col-span-2 rounded-[1.25rem] bg-white border border-pink-100 overflow-hidden cursor-pointer hover:-translate-y-1 transition-all">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                            <div className="aspect-[4/3] bg-pink-50">
-                              <img src={article.thumb} onError={handleImgError} className="w-full h-full object-cover" />
+                {/* PRODUCER RANKING */}
+                <section id="producer-ranking" className="py-20 bg-slate-50 border-y border-slate-200 mb-20">
+                  <div className="max-w-6xl mx-auto px-6">
+                    <SectionTitle title="Top Patrons" subtitle="彼女たちを支えるトッププロデューサー" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {topProducersList.map((producer, index) => {
+                        let oshiName = "未設定";
+                        if (producer.votes) {
+                          const topOshiId = Object.keys(producer.votes).sort((a,b) => producer.votes[b] - producer.votes[a])[0];
+                          const oshiIdol = idolsData.find(i => String(i.id) === topOshiId);
+                          if (oshiIdol) oshiName = oshiIdol.name;
+                        }
+                        const titles = ["👑 筆頭プロデューサー", "✨ 敏腕プロデューサー", "🌟 敏腕プロデューサー"];
+
+                        return (
+                          <div key={producer.id} onClick={() => openProducerDetail(producer)} className="bg-white p-8 border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] cursor-pointer group transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] text-center">
+                            <p className="text-[9px] text-slate-400 font-medium tracking-widest mb-6 uppercase">Rank 0{index + 1}</p>
+                            <div className={`w-16 h-16 rounded-full mb-6 mx-auto flex items-center justify-center bg-gradient-to-tr ${producer.iconColor || 'from-slate-200 to-slate-400'} shadow-inner transition-transform duration-500 group-hover:scale-110 overflow-hidden`}>
+                              {producer.profileImage ? <img src={producer.profileImage} className="w-full h-full object-cover"/> : <i className="fa-solid fa-user-tie text-xl text-white/90"></i>}
                             </div>
-                            <div className="p-6">
-                              <span className="inline-block bg-pink-400 text-white text-[9px] tracking-widest px-3 py-1 rounded-full mb-4">PICK UP</span>
-                              <p className="text-[10px] text-pink-400 tracking-widest mb-2">{article.date}　{article.category}</p>
-                              <h3 className="font-serif text-lg text-slate-800 leading-loose mb-3">{article.title}</h3>
-                              <p className="text-xs text-slate-500 leading-loose">{article.desc}</p>
-                            </div>
+                            <div className="border-b border-slate-200 text-slate-500 text-[9px] font-medium tracking-widest pb-1 inline-block mb-4 uppercase">{titles[index] || "プロデューサー"}</div>
+                            <h4 className="font-light text-slate-800 text-lg tracking-wide mb-1 group-hover:text-amber-600 transition-colors">{producer.name}</h4>
+                            <p className="text-xs text-slate-400 font-light mb-4">Oshi: <span className="font-serif text-slate-700 text-sm normal-case">{oshiName}</span></p>
+                            <p className="text-xl font-timer font-light text-slate-800">{(producer.totalVotes || 0).toLocaleString()} <span className="text-[10px] text-slate-400 font-sans">票</span></p>
                           </div>
+                        );
+                      })}
+                      {topProducersList.length === 0 && <p className="col-span-3 text-center text-sm text-slate-400 font-light py-10">まだプロデューサーのランキングデータがありません。</p>}
+                    </div>
+                  </div>
+                </section>
+
+                {/* MAGAZINE ARCHIVE */}
+                <section id="magazine" className="py-24 relative overflow-hidden max-w-7xl mx-auto px-6 mb-20">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full bg-slate-50/50 blur-3xl -z-10 rounded-full"></div>
+                  <SectionTitle title="Archive" subtitle="過去の誌面コレクション" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12 md:gap-16 relative z-10">
+                    {MAGAZINES.map((mag) => (
+                      <div key={mag.id} className="flex flex-col items-center group cursor-pointer">
+                        <div className="relative w-full aspect-[3/4] bg-white border border-slate-100 p-3 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 group-hover:-translate-y-3 group-hover:shadow-[0_30px_50px_-15px_rgba(0,0,0,0.15)]">
+                          <img src={`./mag${mag.id}.png`} alt={mag.title} className="w-full h-full object-cover mix-blend-multiply" onError={handleImgError} />
+                          <div className="absolute -left-3 top-6 bg-slate-900 text-white text-[9px] font-medium tracking-widest py-1.5 px-4 shadow-md uppercase writing-vertical-lr transform rotate-180" style={{ writingMode: 'vertical-lr' }}>Vol. {mag.id}</div>
                         </div>
-                      ))}
-                      <div className="space-y-3">
-                        {WEB_MAGAZINE_ARTICLES.slice(1,4).map(article => (
-                          <div key={article.id} onClick={()=>openArticleDetail(article)} className="rounded-[1rem] bg-white border border-pink-100 p-3 flex gap-3 cursor-pointer hover:bg-pink-50/50 transition-all">
-                            <img src={article.thumb} onError={handleImgError} className="w-20 h-20 rounded-xl object-cover bg-pink-50" />
-                            <div className="min-w-0">
-                              <p className="text-[9px] text-pink-400 tracking-widest">{article.category}</p>
-                              <h4 className="text-xs text-slate-700 leading-relaxed line-clamp-2">{article.title}</h4>
-                              <p className="text-[9px] text-slate-400 mt-1">{article.views.toLocaleString()} views</p>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="text-center mt-8">
+                          <span className={`text-[9px] font-medium tracking-widest uppercase border-b pb-1 ${mag.status === '発売中' ? 'text-slate-400 border-slate-300' : 'text-pink-400 border-pink-200'}`}>{mag.status}</span>
+                          <h4 className="font-serif font-light text-slate-800 mt-4 leading-relaxed">{mag.title}</h4>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </section>
 
-                {/* AUDITION STORY / PRODUCER / ARCHIVE */}
-                <section className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-5">
-                    <div className="rounded-[1.5rem] bg-white/80 border border-pink-100 p-6 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                      <h2 className="font-serif text-xl tracking-[0.12em] text-slate-800 mb-5">AUDITION STORY</h2>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {['ABOUT','FLOW','BENEFIT','MAGAZINE'].map((item,i)=>(
-                          <button key={item} onClick={()=>setActiveTab('idolLP')} className="rounded-[1rem] border border-pink-100 bg-white p-5 text-left hover:bg-pink-50 transition-all">
-                            <i className={`fa-solid ${['fa-user-astronaut','fa-route','fa-gift','fa-book-open'][i]} text-pink-300 text-xl mb-3`}></i>
-                            <p className="text-[10px] tracking-widest text-slate-700">{item}</p>
-                            <p className="text-[9px] text-slate-400 mt-1">詳しく見る</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                {/* OFF-MELTY CATALOG */}
+                <OffMeltyCatalogSection 
+                  catalog={OFF_MELTY_CATALOG} 
+                  idols={idolsData} 
+                />
 
-                    <div className="rounded-[1.5rem] bg-gradient-to-r from-pink-300 to-indigo-300 p-6 text-white shadow-[0_18px_45px_rgba(165,180,252,.20)] relative overflow-hidden">
-                      <img src="./event_main_banner.png" onError={(e)=>e.currentTarget.style.display='none'} className="absolute inset-0 w-full h-full object-cover opacity-25" />
-                      <div className="relative z-10">
-                        <p className="text-[10px] tracking-[0.3em] mb-4">NEW AUDITION</p>
-                        <h2 className="font-serif text-2xl leading-loose mb-5">あなたの応援が、<br/>彼女の未来を変える。</h2>
-                        <button onClick={()=>setActiveTab('idolLP')} className="rounded-full bg-white/90 text-pink-500 px-8 py-3 text-xs tracking-widest">オーディションに参加する</button>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="px-4 md:px-8 mb-10">
-                  <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-5">
-                    <div className="rounded-[1.5rem] bg-white/80 border border-pink-100 p-6 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                      <h2 className="font-serif text-xl tracking-[0.12em] text-slate-800 mb-5">PRODUCER RANKING</h2>
-                      <div className="space-y-3">
-                        {topProducersList.map((p,index)=>(
-                          <div key={p.id || index} className="flex items-center gap-4 rounded-[1rem] bg-white border border-pink-100 p-4">
-                            <span className="font-serif text-pink-400">0{index+1}</span>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-100 to-indigo-100 flex items-center justify-center text-pink-400"><i className="fa-regular fa-user"></i></div>
-                            <div className="min-w-0">
-                              <p className="text-sm text-slate-700 truncate">{p.name || '名無しプロデューサー'}</p>
-                              <p className="text-[10px] text-slate-400">{(p.totalVotes || 0).toLocaleString()}票</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[1.5rem] bg-white/80 border border-pink-100 p-6 shadow-[0_18px_45px_rgba(244,114,182,.10)]">
-                      <h2 className="font-serif text-xl tracking-[0.12em] text-slate-800 mb-5">ARCHIVE</h2>
-                      <div className="grid grid-cols-3 gap-4">
-                        {MAGAZINES.slice(0,3).map(mag=>(
-                          <div key={mag.id} className="group cursor-pointer">
-                            <div className="aspect-[3/4] rounded-[1rem] overflow-hidden bg-pink-50 border border-pink-100">
-                              <img src={`./mag${mag.id}.png`} onError={handleImgError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                            </div>
-                            <p className="text-center text-[10px] text-slate-500 mt-2">VOL.{mag.id}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="px-4 md:px-8 mb-8">
-                  <div className="max-w-7xl mx-auto rounded-[1.5rem] bg-gradient-to-r from-pink-400 to-indigo-300 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5 shadow-[0_18px_45px_rgba(244,114,182,.18)]">
-                    <p className="font-serif text-xl md:text-2xl tracking-widest">今日の3票を、未来の推しへ。</p>
-                    <button onClick={() => setShowAuthModal(true)} className="rounded-full bg-white text-pink-500 px-8 py-3 text-xs tracking-widest shadow-lg">
-                      無料プロデューサー登録 <i className="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                  </div>
-                </section>
+                {/* MOSHI-AI WEB MAGAZINE */}
+                <MoshiAiMagazineSection 
+                  articles={WEB_MAGAZINE_ARTICLES}
+                  categories={MAG_CATEGORIES}
+                  onArticleSelect={openArticleDetail}
+                />
               </div>
             )}
           </main>
